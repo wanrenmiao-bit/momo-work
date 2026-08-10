@@ -247,6 +247,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .idea-add-card input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .idea-add-card .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .idea-add-card .filters .chip{background:var(--surface)}
+.idea-add-card .filters .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 .idea-timeline{position:relative;padding-left:26px}
 .idea-timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:var(--surface3)}
@@ -260,15 +261,14 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .idea-note:nth-child(4n+4){border-top-color:var(--green)}
 .idea-note.done{opacity:.6;background:var(--surface2);border-color:var(--border)}
 .idea-note:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(120,105,90,.12);border-color:var(--border2)}
-.idea-note-tag{position:absolute;top:14px;right:14px}
-.idea-note-text{font-size:14.2px;line-height:1.7;word-break:break-word;margin:6px 0 16px;color:var(--text);padding-right:28px}
+.idea-note-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.idea-note-tag{margin-right:auto}
+.idea-note-text{font-size:14.2px;line-height:1.7;word-break:break-word;margin:0 0 14px;color:var(--text)}
 .idea-note.done .idea-note-text{text-decoration:line-through;color:var(--text2)}
 .idea-note-foot{display:flex;align-items:center;gap:8px}
-.idea-actions{position:absolute;top:10px;left:10px;display:flex;gap:3px;opacity:0;transition:.15s}
-.idea-note:hover .idea-actions{opacity:1}
+.idea-actions{position:static;opacity:1;display:flex;gap:4px}
 .idea-note.sel{grid-column:1 / -1;padding:22px 24px;border-color:var(--accent2);box-shadow:0 0 0 2px rgba(180,156,201,.4),0 14px 34px rgba(120,105,90,.16);transform:none}
 .idea-note.sel .idea-note-text{font-size:16.5px;line-height:1.85}
-.idea-note.sel .idea-note-tag{top:20px;right:20px}
 @media(max-width:768px){.idea-actions{opacity:1}}
 .btn-done{padding:5px 11px;border-radius:9px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text2);background:var(--surface3);transition:.16s}
 .btn-done:hover{border-color:var(--green);color:#5f7d5a}
@@ -343,11 +343,13 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 
 /* ---------- 番茄钟 ---------- */
 .pomo-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:14px}
-.pomo-hero{display:flex;flex-direction:column;align-items:center;padding:26px 20px 22px;margin-top:14px}
+.pomo-hero{display:flex;flex-direction:column;align-items:stretch;padding:14px 16px 16px;margin-top:14px}
 .pomo-hero .card-h{margin-bottom:6px}
+.pomo-hero-body{display:flex;align-items:center;gap:16px;margin-top:6px;justify-content:flex-start}
+.pomo-side{display:flex;flex-direction:column;gap:9px;flex:1;min-width:0;max-width:520px}
 .pomo-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start}
-.pomo-stage{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px}
-.pomo-ring-wrap{position:relative;width:250px;height:250px;margin-bottom:6px}
+.pomo-stage{display:flex;flex-direction:column;align-items:center;padding:4px 0;flex-shrink:0}
+.pomo-ring-wrap{position:relative;width:190px;height:190px;margin-bottom:0}
 .pomo-ring-wrap svg{display:block;transform:rotate(-90deg)}
 .pomo-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .pomo-time{font-size:50px;font-weight:800;letter-spacing:1px;color:var(--text);font-variant-numeric:tabular-nums;line-height:1.1}
@@ -355,18 +357,20 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pomo-linked{font-size:12.5px;color:var(--accent2);font-weight:650;max-width:170px;text-align:center;line-height:1.45;margin-top:4px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pomo-hand{transform-origin:60px 60px;transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
-.pomo-mins{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 4px}
+.pomo-mins{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:4px 0 2px}
 .pomo-min{padding:8px 15px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:13.5px;color:var(--text2);transition:.15s;min-height:38px}
 .pomo-min:hover{border-color:var(--border2);color:var(--text)}
 .pomo-min.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
 .pomo-min:disabled{opacity:.4;cursor:not-allowed}
-.pomo-ctrl{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.pomo-ctrl{display:flex;gap:10px;justify-content:center;margin-top:8px;flex-wrap:wrap}
 .pomo-big{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 30px;border-radius:999px;font-size:15.5px;font-weight:700;
   background:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(180,156,201,.4);transition:.16s;min-height:48px}
 .pomo-big:hover{background:var(--accent2);transform:translateY(-1px)}
 .pomo-big.ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);box-shadow:none}
 .pomo-big.ghost:hover{background:var(--surface3);color:var(--text);transform:none}
-.pomo-link-row{display:flex;gap:8px;align-items:center;margin-top:18px;flex-wrap:wrap;width:100%;max-width:440px;justify-content:center}
+.pomo-link-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;width:100%;justify-content:flex-start}
+.pomo-hint-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:4px}
+.pomo-hint-row svg{color:var(--accent);flex-shrink:0}
 .pomo-link-row .lb{font-size:13px;color:var(--text2);flex-shrink:0}
 .pomo-link-row .dd{flex:1;min-width:180px}
 .pomo-sound{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);
@@ -460,7 +464,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .review-ops{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
 
 /* ===== 感恩日历 ===== */
-.grat-layout{display:flex;flex-direction:column;gap:18px;margin-top:14px}
+.grat-layout{display:flex;flex-direction:row;gap:22px;align-items:flex-start;margin-top:14px}
+.grat-editor{flex:1;min-width:0}
+.grat-calendar-wrap{width:330px;flex-shrink:0;position:sticky;top:14px}
 .cal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
 .cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .cal-head .mt{font-size:15px;font-weight:700;color:var(--text);margin:0 auto}
@@ -524,16 +530,24 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .frow{grid-template-columns:1fr}
   .card{padding:15px}
   .pr-layout,.grat-layout,.pomo-layout{grid-template-columns:1fr}
+  .grat-layout{flex-direction:column}
+  .grat-calendar-wrap{width:auto;position:static}
   .pomo-grid{grid-template-columns:1fr}
   .pomo-hero{padding:20px 14px 18px}
   .daily-sub{display:flex}
-  .pomo-ring-wrap{width:216px;height:216px}
+  .pomo-ring-wrap{width:200px;height:200px}
+  .pomo-hero-body{flex-direction:column;gap:14px}
   .pomo-time{font-size:44px}
   .pomo-mini{right:14px;bottom:calc(76px + env(safe-area-inset-bottom));padding:9px 14px 9px 11px}
   .lib-tools{flex-direction:column;align-items:stretch}
   .lib-search{min-width:0}
   .lib-item{padding:11px 12px;gap:10px}
   .lib-ops .iconbtn{width:40px;height:40px}
+  .lib-layout{flex-direction:column}
+  .lib-side{width:auto;position:static;max-height:none}
+  .lib-node-row{padding:11px 10px;font-size:15px}
+  .lib-node-ops{display:flex;position:static;justify-content:flex-end;margin:-4px 4px 4px 0;border:none;background:none;padding:0}
+  .lib-node-ops .iconbtn.sm{width:32px;height:32px}
   .pomo-mini .mlab{display:none}
   .pomo-link-row .dd{min-width:0;width:100%;flex:1 1 100%}
   .cal{grid-column:1/-1}
@@ -591,7 +605,29 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-badge.project{background:rgba(149,176,142,.20);color:#5f7d5a}
 .lib-badge.study{background:rgba(118,162,204,.20);color:#3f6ea5}
 .lib-badge.goal{background:rgba(184,150,202,.20);color:#7a5a90}
+.lib-badge.cat{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent2)}
+.lib-badge.muted{background:transparent;border:1px dashed var(--surface3);color:var(--muted)}
 .lib-ops{display:flex;gap:5px;flex-shrink:0}
+
+/* ---- 知识框架树 ---- */
+.lib-layout{display:flex;gap:16px;align-items:flex-start}
+.lib-side{width:288px;flex-shrink:0;position:sticky;top:14px;max-height:calc(100vh - 40px);display:flex;flex-direction:column}
+.lib-main-col{flex:1;min-width:0}
+.lib-tree{margin-top:12px;overflow-y:auto;flex:1}
+.lib-tree-list{margin-left:14px;padding-left:10px;border-left:1px dashed var(--surface3)}
+.lib-node{position:relative}
+.lib-node-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:.15s;font-size:14px;color:var(--text2)}
+.lib-node-row:hover{background:var(--accent-soft);color:var(--text)}
+.lib-node.on>.lib-node-row{background:var(--accent);color:#fff;font-weight:600}
+.lib-node.on>.lib-node-row .ln-cnt{background:rgba(255,255,255,.28);color:#fff}
+.ln-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ln-cnt{font-size:11.5px;background:var(--surface3);color:var(--muted);border-radius:9px;padding:1px 7px;flex-shrink:0}
+.lib-node-ops{position:absolute;right:6px;top:4px;display:none;gap:2px;background:var(--surface);border:1px solid var(--surface3);border-radius:9px;padding:2px}
+.lib-node:hover>.lib-node-ops{display:flex}
+.lib-node-ops .iconbtn.sm{width:24px;height:24px;padding:0}
+.lib-tree-empty{font-size:13px;color:var(--muted);line-height:1.7;padding:14px 10px}
+.lib-tree-tip{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--surface3)}
+.lib-tree-tip svg{flex-shrink:0;margin-top:2px}
 
 .lib-pv-imgwrap{display:flex;justify-content:center;background:var(--surface3);border-radius:14px;padding:10px}
 .lib-pv-img{max-width:100%;max-height:72vh;border-radius:8px}
@@ -698,6 +734,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 function d2s(d){ const p = n => String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 const TODAY = d2s(new Date());
 function off(n){ const d = new Date(); d.setDate(d.getDate()+n); return d2s(d); }
+function nowStamp(){ const d = new Date(); const p = n => String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
 function fmtSize(b){ if(b==null) return ''; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; if(b<1073741824) return (b/1048576).toFixed(1)+' MB'; return (b/1073741824).toFixed(2)+' GB'; }
 function fmtMD(s){ if(!s) return ''; const p = s.split('-'); return p.length===3 ? (+p[1])+'月'+(+p[2])+'日' : s; }
 function fmtYM(s){ if(!s) return '未填日期'; return s.slice(0,4)+'年'+ (+s.slice(5,7))+'月'; }
@@ -708,7 +745,7 @@ function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'
 let db = null;
 let meta = { lastBackupCount: 0, noticeDismissAt: 0, sync: { token:'', gistId:'', auto:false, lastSync:0 } };
 
-function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], gratitude:{}, seeded:false, v:4 }; }
+function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], gratitude:{}, seeded:false, v:4 }; }
 
 function seedDB(){
   const g0 = { id:uid(), title:'三年内成为能养活自己的独立开发者', cat:'事业', note:'目标不是辞职，而是有随时可以辞职的底气。', created:off(-60), milestones:[
@@ -722,6 +759,9 @@ function seedDB(){
     { id:uid(), title:'完成一次半程马拉松', done:false }
   ]};
   const PID0 = uid(), PID1 = uid(), TID0 = uid(), TID1 = uid();
+  const FWL = defaultFrameworks();
+  const fwId = n => { const f = FWL.find(x=>x.name===n); return f ? f.id : ''; };
+  const fProj = fwId('配图配色'), fTime = fwId('时间管理');
   const g2 = { id:uid(), title:'今年读完 30 本书', cat:'成长', note:'重质不重量，每本要写读书笔记。', created:off(-30), milestones:[
     { id:uid(), title:'上半年读完 15 本', done:true, doneAt:off(-5) },
     { id:uid(), title:'下半年读完 15 本', done:false }
@@ -737,9 +777,9 @@ function seedDB(){
       { id:uid(), text:'把过去两年写过的所有笔记整理成一个可检索的知识库', tag:'成长', created:off(-4), done:false }
     ],
     studies:[
-      { id:uid(), title:'SVG 与 CSS 动画学习笔记', content:'通读 MDN SVG 基础教程，重点理解 viewBox、path 指令、stroke-dasharray 的用法。\n\n接下来要手写 3 个 loading 动画，把贝塞尔曲线和缓动函数吃透。', tags:['前端','动画'], created:off(-30) },
-      { id:uid(), title:'AI Agent 工程化实践', content:'Prompt 工程核心要点：结构化输出 + 少量示例，比长篇描述有效得多。\n\nRAG 检索增强生成里，分块策略和 rerank 是效果关键。还要做一个能查天气的 Agent Demo。', tags:['AI','工程化'], created:off(-20) },
-      { id:uid(), title:'个人财务与理财入门', content:'《小狗钱钱》读书笔记：先存钱再花钱，比什么理财技巧都重要。\n\n指数基金定投的底层逻辑是相信长期国运，不择时。', tags:['通识','理财'], created:off(-60) }
+      { id:uid(), title:'SVG 与 CSS 动画学习笔记', content:'通读 MDN SVG 基础教程，重点理解 viewBox、path 指令、stroke-dasharray 的用法。\n\n接下来要手写 3 个 loading 动画，把贝塞尔曲线和缓动函数吃透。', tags:['前端','动画'], created:off(-30), createdAt:off(-30)+' 21:15', duration:45 },
+      { id:uid(), title:'AI Agent 工程化实践', content:'Prompt 工程核心要点：结构化输出 + 少量示例，比长篇描述有效得多。\n\nRAG 检索增强生成里，分块策略和 rerank 是效果关键。还要做一个能查天气的 Agent Demo。', tags:['AI','工程化'], created:off(-20), createdAt:off(-20)+' 10:40', duration:30 },
+      { id:uid(), title:'个人财务与理财入门', content:'《小狗钱钱》读书笔记：先存钱再花钱，比什么理财技巧都重要。\n\n指数基金定投的底层逻辑是相信长期国运，不择时。', tags:['通识','理财'], created:off(-60), createdAt:off(-60)+' 22:05', duration:20 }
     ],
     projects:[
       { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8),
@@ -803,9 +843,12 @@ function seedDB(){
       { id:uid(), date:off(-2), at:'08:40', min:25, linkType:'goal',    linkId:g0.id, label:'三年内成为能养活自己的独立开发者', note:'' }
     ],
     library:[
-      { id:uid(), name:'莫兰迪可爱风配色板（在线参考）', type:'link', url:'https://www.pinterest.com/search/pins/?q=morandi%20pastel', size:0, date:TODAY, linkedType:'project', linkedId:PID0, note:'配色灵感' },
-      { id:uid(), name:'番茄工作法说明（在线）', type:'link', url:'https://en.wikipedia.org/wiki/Pomodoro_Technique', size:0, date:TODAY, linkedType:'none', linkedId:'', note:'时间管理方法' }
+      { id:uid(), name:'莫兰迪可爱风配色板（在线参考）', type:'link', url:'https://www.pinterest.com/search/pins/?q=morandi%20pastel', size:0, date:TODAY, linkedType:'project', linkedId:PID0, catId:fProj, note:'配色灵感' },
+      { id:uid(), name:'番茄工作法说明（在线）', type:'link', url:'https://en.wikipedia.org/wiki/Pomodoro_Technique', size:0, date:TODAY, linkedType:'none', linkedId:'', catId:fTime, note:'时间管理方法' },
+      { id:uid(), name:'《认知觉醒》读书笔记大纲', type:'link', url:'https://book.douban.com/subject/35193035/', size:0, date:off(-3), linkedType:'goal', linkedId:g2.id, catId:fwId('读书笔记'), note:'边读边记' },
+      { id:uid(), name:'待整理：随手存的一批参考链接', type:'link', url:'https://developer.mozilla.org/', size:0, date:off(-6), linkedType:'none', linkedId:'', catId:'', note:'还没归类，随时拖进框架里' }
     ],
+    frameworks: FWL,
     gratitude:{
       [TODAY]:{ mood:'兴奋',
         grateful:['今天同事顺风车载我，我们一路吐槽公司，情绪很好','早上的太阳很好，出门就被晒得暖暖的','楼下阿姨多给了我一个小笼包','工作台改版终于跑通了，很有成就感','家里的猫今天特别黏我'],
@@ -826,6 +869,24 @@ function seedDB(){
   };
 }
 
+/* 默认知识框架（首次使用 / 框架为空时自动铺一套，之后可随意增删改） */
+function defaultFrameworks(){
+  const F = (name, parent) => ({ id:uid(), name, parent:parent||'' });
+  const out = [];
+  const push = (name, kids) => {
+    const p = F(name); out.push(p);
+    (kids||[]).forEach(k => out.push(F(k, p.id)));
+    return p.id;
+  };
+  push('学科知识', ['数学','语文','英语','其他学科']);
+  push('技能方法', ['学习方法','时间管理','软件工具','写作表达']);
+  push('阅读与笔记', ['读书笔记','金句摘录','书单']);
+  push('项目沉淀', ['需求与方案','设计素材','复盘总结']);
+  push('灵感素材', ['选题灵感','案例参考','配图配色']);
+  push('生活与成长', ['健康运动','理财记账','情绪心理']);
+  return out;
+}
+
 function migrateData(d){
   // 旧版字段清理；新版本用 plans / reviews / gratitude(map)
   if(Array.isArray(d.projects)) d.projects.forEach(p => { if(Array.isArray(p.tasks)) p.tasks.forEach(t => delete t.due); });
@@ -833,6 +894,9 @@ function migrateData(d){
   if(!d.reviews) d.reviews = [];
   if(!d.pomos) d.pomos = [];
   if(!d.library) d.library = [];
+  if(!d.frameworks || !d.frameworks.length) d.frameworks = defaultFrameworks();
+  if(Array.isArray(d.studies)) d.studies.forEach(s=>{ if(!s.createdAt) s.createdAt=(s.created||TODAY)+' 09:00'; if(s.duration==null) s.duration=0; });
+  if(Array.isArray(d.library)) d.library.forEach(x=>{ if(x.catId==null) x.catId=''; });
   if(!d.gratitude || Array.isArray(d.gratitude)) d.gratitude = {};
   return d;
 }
@@ -844,7 +908,7 @@ function load(){
     if(raw){ db = migrateData(JSON.parse(raw)); }
     else { db = seedDB(); fresh = true; }
   }catch(e){ db = seedDB(); fresh = true; }
-  ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
+  ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
   if(typeof db.gratitude !== 'object' || db.gratitude === null || Array.isArray(db.gratitude)) db.gratitude = {};
   db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; });
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
@@ -949,7 +1013,7 @@ const DAILY_TABS = [
   { k:'gratitude', n:'感恩日历',   i:'heart',  sub:'每天一件值得感恩的小事' }
 ];
 let route = { tab:'goals', detail:null, filter:'all', showDone:true, projCol:null, selIdea:null };
-let libSearchTerm = '', libCat = 'all';
+let libSearchTerm = '', libCat = 'all', libCatId = '';
 
 function go(tab){ route.tab = tab; route.detail = null; route.filter = 'all'; route.showDone = true; route.projCol = null; route.selIdea = null; window.scrollTo(0,0); render(); }
 function openProject(id){ route.tab = 'project_'+id; route.detail = id; route.projCol = null; route.selIdea = null; window.scrollTo(0,0); render(); }
@@ -1187,10 +1251,12 @@ function viewIdeas(){
       + '<div class="idea-grid">';
     groups[k].forEach(i => {
       h += '<div class="idea-note'+(i.done?' done':'')+(route.selIdea===i.id?' sel':'')+'" onclick="selIdea(\''+i.id+'\',event)">'
-        + '<span class="tag purple idea-note-tag">'+esc(i.tag||'其他')+'</span>'
-        + '<div class="idea-actions">'
-        +   '<button class="iconbtn" style="width:28px;height:28px" onclick="editIdea(\''+i.id+'\')">'+ico('edit',13)+'</button>'
-        +   '<button class="iconbtn del" style="width:28px;height:28px" onclick="delIdea(\''+i.id+'\')">'+ico('del',13)+'</button>'
+        + '<div class="idea-note-top">'
+        +   '<span class="tag purple idea-note-tag">'+esc(i.tag||'其他')+'</span>'
+        +   '<div class="idea-actions">'
+        +     '<button class="iconbtn" title="编辑" onclick="editIdea(\''+i.id+'\')">'+ico('edit',13)+'</button>'
+        +     '<button class="iconbtn del" title="删除" onclick="delIdea(\''+i.id+'\')">'+ico('del',13)+'</button>'
+        +   '</div>'
         + '</div>'
         + '<div class="idea-note-text">'+esc(i.text)+'</div>'
         + '<div class="idea-note-foot">'
@@ -1256,7 +1322,7 @@ function viewStudies(){
     h += '<div class="study-item">'
       + '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">'
       +   '<div class="study-item-title">'+esc(s.title)+'</div>'
-      +   '<div class="study-item-date">'+esc(s.created||'—')+'</div>'
+      +   '<div class="study-item-date">'+esc(s.createdAt||s.created||'—')+(s.duration?(' · 填写 '+s.duration+' 分钟'):'')+'</div>'
       + '</div>'
       + '<div class="study-item-tags">'+(s.tags||[]).map(t=>'<span class="tag blue">'+esc(t)+'</span>').join('')+'</div>'
       + '<div class="study-item-body">'+esc(s.content||'')+'</div>'
@@ -1273,7 +1339,7 @@ function quickStudy(){
   const tagStr = $('studyTags').value.trim();
   if(!t){ $('studyTitle').focus(); return; }
   const tags = tagStr ? tagStr.split(/[\s,，]+/).filter(Boolean) : [];
-  db.studies.unshift({ id:uid(), title:t, content:'', tags, created:TODAY });
+  db.studies.unshift({ id:uid(), title:t, content:'', tags, created:TODAY, createdAt:nowStamp(), duration:0 });
   $('studyTitle').value = ''; $('studyTags').value = '';
   save(); render(); toast('笔记已创建');
 }
@@ -1283,11 +1349,12 @@ function editStudy(id){
     { k:'title', l:'标题', t:'text', req:true, ph:'例：SVG 与 CSS 动画学习笔记' },
     { k:'content', l:'正文（长文本，支持多行）', t:'textarea', req:true, ph:'记下关键结论、心得、待办...' },
     { k:'tags', l:'标签（用空格分隔）', t:'text', ph:'前端 动画' },
-    { k:'created', l:'日期', t:'date' }
-  ], s ? { ...s, tags:(s.tags||[]).join(' ') } : { created:TODAY }, v => {
+    { k:'created', l:'日期', t:'date' },
+    { k:'duration', l:'填写时长（分钟）', t:'number', ph:'例如 30' }
+  ], s ? { ...s, tags:(s.tags||[]).join(' '), duration:(s.duration||0) } : { created:TODAY, duration:0 }, v => {
     const tags = v.tags ? v.tags.split(/[\s,，]+/).filter(Boolean) : [];
-    if(s) Object.assign(s, { title:v.title, content:v.content, tags, created:v.created });
-    else db.studies.unshift({ id:uid(), title:v.title, content:v.content, tags, created:v.created||TODAY });
+    if(s){ Object.assign(s, { title:v.title, content:v.content, tags, created:v.created, duration:Number(v.duration)||0 }); }
+    else db.studies.unshift({ id:uid(), title:v.title, content:v.content, tags, created:v.created||TODAY, createdAt:nowStamp(), duration:Number(v.duration)||0 });
     save(); render(); toast('已保存');
   });
 }
@@ -2185,7 +2252,7 @@ function viewGratitude(){
     + (gratHas(d)?'<button class="btn danger" onclick="gratDelDay()">删除当天</button>':'')+'</div>';
   h += '</div>';
 
-  h += gratCalendar();
+  h += '<div class="grat-calendar-wrap">'+gratCalendar()+'</div>';
   h += '</div>';
   return h;
 }
@@ -2328,6 +2395,76 @@ function curPomoLabel(){
 /* ============================================================
    资料库（文件存浏览器 IndexedDB，元数据存 localStorage）
 ============================================================ */
+/* ---- 知识框架（可编辑分类树）---- */
+function libCatLabel(id){ const f = db.frameworks.find(x=>x.id===id); return f ? f.name : ''; }
+function libChildren(id){ return db.frameworks.filter(x=>x.parent===id); }
+function libDescendants(id){
+  const out=[id]; const st=libChildren(id).map(x=>x.id);
+  while(st.length){ const c=st.pop(); out.push(c); libChildren(c).forEach(k=>st.push(k.id)); }
+  return out;
+}
+function libCatOptions(){
+  const opts=[];
+  const walk=(parent,depth)=>{ db.frameworks.filter(x=>x.parent===parent).forEach(n=>{ opts.push([n.id, (depth?'　'.repeat(depth):'')+n.name]); walk(n.id, depth+1); }); };
+  walk('',0);
+  return opts;
+}
+function libSetCatId(id){ libCatId = id; render(); }
+function libTreeHTML(parent){
+  const kids = libChildren(parent);
+  if(!kids.length) return '';
+  let h = '<div class="lib-tree-list">';
+  kids.forEach(n=>{
+    const set = new Set(libDescendants(n.id));
+    const cnt = db.library.filter(x=>set.has(x.catId||'')).length;
+    h += '<div class="lib-node'+(libCatId===n.id?' on':'')+'">'
+      + '<div class="lib-node-row" onclick="libSetCatId(\''+n.id+'\')">'
+      +   '<span class="ln-name">'+esc(n.name)+'</span>'
+      +   '<span class="ln-cnt">'+cnt+'</span>'
+      + '</div>'
+      + '<div class="lib-node-ops">'
+      +   '<button class="iconbtn sm" title="加子分类" onclick="event.stopPropagation();fwAdd(\''+n.id+'\')">'+ico('plus',13)+'</button>'
+      +   '<button class="iconbtn sm" title="改名" onclick="event.stopPropagation();fwRename(\''+n.id+'\')">'+ico('edit',13)+'</button>'
+      +   '<button class="iconbtn sm del" title="删除" onclick="event.stopPropagation();fwDel(\''+n.id+'\')">'+ico('del',13)+'</button>'
+      + '</div>'
+      + libTreeHTML(n.id)
+      + '</div>';
+  });
+  h += '</div>';
+  return h;
+}
+function fwAdd(parent){
+  openForm('新增分类', [{ k:'name', l:'分类名称', req:true, ph:'例如：工作方法论' }], {}, out=>{
+    if(!out.name) return;
+    db.frameworks.push({ id:uid(), name:out.name.trim(), parent:parent||'' });
+    save(); render(); toast('已新增分类');
+  });
+}
+function fwRename(id){
+  const n = db.frameworks.find(x=>x.id===id); if(!n) return;
+  openForm('重命名分类', [{ k:'name', l:'分类名称', req:true }], { name:n.name }, out=>{
+    if(!out.name) return; n.name = out.name.trim(); save(); render(); toast('已重命名');
+  });
+}
+function fwDel(id){
+  const node = db.frameworks.find(x=>x.id===id); if(!node) return;
+  const kids = libChildren(id);
+  const doDel = ()=>{
+    kids.forEach(k=> k.parent = node.parent );
+    db.frameworks = db.frameworks.filter(x=>x.id!==id);
+    db.library.forEach(x=>{ if(x.catId===id) x.catId=''; });
+    if(libCatId===id) libCatId='';
+    save(); render(); toast('已删除分类');
+  };
+  const desc = kids.length ? ('它包含 '+kids.length+' 个子分类，删除后子分类将上移到上一级；该分类下的资料会变为「未分类」。') : '该分类下的资料会变为「未分类」。';
+  confirmBoxCustom('删除该分类？', desc, '删除', doDel);
+}
+function libOpenFramework(){
+  openForm('编辑分类框架', [{ k:'name', l:'新增顶层分类', ph:'例如：工作方法论' }], {}, out=>{
+    if(out.name && out.name.trim()){ db.frameworks.push({ id:uid(), name:out.name.trim(), parent:'' }); save(); render(); toast('已新增顶层分类'); }
+  });
+}
+
 function libLinkOptions(){
   const opts = [['none|', '不关联（通用资料）']];
   if(db.projects.length){ opts.push({ group:'项目' }); db.projects.forEach(p=>opts.push(['project|'+p.id, p.name])); }
@@ -2343,32 +2480,38 @@ function libLinkLabel(type, id){
 }
 function libTypeName(t){ return { project:'项目', study:'学习', goal:'目标', none:'通用', task:'任务', plan:'计划' }[t] || '通用'; }
 
+function libMatch(x){
+  const q = (libSearchTerm||'').toLowerCase();
+  if(libCat && libCat !== 'all' && (x.linkedType||'none') !== libCat) return false;
+  if(libCatId === '__none__'){ if(x.catId) return false; }
+  else if(libCatId){ if(!libCatSet.has(x.catId||'')) return false; }
+  if(q && !(x.name||'').toLowerCase().includes(q) && !(x.note||'').toLowerCase().includes(q) && !libCatLabel(x.catId||'').toLowerCase().includes(q)) return false;
+  return true;
+}
+let libCatSet = new Set();
 function libListHTML(){
   const all = db.library;
-  const q = (libSearchTerm||'').toLowerCase();
-  const cat = libCat || 'all';
-  const filtered = all.filter(x=>{
-    if(cat !== 'all' && (x.linkedType||'none') !== cat) return false;
-    if(q && !(x.name||'').toLowerCase().includes(q) && !(x.note||'').toLowerCase().includes(q)) return false;
-    return true;
-  }).sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-  if(!filtered.length) return emptyBox(all.length ? '没有匹配的资料' : '还没有资料，点右上角上传文件或加链接');
+  libCatSet = libCatId && libCatId !== '__none__' ? new Set(libDescendants(libCatId)) : new Set();
+  const filtered = all.filter(libMatch).sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  if(!filtered.length) return emptyBox(all.length ? '这个分类下还没有资料' : '还没有资料，点右上角上传文件或加链接');
   let h = '<div class="lib-list">';
   filtered.forEach(x=>{
     const isLink = x.type === 'link';
-    const linked = (x.linkedType && x.linkedType!=='none') ? '<span class="lib-badge '+(x.linkedType)+'">'+libTypeName(x.linkedType)+' · '+esc(libLinkLabel(x.linkedType,x.linkedId))+'</span>' : '';
+    const catName = libCatLabel(x.catId||'');
+    const catBadge = catName ? '<span class="lib-badge cat">'+ico('folder',12)+esc(catName)+'</span>' : '<span class="lib-badge muted">未分类</span>';
+    const linked = (x.linkedType && x.linkedType!=='none' && libLinkLabel(x.linkedType,x.linkedId)) ? '<span class="lib-badge '+(x.linkedType)+'">'+libTypeName(x.linkedType)+' · '+esc(libLinkLabel(x.linkedType,x.linkedId))+'</span>' : '';
     const sizeStr = isLink ? '' : (x.size ? fmtSize(x.size) : '');
     h += '<div class="lib-item">'
       + '<div class="lib-ico">'+ico(isLink?'link':'file',20)+'</div>'
       + '<div class="lib-main">'
       +   '<div class="lib-name">'+(isLink ? '<a class="lib-link" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>' : esc(x.name))+'</div>'
       +   '<div class="lib-meta">'+(isLink?'链接':esc(x.type||'文件'))+(sizeStr?' · '+sizeStr:'')+' · '+fmtMD(x.date||'')+(x.note?' · '+esc(x.note):'')+'</div>'
-      +   (linked ? '<div class="lib-badges">'+linked+'</div>' : '')
+      +   '<div class="lib-badges">'+catBadge+linked+'</div>'
       + '</div>'
       + '<div class="lib-ops">'
       +   (isLink ? '' : '<button class="iconbtn" title="打开" onclick="libOpen(\''+x.id+'\')">'+ico('open',16)+'</button>')
-      +   (isLink ? '' : '<button class="iconbtn" title="下载" onclick="libDownload(\'+x.id+\')">'+ico('download',16)+'</button>')
-      +   '<button class="iconbtn" title="关联到项目/学习" onclick="libOpenLink(\''+x.id+'\')">'+ico('link',16)+'</button>'
+      +   (isLink ? '' : '<button class="iconbtn" title="下载" onclick="libDownload(\''+x.id+'\')">'+ico('download',16)+'</button>')
+      +   '<button class="iconbtn" title="编辑（分类 / 项目）" onclick="libEdit(\''+x.id+'\')">'+ico('edit',16)+'</button>'
       +   '<button class="iconbtn del" title="删除" onclick="libDel(\''+x.id+'\')">'+ico('del',15)+'</button>'
       + '</div></div>';
   });
@@ -2378,65 +2521,106 @@ function libListHTML(){
 function viewLibrary(){
   const all = db.library;
   const files = all.filter(x=>x.type!=='link').length;
+  const noCat = all.filter(x=>!x.catId).length;
   let h = '<div class="grid g3 stats" style="margin-bottom:12px">'
     + stat('资料总数', all.length, '份')
-    + stat('文件', files, '个')
-    + stat('链接', all.length - files, '条') + '</div>';
-  h += '<div class="card"><div class="card-h"><h3>资料库</h3>'
+    + stat('分类节点', db.frameworks.length, '个')
+    + stat('未分类', noCat, '份') + '</div>';
+
+  h += '<div class="lib-layout">';
+
+  /* 左侧：知识框架树 */
+  h += '<div class="card lib-side"><div class="card-h"><h3>知识框架</h3>'
+    + '<div class="r"><button class="btn sm" onclick="fwAdd(\'\')">'+ico('plus',14)+'顶层分类</button></div></div>'
+    + '<div class="lib-tree">'
+    +   '<div class="lib-node root'+(libCatId===''?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'\')">'
+    +     '<span class="ln-name">全部资料</span><span class="ln-cnt">'+all.length+'</span></div></div>'
+    +   '<div class="lib-node root'+(libCatId==='__none__'?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'__none__\')">'
+    +     '<span class="ln-name">未分类</span><span class="ln-cnt">'+noCat+'</span></div></div>'
+    +   (db.frameworks.length ? libTreeHTML('') : '<div class="lib-tree-empty">还没有分类，点右上角「顶层分类」开始搭建你的知识框架</div>')
+    + '</div>'
+    + '<div class="lib-tree-tip">'+ico('spark',13)+'分类可随时新增 / 改名 / 删除，删除后子分类自动上移</div>'
+    + '</div>';
+
+  /* 右侧：资料列表 */
+  const curName = libCatId==='' ? '全部资料' : (libCatId==='__none__' ? '未分类' : libCatLabel(libCatId));
+  h += '<div class="card lib-main-col"><div class="card-h"><h3>'+esc(curName||'资料')+'</h3>'
     + '<div class="r"><button class="btn primary sm" onclick="libAddLink()">'+ico('link',15)+'加链接</button>'
     + '<label class="btn sm" style="cursor:pointer">'+ico('upload',15)+'上传文件'
     + '<input type="file" id="libFile" multiple style="display:none" onchange="libUpload(this)"></label></div></div>';
   h += '<div class="lib-tools">'
-    + '<div class="lib-search">'+ico('search',15)+'<input id="libSearch" placeholder="搜索资料名称…" value="'+esc(libSearchTerm||'')+'" oninput="libSearch(this.value)"></div>'
+    + '<div class="lib-search">'+ico('search',15)+'<input id="libSearch" placeholder="搜索资料名称 / 备注 / 分类…" value="'+esc(libSearchTerm||'')+'" oninput="libSearch(this.value)"></div>'
     + '<div class="lib-cats">'
-    +   '<button class="chip'+(libCat==='all'?' on':'')+'" onclick="libSetCat(\'all\')">全部</button>'
+    +   '<button class="chip'+(libCat==='all'?' on':'')+'" onclick="libSetCat(\'all\')">不限归属</button>'
     +   '<button class="chip'+(libCat==='project'?' on':'')+'" onclick="libSetCat(\'project\')">项目</button>'
     +   '<button class="chip'+(libCat==='study'?' on':'')+'" onclick="libSetCat(\'study\')">学习</button>'
+    +   '<button class="chip'+(libCat==='goal'?' on':'')+'" onclick="libSetCat(\'goal\')">目标</button>'
     +   '<button class="chip'+(libCat==='none'?' on':'')+'" onclick="libSetCat(\'none\')">通用</button>'
     + '</div></div>';
   h += '<div id="libListWrap">'+libListHTML()+'</div>';
-  h += '</div>';
+  h += '</div></div>';
   return h;
 }
 function paintLibList(){ const w = $('libListWrap'); if(w) w.innerHTML = libListHTML(); }
 function libSearch(v){ libSearchTerm = v; paintLibList(); }
 function libSetCat(c){ libCat = c; render(); }
 
+function libFields(){
+  return [
+    { k:'catId', l:'知识分类', t:'select', opts:[['','未分类']].concat(libCatOptions()) },
+    { k:'target', l:'归属项目 / 学习 / 目标', t:'select', opts:libLinkOptions() },
+    { k:'note', l:'备注', ph:'可选' }
+  ];
+}
+function libApplyTarget(x, out){
+  x.catId = out.catId || '';
+  const raw = out.target || 'none|'; const i = raw.indexOf('|');
+  x.linkedType = raw.slice(0, i) || 'none';
+  x.linkedId = raw.slice(i + 1);
+  x.note = out.note || '';
+}
 function libUpload(input){
   const files = Array.from(input.files||[]);
   input.value = '';
   if(!files.length) return;
+  const defCat = (libCatId && libCatId !== '__none__') ? libCatId : '';
   Promise.all(files.map(f=>{
     const id = uid();
     return putFile(id, f).then(()=>{
       const ext = (f.name.split('.').pop()||'').toLowerCase();
-      db.library.unshift({ id, name:f.name, type:ext||'file', size:f.size, date:TODAY, linkedType:'none', linkedId:'', note:'' });
+      db.library.unshift({ id, name:f.name, type:ext||'file', size:f.size, date:TODAY, catId:defCat, linkedType:'none', linkedId:'', note:'' });
     });
   })).then(()=>{
-    save(); render(); toast('已存入 '+files.length+' 份资料（仅本机）');
+    save(); render(); toast('已存入 '+files.length+' 份资料'+(defCat?('（分类：'+libCatLabel(defCat)+'）'):'（仅本机）'));
   }).catch(()=>{
     save(); render(); toast('部分文件未能存入，可能超过浏览器存储上限');
   });
 }
 function libAddLink(){
+  const defCat = (libCatId && libCatId !== '__none__') ? libCatId : '';
   openForm('添加链接资料', [
     { k:'name', l:'资料名称', req:true },
-    { k:'url', l:'链接地址', req:true, ph:'https://…' },
-    { k:'note', l:'备注', ph:'可选' }
-  ], {}, out=>{
-    db.library.unshift({ id:uid(), name:out.name, type:'link', url:out.url, size:0, date:TODAY, linkedType:'none', linkedId:'', note:out.note });
+    { k:'url', l:'链接地址', req:true, ph:'https://…' }
+  ].concat(libFields()), { catId:defCat, target:'none|' }, out=>{
+    const x = { id:uid(), name:out.name, type:'link', url:out.url, size:0, date:TODAY, catId:'', linkedType:'none', linkedId:'', note:'' };
+    libApplyTarget(x, out);
+    db.library.unshift(x);
     save(); render(); toast('链接已添加');
   });
 }
-function libOpenLink(id){
+function libEdit(id){
   const x = db.library.find(z=>z.id===id); if(!x) return;
-  openForm('关联到…', [{ k:'target', l:'关联对象', t:'select', opts:libLinkOptions() }], { target:(x.linkedType||'none')+'|'+(x.linkedId||'') }, out=>{
-    const raw = out.target || 'none|'; const i = raw.indexOf('|');
-    x.linkedType = raw.slice(0, i);
-    x.linkedId = raw.slice(i + 1);
-    save(); render(); toast('已更新关联');
+  const fields = [{ k:'name', l:'资料名称', req:true }]
+    .concat(x.type==='link' ? [{ k:'url', l:'链接地址' }] : [])
+    .concat(libFields());
+  openForm('编辑资料', fields, { name:x.name, url:x.url||'', catId:x.catId||'', target:(x.linkedType||'none')+'|'+(x.linkedId||''), note:x.note||'' }, out=>{
+    x.name = out.name || x.name;
+    if(x.type==='link' && out.url) x.url = out.url;
+    libApplyTarget(x, out);
+    save(); render(); toast('已更新');
   });
 }
+function libOpenLink(id){ libEdit(id); }
 let _libUrl = null;
 function libModal(title, body, btns){
   openModal(title, body, btns);
@@ -2623,7 +2807,7 @@ function viewPomo(){
     + stat('专注天数', days, '天') + '</div>';
 
   h += '<div class="card pomo-hero">';
-  h += '<div class="card-h" style="width:100%"><h3>专注计时</h3>'
+  h += '<div class="card-h"><h3>专注计时</h3>'
     + '<div class="r"><button class="pomo-sound'+(pomoCfg.sound?'':' off')+'" onclick="togglePomoSound()">'
     + ico(pomoCfg.sound?'volume':'mute',14) + (pomoCfg.sound?'滴答声开':'已静音') + '</button></div></div>';
 
@@ -2632,8 +2816,9 @@ function viewPomo(){
   const secInto = pomo.total - pomo.remain;
   const linkLab = curPomoLabel();
 
+  h += '<div class="pomo-hero-body">';
   h += '<div class="pomo-stage"><div class="pomo-ring-wrap">'
-    + '<svg width="250" height="250" viewBox="0 0 240 240">'
+    + '<svg width="190" height="190" viewBox="0 0 240 240">'
     +   '<circle cx="120" cy="120" r="'+r+'" fill="none" stroke="var(--surface3)" stroke-width="13"/>'
     +   '<circle id="pomoArc" cx="120" cy="120" r="'+r+'" fill="none" stroke="'+(pomo.running?'var(--red)':'var(--accent)')+'" stroke-width="13" stroke-linecap="round"'
     +     ' stroke-dasharray="'+(c*pct).toFixed(1)+' '+(c*(1-pct)).toFixed(1)+'"/>'
@@ -2649,6 +2834,7 @@ function viewPomo(){
     +   '<div class="pomo-linked" id="pomoLinked">'+(linkLab?esc(pomoTypeName(pomoCfg.linkType)+' · '+linkLab):'')+'</div>'
     + '</div></div>';
 
+  h += '<div class="pomo-side">';
   h += '<div class="pomo-mins">';
   POMO_MINS.forEach(m => {
     h += '<button class="pomo-min'+(pomoCfg.minutes===m?' on':'')+'"'+(pomo.running||pomo.paused?' disabled':'')
@@ -2671,7 +2857,10 @@ function viewPomo(){
   h += '<div class="pomo-link-row"><span class="lb">'+ico('link',14)+' 这个番茄用来推进</span>'
     + dd('dd_pomoLink','pomoLink', pomoLinkOptions(), (pomoCfg.linkType||'none')+'|'+(pomoCfg.linkId||''), setPomoLink)
     + '</div>';
-  h += '<div class="plan-hint">'+ico('clock',13)+'倒计时期间可以切到其他页面，右下角会有小计时条</div>';
+  h += '<div class="pomo-hint-row">'+ico('clock',13)+'倒计时期间可切到其他页面，右下角有小计时条</div>';
+
+  h += '</div>';
+  h += '</div>';
   h += '</div>';
 
   h += '<div class="pomo-grid">';
