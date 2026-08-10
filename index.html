@@ -223,22 +223,59 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .goal-note{font-size:13px;color:var(--text2);line-height:1.6}
 .goal-expand{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer}
 .goal-expand:hover{color:var(--text)}
+.goal-card.achieved{border-color:rgba(148,176,142,.4);background:linear-gradient(135deg,rgba(148,176,142,.07),var(--surface))}
 .milestone-list{padding:14px 0 4px}
-.milestone{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:13px;border:1px solid var(--border);margin-bottom:10px;background:var(--surface2);transition:.16s}
-.milestone:hover{border-color:var(--border2);background:var(--surface3)}
+.milestone{border-radius:13px;border:1px solid var(--border);margin-bottom:10px;background:var(--surface2);transition:.16s;overflow:hidden}
+.milestone:hover{border-color:var(--border2)}
 .milestone.done{background:linear-gradient(135deg,rgba(216,180,131,.16),rgba(216,180,131,.05));border-color:rgba(216,180,131,.4);box-shadow:0 2px 14px rgba(216,180,131,.12)}
+/* 标题行整体垂直居中 */
+.milestone-row{display:flex;align-items:center;gap:12px;padding:12px}
 .milestone-num{width:28px;height:28px;border-radius:50%;background:var(--surface3);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
 .milestone.done .milestone-num{background:linear-gradient(140deg,#d8b483,#cba56a);color:#fff}
-.milestone-body{flex:1;min-width:0}
-.milestone-title{font-size:14.5px;font-weight:600;margin-bottom:4px;color:var(--text)}
+.milestone-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.milestone-title{font-size:14.5px;font-weight:600;color:var(--text);line-height:1.4}
 .milestone.done .milestone-title{color:#a8824e}
-.milestone-time{font-size:11.5px;color:var(--muted)}
+.milestone-time{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);margin-top:3px}
 .milestone.done .milestone-time{color:#a8824e}
-.milestone-actions{flex-shrink:0;display:flex;gap:4px}
-.btn-achieve{padding:6px 12px;border-radius:9px;background:var(--accent-soft);color:var(--accent2);border:1px solid rgba(180,156,201,.3);font-size:12px;font-weight:600;transition:.16s}
+.ms-mini{flex-shrink:0;display:flex;align-items:center}
+.ms-mini text{font-size:13px}
+.milestone-actions{flex-shrink:0;display:flex;gap:4px;align-items:center}
+.btn-achieve{padding:6px 12px;border-radius:9px;background:var(--accent-soft);color:var(--accent2);border:1px solid rgba(180,156,201,.3);font-size:12px;font-weight:600;transition:.16s;white-space:nowrap}
 .btn-achieve:hover{background:rgba(180,156,201,.26)}
 .btn-achieve.completed{background:rgba(216,180,131,.18);color:#a8824e;border-color:rgba(216,180,131,.4);cursor:default}
+.btn-achieve.view{background:var(--surface);color:var(--text2);border-color:var(--border2)}
+.btn-achieve.view:hover{background:var(--surface3);color:var(--text)}
 .goal-completed-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--green-soft);color:#5f7d5a;border:1px solid rgba(148,176,142,.3);font-size:12px;font-weight:700}
+
+/* 第三层：里程表 */
+.sub-list{padding:2px 12px 12px 52px;border-top:1px dashed var(--border);margin-top:2px}
+.sub-empty{font-size:12.5px;color:var(--muted);padding:10px 0 6px}
+.submile{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);margin-top:8px;transition:.14s}
+.submile:hover{border-color:var(--border2)}
+.submile.done{background:rgba(148,176,142,.09);border-color:rgba(148,176,142,.3)}
+.sub-check{width:20px;height:20px;border-radius:6px;border:1.8px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.14s}
+.sub-check:hover{border-color:var(--accent)}
+.sub-check.on{background:var(--green);border-color:var(--green)}
+.sub-idx{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0}
+.sub-title{flex:1;min-width:0;font-size:13.5px;color:var(--text);line-height:1.45}
+.submile.done .sub-title{color:var(--text2);text-decoration:line-through;text-decoration-color:rgba(148,176,142,.6)}
+.sub-at{font-size:11px;color:#5f7d5a;flex-shrink:0}
+.sub-ops{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:.14s}
+.submile:hover .sub-ops{opacity:1}
+.sub-ops .iconbtn{width:26px;height:26px}
+.sub-add{margin-top:9px}
+
+/* 目标内联新建 */
+.goal-add-card{background:linear-gradient(135deg,var(--accent-soft),rgba(180,156,201,.05));border:1px solid rgba(180,156,201,.28);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px}
+.ga-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.goal-add-card input{flex:1;min-width:200px;padding:12px 15px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:16px;outline:none;color:var(--text)}
+.goal-add-card input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.goal-add-card .btn.primary{flex-shrink:0;min-height:46px}
+.ga-row2{margin-top:11px}
+.ga-cats{display:flex;gap:6px;flex-wrap:wrap}
+.ga-cats .chip{background:var(--surface)}
+.ga-cats .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ga-note{margin-top:10px;width:100%;font-size:14.5px !important;padding:10px 15px !important}
 
 /* 灵感库 */
 .idea-add-card{background:linear-gradient(135deg,var(--accent-soft),rgba(180,156,201,.05));border:1px solid rgba(180,156,201,.28);border-radius:var(--radius);padding:18px;margin-bottom:20px}
@@ -348,6 +385,13 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pomo-hero-body{display:flex;align-items:center;gap:16px;margin-top:6px;justify-content:flex-start}
 .pomo-side{display:flex;flex-direction:column;gap:9px;flex:1;min-width:0;max-width:520px}
 .pomo-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start}
+.pomo-lr{display:grid;grid-template-columns:minmax(300px,360px) 1fr;gap:18px;margin-top:18px;align-items:start}
+.pomo-timer{display:flex;flex-direction:column;align-items:stretch;padding:14px 16px 16px}
+.pomo-timer .card-h{margin-bottom:6px}
+.pomo-records .pomo-list{max-height:none}
+.pomo-analysis .pomo-insight{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--surface3);font-size:13px;color:var(--text2)}
+.pomo-analysis .pomo-insight svg{color:var(--accent);flex-shrink:0}
+.pomo-analysis .pomo-insight b{color:var(--text)}
 .pomo-stage{display:flex;flex-direction:column;align-items:center;padding:4px 0;flex-shrink:0}
 .pomo-ring-wrap{position:relative;width:190px;height:190px;margin-bottom:0}
 .pomo-ring-wrap svg{display:block;transform:rotate(-90deg)}
@@ -500,6 +544,26 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .mood-input label{font-size:13px;color:var(--text2);font-weight:600}
 .mood-input input{flex:1;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;font-size:15px;outline:none;color:var(--text)}
 .mood-input input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+.mood-pick{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.mood-pick label{font-size:13px;color:var(--text2);font-weight:600}
+.mood-faces{display:flex;flex-wrap:wrap;gap:9px}
+.mface{width:46px;height:46px;border-radius:14px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;padding:0}
+.mface:hover{transform:translateY(-2px);border-color:var(--mc)}
+.mface.on{background:color-mix(in srgb, var(--mc) 16%, var(--surface));border-color:var(--mc);box-shadow:0 4px 12px color-mix(in srgb, var(--mc) 30%, transparent)}
+.mface svg{display:block}
+.cal-mood{position:absolute;right:3px;bottom:2px;line-height:0;pointer-events:none}
+.cal-day{position:relative}
+.grat-mood-an{margin-top:14px}
+.mood-dist{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.md-row{display:flex;align-items:center;gap:9px}
+.md-face{width:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0}
+.md-k{font-size:13px;color:var(--text);width:34px;flex-shrink:0}
+.md-bar{flex:1;height:8px;background:var(--surface3);border-radius:999px;overflow:hidden;min-width:30px}
+.md-fill{height:100%;border-radius:999px;display:block}
+.md-n{font-size:12.5px;font-weight:700;color:var(--text2);width:22px;text-align:right;flex-shrink:0}
+.mood-verdict{display:flex;align-items:center;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid var(--surface3);font-size:13px;color:var(--text2)}
+.mood-verdict svg{color:var(--accent);flex-shrink:0}
+.mood-verdict b{color:var(--text)}
 .grat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;padding-bottom:13px;border-bottom:1px solid var(--border)}
 .grat-head .gt-title{font-size:16px;font-weight:800;color:var(--text)}
 .done-pill{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent2);font-size:11.5px;font-weight:700}
@@ -533,6 +597,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .grat-layout{flex-direction:column}
   .grat-calendar-wrap{width:auto;position:static}
   .pomo-grid{grid-template-columns:1fr}
+  .pomo-lr{grid-template-columns:1fr}
   .pomo-hero{padding:20px 14px 18px}
   .daily-sub{display:flex}
   .pomo-ring-wrap{width:200px;height:200px}
@@ -641,6 +706,27 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .modal.lib-preview{max-width:min(940px,94vw);width:94vw}
 .modal.lib-preview .modal-b{padding:16px}
 .modal.lib-preview .modal-f{padding:13px 18px}
+
+/* ---------- 账号管理 ---------- */
+.acct-tip{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted);line-height:1.6;background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:12px;padding:11px 14px;margin-bottom:18px}
+.acct-tip svg{flex-shrink:0;margin-top:2px;color:var(--accent)}
+.acct-group{margin-bottom:22px}
+.acct-group-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ag-title{font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ag-title .cnt{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface3);border-radius:9px;padding:1px 8px}
+.acct-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.acct-card{background:var(--surface);border:1px solid var(--surface3);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:9px}
+.acct-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.acct-name{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-name svg{color:var(--accent);flex-shrink:0}
+.acct-ops{display:flex;gap:2px;flex-shrink:0}
+.acct-url{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--blue);text-decoration:none;word-break:break-all;background:var(--surface2);border-radius:8px;padding:6px 9px}
+.acct-url:hover{text-decoration:underline}
+.acct-row{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.acct-k{width:34px;flex-shrink:0;color:var(--muted);font-size:12.5px}
+.acct-v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.acct-v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.5px}
+.acct-note{font-size:12.5px;color:var(--muted);line-height:1.5;background:var(--surface2);border-radius:8px;padding:7px 9px;word-break:break-word}
 </style>
 </head>
 <body>
@@ -741,30 +827,58 @@ function fmtYM(s){ if(!s) return '未填日期'; return s.slice(0,4)+'年'+ (+s.
 function money(n){ return '¥' + Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2100); }
 
+/* ---------- 心情表（全内联 SVG 小脸，不用 emoji）---------- */
+const MOOD_FACE = '<circle cx="12" cy="12" r="9"/>';
+const MOODS = [
+  { k:'兴奋', c:'#d6a878', d:MOOD_FACE+'<path d="M7.4 13.2a4.6 4.6 0 0 0 9.2 0"/><path d="M7.9 8.1l1.9 1"/><path d="M16.1 8.1l-1.9 1"/><path d="M9.3 10.9h.01"/><path d="M14.7 10.9h.01"/>' },
+  { k:'开心', c:'#94b08e', d:MOOD_FACE+'<path d="M8.4 13.6a4 4 0 0 0 7.2 0"/><path d="M9.2 9.9h.01"/><path d="M14.8 9.9h.01"/>' },
+  { k:'温暖', c:'#d3a4ab', d:MOOD_FACE+'<path d="M8.9 13.7a3.7 3.7 0 0 0 6.2 0"/><path d="M8.2 10.5c.5-.9 1.6-.9 2.1 0"/><path d="M13.7 10.5c.5-.9 1.6-.9 2.1 0"/>' },
+  { k:'平静', c:'#9fb4c4', d:MOOD_FACE+'<path d="M8.9 14.2h6.2"/><path d="M9.2 9.9h.01"/><path d="M14.8 9.9h.01"/>' },
+  { k:'疲惫', c:'#aaa097', d:MOOD_FACE+'<path d="M9.2 14.9c.9-.7 1.9.7 2.8 0s1.9.7 2.8 0"/><path d="M7.9 10.1h2.4"/><path d="M13.7 10.1h2.4"/>' },
+  { k:'低落', c:'#b49cc9', d:MOOD_FACE+'<path d="M8.4 15.3a4 4 0 0 1 7.2 0"/><path d="M9.2 9.9h.01"/><path d="M14.8 9.9h.01"/>' },
+  { k:'烦躁', c:'#cf9b94', d:MOOD_FACE+'<path d="M8.6 15.1a4 4 0 0 1 6.8 0"/><path d="M7.9 9.1l2 1.1"/><path d="M16.1 9.1l-2 1.1"/>' }
+];
+const MOOD_ALIAS = { '高兴':'开心','快乐':'开心','愉快':'开心','安静':'平静','平淡':'平静','累':'疲惫','疲劳':'疲惫','难过':'低落','伤心':'低落','emo':'低落','生气':'烦躁','焦虑':'烦躁' };
+function moodOf(k){ return MOODS.find(m=>m.k===k) || null; }
+function moodIcon(k, size){
+  const m = moodOf(k); if(!m) return '';
+  const s = size||18;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="'+m.c+'" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+m.d+'</svg>';
+}
+
 /* ---------- 数据 ---------- */
 let db = null;
 let meta = { lastBackupCount: 0, noticeDismissAt: 0, sync: { token:'', gistId:'', auto:false, lastSync:0 } };
 
-function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], gratitude:{}, seeded:false, v:4 }; }
+function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, seeded:false, v:5 }; }
 
 function seedDB(){
+  const SUB = (t, done, at) => ({ id:uid(), title:t, done:!!done, doneAt:done?(at||off(-6)):'' });
   const g0 = { id:uid(), title:'三年内成为能养活自己的独立开发者', cat:'事业', note:'目标不是辞职，而是有随时可以辞职的底气。', created:off(-60), milestones:[
-    { id:uid(), title:'上线第一个完整产品', done:true, doneAt:off(-12) },
-    { id:uid(), title:'积累 1000 名真实用户', done:false },
-    { id:uid(), title:'月被动收入稳定过 5000', done:false }
+    { id:uid(), title:'上线第一个完整产品', done:true, doneAt:off(-12), subs:[
+      SUB('确定产品定位与核心功能', true, off(-30)), SUB('完成 MVP 开发', true, off(-18)), SUB('正式发布并收集反馈', true, off(-12))
+    ]},
+    { id:uid(), title:'积累 1000 名真实用户', done:false, subs:[
+      SUB('打通第一个获客渠道', true, off(-7)), SUB('做到日活 50', false), SUB('建立用户社群', false)
+    ]},
+    { id:uid(), title:'月被动收入稳定过 5000', done:false, subs:[] }
   ]};
   const g1 = { id:uid(), title:'身体状态回到 25 岁', cat:'健康', note:'', created:off(-40), milestones:[
-    { id:uid(), title:'体脂率降到 18%', done:false },
-    { id:uid(), title:'连续跑步打卡 100 天', done:false },
-    { id:uid(), title:'完成一次半程马拉松', done:false }
+    { id:uid(), title:'体脂率降到 18%', done:false, subs:[
+      SUB('连续两周控制饮食', true, off(-4)), SUB('体脂降到 22%', false), SUB('体脂降到 18%', false)
+    ]},
+    { id:uid(), title:'连续跑步打卡 100 天', done:false, subs:[] },
+    { id:uid(), title:'完成一次半程马拉松', done:false, subs:[] }
   ]};
   const PID0 = uid(), PID1 = uid(), TID0 = uid(), TID1 = uid();
   const FWL = defaultFrameworks();
   const fwId = n => { const f = FWL.find(x=>x.name===n); return f ? f.id : ''; };
   const fProj = fwId('配图配色'), fTime = fwId('时间管理');
   const g2 = { id:uid(), title:'今年读完 30 本书', cat:'成长', note:'重质不重量，每本要写读书笔记。', created:off(-30), milestones:[
-    { id:uid(), title:'上半年读完 15 本', done:true, doneAt:off(-5) },
-    { id:uid(), title:'下半年读完 15 本', done:false }
+    { id:uid(), title:'上半年读完 15 本', done:true, doneAt:off(-5), subs:[] },
+    { id:uid(), title:'下半年读完 15 本', done:false, subs:[
+      SUB('7-8 月读完 5 本', false), SUB('9-10 月读完 5 本', false), SUB('11-12 月读完 5 本', false)
+    ]}
   ]};
   return {
     v:3, seeded:true,
@@ -849,6 +963,13 @@ function seedDB(){
       { id:uid(), name:'待整理：随手存的一批参考链接', type:'link', url:'https://developer.mozilla.org/', size:0, date:off(-6), linkedType:'none', linkedId:'', catId:'', note:'还没归类，随时拖进框架里' }
     ],
     frameworks: FWL,
+    accounts:[
+      { id:uid(), name:'公司邮箱', group:'work', url:'https://mail.qq.com', user:'momo@company.com', pass:'Work@2026', note:'两步验证已开', created:off(-40) },
+      { id:uid(), name:'公司 OA 系统', group:'work', url:'https://oa.company.com', user:'momo', pass:'Oa#88520', note:'', created:off(-40) },
+      { id:uid(), name:'GitHub', group:'work', url:'https://github.com', user:'wanrenmiao-bit', pass:'Gh!momo2026', note:'工作台部署用', created:off(-20) },
+      { id:uid(), name:'网上银行', group:'life', url:'https://ebank.example.com', user:'6222****8888', pass:'Bank@0601', note:'U 盾放抽屉第二层', created:off(-30) },
+      { id:uid(), name:'某视频会员', group:'life', url:'https://v.example.com', user:'138****6688', pass:'Video666', note:'12 月到期', created:off(-15) }
+    ],
     gratitude:{
       [TODAY]:{ mood:'兴奋',
         grateful:['今天同事顺风车载我，我们一路吐槽公司，情绪很好','早上的太阳很好，出门就被晒得暖暖的','楼下阿姨多给了我一个小笼包','工作台改版终于跑通了，很有成就感','家里的猫今天特别黏我'],
@@ -895,8 +1016,20 @@ function migrateData(d){
   if(!d.pomos) d.pomos = [];
   if(!d.library) d.library = [];
   if(!d.frameworks || !d.frameworks.length) d.frameworks = defaultFrameworks();
+  if(!d.accounts) d.accounts = [];
+  if(Array.isArray(d.accounts)) d.accounts.forEach(a=>{ if(!a.group) a.group='work'; });
   if(Array.isArray(d.studies)) d.studies.forEach(s=>{ if(!s.createdAt) s.createdAt=(s.created||TODAY)+' 09:00'; if(s.duration==null) s.duration=0; });
   if(Array.isArray(d.library)) d.library.forEach(x=>{ if(x.catId==null) x.catId=''; });
+  // 里程碑三层：补齐 subs
+  if(Array.isArray(d.goals)) d.goals.forEach(g=>{
+    if(!Array.isArray(g.milestones)) g.milestones=[];
+    g.milestones.forEach(m=>{ if(!Array.isArray(m.subs)) m.subs=[]; });
+  });
+  // 心情归一化到预置心情表
+  if(d.gratitude && !Array.isArray(d.gratitude)) Object.keys(d.gratitude).forEach(k=>{
+    const g = d.gratitude[k]; if(!g) return;
+    if(g.mood && !MOODS.some(m=>m.k===g.mood)) g.mood = MOOD_ALIAS[g.mood] || '平静';
+  });
   if(!d.gratitude || Array.isArray(d.gratitude)) d.gratitude = {};
   return d;
 }
@@ -908,9 +1041,9 @@ function load(){
     if(raw){ db = migrateData(JSON.parse(raw)); }
     else { db = seedDB(); fresh = true; }
   }catch(e){ db = seedDB(); fresh = true; }
-  ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
+  ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks','accounts'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
   if(typeof db.gratitude !== 'object' || db.gratitude === null || Array.isArray(db.gratitude)) db.gratitude = {};
-  db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; });
+  db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; g.milestones.forEach(m=>{ if(!Array.isArray(m.subs)) m.subs=[]; }); });
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
   try{ const m = localStorage.getItem(META_KEY); if(m) meta = Object.assign(meta, JSON.parse(m)); }catch(e){}
   meta.sync = Object.assign({ token:'', gistId:'', auto:false, lastSync:0 }, meta.sync||{});
@@ -993,7 +1126,9 @@ const ICO = {
   open:'<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>',
   search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
   download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/>',
-  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'
+  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
 };
 function ico(name, size, sw){
   return '<svg width="'+(size||16)+'" height="'+(size||16)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(sw||2)+'" stroke-linecap="round" stroke-linejoin="round">'+ICO[name]+'</svg>';
@@ -1005,7 +1140,8 @@ const TABS = [
   { k:'ideas',   n:'灵感库',   i:'idea',  sub:'随手记录的灵感' },
   { k:'studies', n:'学习记录', i:'study', sub:'按标签筛选的笔记' },
   { k:'incomes', n:'收入记录', i:'money', sub:'每一笔都记下来源' },
-  { k:'library', n:'资料库',   i:'folder', sub:'项目与学习的资料集中管理' }
+  { k:'library', n:'资料库',   i:'folder', sub:'项目与学习的资料集中管理' },
+  { k:'accounts',n:'账号管理', i:'lock',  sub:'工作与生活的账号集中保管' }
 ];
 const DAILY_TABS = [
   { k:'plan',      n:'计划与复盘', i:'todo',   sub:'左：今日计划矩阵 · 右：每日复盘' },
@@ -1096,35 +1232,67 @@ function goalRing(pct, size){
     + '<circle cx="24" cy="24" r="'+r+'" fill="none" stroke="'+(pct>=100?'var(--green)':'var(--accent)')+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+on.toFixed(1)+' '+(c-on).toFixed(1)+'" transform="rotate(-90 24 24)"/>'
     + '<text x="24" y="28" text-anchor="middle" font-size="12" font-weight="800">'+pct+'%</text></svg>';
 }
+const GOAL_CATS = ['事业','健康','成长','财务','家庭','兴趣','其他'];
+let goalNewCat = '事业';
+
+/* 里程碑进度：有子里程表按子项算，没有就按自身 done */
+function msProgress(m){
+  const subs = m.subs || [];
+  if(!subs.length) return { done:m.done?1:0, total:1, pct:m.done?100:0, leaf:true };
+  const d = subs.filter(s=>s.done).length;
+  return { done:d, total:subs.length, pct:Math.round(d/subs.length*100), leaf:false };
+}
+function msIsDone(m){ const p = msProgress(m); return p.total>0 && p.done===p.total; }
+function goalProgress(g){
+  let done=0, total=0;
+  (g.milestones||[]).forEach(m=>{ const p = msProgress(m); done+=p.done; total+=p.total; });
+  return { done, total, pct: total?Math.round(done/total*100):0 };
+}
+
 function viewGoals(){
   const gs = db.goals;
   const allM = gs.reduce((a,g)=>a+g.milestones.length,0);
-  const doneM = gs.reduce((a,g)=>a+g.milestones.filter(m=>m.done).length,0);
-  const doneGoals = gs.filter(g => g.milestones.length && g.milestones.every(m=>m.done)).length;
-  let h = '<div class="grid g3 stats" style="margin-bottom:18px">'
+  const doneM = gs.reduce((a,g)=>a+g.milestones.filter(msIsDone).length,0);
+  const allSub = gs.reduce((a,g)=>a+g.milestones.reduce((b,m)=>b+(m.subs||[]).length,0),0);
+  const doneGoals = gs.filter(g => g.milestones.length && g.milestones.every(msIsDone)).length;
+  let h = '<div class="grid g4 stats" style="margin-bottom:18px">'
     + stat('人生大目标', gs.length, '个')
     + stat('里程碑完成', doneM+' / '+allM, allM?Math.round(doneM/allM*100)+'%':'')
+    + stat('里程表小项', allSub, '条')
     + stat('已达成目标', doneGoals, '个')
     + '</div>';
-  h += '<div class="card-h" style="margin-bottom:14px"><h3>我的大目标</h3><div class="r">'
-    + '<button class="btn primary sm" onclick="editGoal()">'+ico('plus',15)+'新建大目标</button></div></div>';
-  if(!gs.length) return h + emptyBox('还没有目标，先写下一个想在三年内实现的事');
+
+  /* 内联新建（不再弹框） */
+  h += '<div class="goal-add-card">'
+    + '<div class="ga-row">'
+    +   '<input id="gaTitle" placeholder="写下一个大目标，比如：三年内成为能养活自己的独立开发者" onkeydown="if(event.key===\'Enter\')addGoalInline()">'
+    +   '<button class="btn primary" onclick="addGoalInline()">'+ico('plus',15)+'添加</button>'
+    + '</div>'
+    + '<div class="ga-row2">'
+    +   '<div class="ga-cats">'+GOAL_CATS.map(c=>'<button class="chip'+(goalNewCat===c?' on':'')+'" onclick="setGoalNewCat(\''+c+'\')">'+c+'</button>').join('')+'</div>'
+    + '</div>'
+    + '<input id="gaNote" class="ga-note" placeholder="备注 / 为什么想做这件事（可留空）">'
+    + '</div>';
+
+  if(!gs.length) return h + emptyBox('还没有目标，在上面直接写下第一个想实现的事');
+
   gs.forEach(g => {
-    const total = g.milestones.length, done = g.milestones.filter(m=>m.done).length;
-    const pct = total ? Math.round(done/total*100) : 0;
-    const allDone = total && done === total;
+    const gp = goalProgress(g);
+    const msTotal = g.milestones.length, msDone = g.milestones.filter(msIsDone).length;
+    const allDone = msTotal && msDone === msTotal;
     const expanded = EXPANDED.has(g.id);
-    h += '<div class="goal-card'+(allDone?'" style="border-color:rgba(148,176,142,.4);background:linear-gradient(135deg,rgba(148,176,142,.07),transparent)':'')+'">'
+    const lastDone = allDone ? (g.milestones.map(m=>m.doneAt).filter(Boolean).sort().pop()||'') : '';
+    h += '<div class="goal-card'+(allDone?' achieved':'')+'">'
       + '<div class="goal-head">'
-      +   '<div class="goal-ring">'+goalRing(pct)+'</div>'
+      +   '<div class="goal-ring">'+goalRing(gp.pct)+'</div>'
       +   '<div style="flex:1;min-width:0">'
       +     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
       +       '<div class="goal-title">'+esc(g.title)+'</div>'
       +       '<span class="tag purple">'+esc(g.cat||'未分类')+'</span>'
-      +       (allDone ? '<span class="goal-completed-badge">'+ico('trophy',12,2.5)+'已达成 · '+fmtMD(g.milestones[g.milestones.length-1].doneAt)+'</span>' : '')
+      +       (allDone ? '<span class="goal-completed-badge">'+ico('trophy',12,2.5)+'已达成'+(lastDone?' · '+fmtMD(lastDone):'')+'</span>' : '')
       +     '</div>'
       +     (g.note ? '<div class="goal-note">'+esc(g.note)+'</div>' : '')
-      +     '<div style="font-size:12.5px;color:var(--muted);margin-top:8px">里程碑 '+done+'/'+total+'</div>'
+      +     '<div style="font-size:12.5px;color:var(--muted);margin-top:8px">里程碑 '+msDone+'/'+msTotal+' · 小项 '+gp.done+'/'+gp.total+'</div>'
       +   '</div>'
       +   '<div class="ops">'
       +     '<button class="iconbtn" onclick="event.stopPropagation();editGoal(\''+g.id+'\')" title="编辑">'+ico('edit',15)+'</button>'
@@ -1132,24 +1300,54 @@ function viewGoals(){
       +   '</div>'
       + '</div>';
     h += '<div class="goal-expand" onclick="toggleGoal(\''+g.id+'\')">'
-      + ico('chev',14)+(expanded?'收起':'展开')+'里程碑 ('+total+')'
+      + ico('chev',14)+(expanded?'收起':'展开')+'里程碑 ('+msTotal+')'
       + '</div>';
     if(expanded){
       h += '<div class="milestone-list">';
-      if(!total) h += '<div style="font-size:13px;color:var(--muted);padding:8px 0">还没有里程碑，把大目标拆成 3-5 个能验收的小目标。</div>';
+      if(!msTotal) h += '<div style="font-size:13px;color:var(--muted);padding:8px 0">还没有里程碑，把大目标拆成 3-5 个能验收的小目标。</div>';
       g.milestones.forEach((m,idx) => {
-        h += '<div class="milestone'+(m.done?' done':'')+'">'
-          + '<div class="milestone-num">'+(m.done?ico('check',14,3):(idx+1))+'</div>'
-          + '<div class="milestone-body">'
-          +   '<div class="milestone-title">'+esc(m.title)+'</div>'
-          +   (m.done ? '<div class="milestone-time">'+ico('trophy',11,2)+' 完成于 '+fmtMD(m.doneAt)+'</div>' : '')
-          + '</div>'
-          + '<div class="milestone-actions">'
-          +   '<button class="btn-achieve'+(m.done?' completed':'')+'" onclick="toggleMilestone(\''+g.id+'\',\''+m.id+'\')">'+(m.done?'已完成':'标记完成')+'</button>'
-          +   '<button class="iconbtn" onclick="editMilestone(\''+g.id+'\',\''+m.id+'\')">'+ico('edit',14)+'</button>'
-          +   '<button class="iconbtn del" onclick="delMilestone(\''+g.id+'\',\''+m.id+'\')">'+ico('del',14)+'</button>'
-          + '</div>'
+        const p = msProgress(m);
+        const done = msIsDone(m);
+        const mOpen = EXPANDED.has(m.id);
+        const subs = m.subs || [];
+        h += '<div class="milestone'+(done?' done':'')+'">'
+          + '<div class="milestone-row">'
+          +   '<div class="milestone-num">'+(done?ico('check',14,3):(idx+1))+'</div>'
+          +   '<div class="milestone-body">'
+          +     '<div class="milestone-title">'+esc(m.title)+'</div>'
+          +     '<div class="milestone-time">'
+          +       (subs.length ? ('里程表 '+p.done+'/'+p.total) : (done ? (ico('trophy',11,2)+' 完成于 '+fmtMD(m.doneAt)) : '暂无里程表小项'))
+          +     '</div>'
+          +   '</div>'
+          +   (subs.length ? '<div class="ms-mini">'+goalRing(p.pct, 40)+'</div>' : '')
+          +   '<div class="milestone-actions">'
+          +     (subs.length
+                  ? '<button class="btn-achieve view" onclick="toggleGoal(\''+m.id+'\')">'+(mOpen?'收起里程表':'里程表 '+p.done+'/'+p.total)+'</button>'
+                  : '<button class="btn-achieve'+(m.done?' completed':'')+'" onclick="toggleMilestone(\''+g.id+'\',\''+m.id+'\')">'+(m.done?'已完成':'标记完成')+'</button>')
+          +     '<button class="iconbtn" title="展开里程表" onclick="toggleGoal(\''+m.id+'\')">'+ico('chev',14)+'</button>'
+          +     '<button class="iconbtn" title="编辑" onclick="editMilestone(\''+g.id+'\',\''+m.id+'\')">'+ico('edit',14)+'</button>'
+          +     '<button class="iconbtn del" title="删除" onclick="delMilestone(\''+g.id+'\',\''+m.id+'\')">'+ico('del',14)+'</button>'
+          +   '</div>'
           + '</div>';
+        if(mOpen){
+          h += '<div class="sub-list">';
+          if(!subs.length) h += '<div class="sub-empty">还没有里程表小项，把这个里程碑再拆成几步可执行的动作。</div>';
+          subs.forEach((s,si)=>{
+            h += '<div class="submile'+(s.done?' done':'')+'">'
+              + '<button class="sub-check'+(s.done?' on':'')+'" onclick="toggleSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="'+(s.done?'取消完成':'标记完成')+'">'+(s.done?ico('check',12,3.2):'')+'</button>'
+              + '<span class="sub-idx">'+(idx+1)+'.'+(si+1)+'</span>'
+              + '<span class="sub-title">'+esc(s.title)+'</span>'
+              + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span>' : '')
+              + '<span class="sub-ops">'
+              +   '<button class="iconbtn" title="编辑" onclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('edit',13)+'</button>'
+              +   '<button class="iconbtn del" title="删除" onclick="delSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('del',13)+'</button>'
+              + '</span></div>';
+          });
+          h += '<div class="addline sub-add"><input placeholder="添加里程表小项，回车保存" onkeydown="if(event.key===\'Enter\')quickSub(\''+g.id+'\',\''+m.id+'\',this)">'
+            + '<button class="btn sm" onclick="editSub(\''+g.id+'\',\''+m.id+'\')">添加</button></div>';
+          h += '</div>';
+        }
+        h += '</div>';
       });
       h += '<div class="addline"><input placeholder="添加一个里程碑，回车保存" onkeydown="if(event.key===\'Enter\')quickMilestone(\''+g.id+'\',this)">'
         + '<button class="btn sm" onclick="editMilestone(\''+g.id+'\')">添加</button></div>';
@@ -1160,28 +1358,89 @@ function viewGoals(){
   return h;
 }
 function toggleGoal(id){ if(EXPANDED.has(id)) EXPANDED.delete(id); else EXPANDED.add(id); render(); }
+function setGoalNewCat(c){ goalNewCat = c; render(); }
+function addGoalInline(){
+  const t = $('gaTitle'), n = $('gaNote');
+  const v = (t.value||'').trim();
+  if(!v){ toast('先写下目标内容'); t.focus(); return; }
+  db.goals.unshift({ id:uid(), title:v, cat:goalNewCat, note:(n.value||'').trim(), created:TODAY, milestones:[] });
+  t.value=''; n.value='';
+  save(); render(); toast('目标已创建');
+}
 function quickMilestone(gid, el){
   const v = el.value.trim(); if(!v) return;
-  db.goals.find(x=>x.id===gid).milestones.push({ id:uid(), title:v, done:false });
+  db.goals.find(x=>x.id===gid).milestones.push({ id:uid(), title:v, done:false, subs:[] });
   el.value=''; save(); render(); toast('里程碑已添加');
 }
 function toggleMilestone(gid,mid){
   const g = db.goals.find(x=>x.id===gid);
   const m = g.milestones.find(x=>x.id===mid);
+  if((m.subs||[]).length){ toast('这个里程碑有里程表，勾完小项会自动完成'); return; }
   m.done = !m.done;
   m.doneAt = m.done ? TODAY : '';
   if(m.done){
-    const allDone = g.milestones.length && g.milestones.every(x=>x.done);
-    if(allDone) toast('目标达成！');
-    else toast('里程碑达成');
+    const allDone = g.milestones.length && g.milestones.every(msIsDone);
+    toast(allDone ? '目标达成！' : '里程碑达成');
   }
   save(); render();
+}
+/* ---- 第三层：里程表小项 ---- */
+function findSub(gid,mid){
+  const g = db.goals.find(x=>x.id===gid); if(!g) return {};
+  const m = g.milestones.find(x=>x.id===mid); if(!m) return { g };
+  if(!Array.isArray(m.subs)) m.subs = [];
+  return { g, m };
+}
+function syncMilestone(g,m){
+  const subs = m.subs || [];
+  if(!subs.length) return;
+  const all = subs.every(s=>s.done);
+  m.done = all;
+  m.doneAt = all ? (subs.map(s=>s.doneAt).filter(Boolean).sort().pop()||TODAY) : '';
+}
+function toggleSub(gid,mid,sid){
+  const { g, m } = findSub(gid,mid); if(!m) return;
+  const s = m.subs.find(x=>x.id===sid); if(!s) return;
+  s.done = !s.done; s.doneAt = s.done ? TODAY : '';
+  const before = m.done;
+  syncMilestone(g,m);
+  if(!before && m.done){
+    const allDone = g.milestones.every(msIsDone);
+    toast(allDone ? '目标达成！' : '里程碑「'+m.title+'」达成');
+  }
+  save(); render();
+}
+function quickSub(gid,mid,el){
+  const v = el.value.trim(); if(!v) return;
+  const { g, m } = findSub(gid,mid); if(!m) return;
+  m.subs.push({ id:uid(), title:v, done:false, doneAt:'' });
+  syncMilestone(g,m);
+  el.value=''; save(); render(); toast('里程表已添加');
+}
+function editSub(gid,mid,sid){
+  const { g, m } = findSub(gid,mid); if(!m) return;
+  const s = sid ? m.subs.find(x=>x.id===sid) : null;
+  openForm(s?'编辑里程表小项':'添加里程表小项', [
+    { k:'title', l:'小项内容', t:'text', req:true, ph:'例：打通第一个获客渠道' }
+  ], s || {}, v => {
+    if(s) s.title = v.title;
+    else m.subs.push({ id:uid(), title:v.title, done:false, doneAt:'' });
+    syncMilestone(g,m); save(); render(); toast('已保存');
+  });
+}
+function delSub(gid,mid,sid){
+  const { g, m } = findSub(gid,mid); if(!m) return;
+  const s = m.subs.find(x=>x.id===sid); if(!s) return;
+  confirmBox('删除里程表小项？', '「'+s.title+'」删除后不可恢复。', ()=>{
+    m.subs = m.subs.filter(x=>x.id!==sid);
+    syncMilestone(g,m); save(); render(); toast('已删除');
+  });
 }
 function editGoal(id){
   const g = id ? db.goals.find(x=>x.id===id) : null;
   openForm(g?'编辑大目标':'新建大目标', [
     { k:'title', l:'目标（写具体一点，能验收的那种）', t:'text', req:true, ph:'例：三年内成为能养活自己的独立开发者' },
-    { k:'cat', l:'分类', t:'select', opts:['事业','健康','成长','财务','家庭','兴趣','其他'] },
+    { k:'cat', l:'分类', t:'select', opts:GOAL_CATS },
     { k:'note', l:'备注 / 为什么想做这件事', t:'textarea' }
   ], g || { cat:'事业' }, v => {
     if(g) Object.assign(g, v);
@@ -1191,7 +1450,8 @@ function editGoal(id){
 }
 function delGoal(id){
   const g = db.goals.find(x=>x.id===id);
-  confirmBox('删除目标「'+g.title+'」？', '它下面的 '+g.milestones.length+' 个里程碑会一起删除，此操作不可撤销。', () => {
+  const subN = g.milestones.reduce((a,m)=>a+(m.subs||[]).length,0);
+  confirmBox('删除目标「'+g.title+'」？', '它下面的 '+g.milestones.length+' 个里程碑'+(subN?('和 '+subN+' 条里程表小项'):'')+'会一起删除，此操作不可撤销。', () => {
     db.goals = db.goals.filter(x=>x.id!==id); save(); render(); toast('已删除');
   });
 }
@@ -1201,14 +1461,18 @@ function editMilestone(gid,mid){
   openForm(m?'编辑里程碑':'添加里程碑', [
     { k:'title', l:'里程碑内容', t:'text', req:true, ph:'例：积累 1000 名真实用户' }
   ], m || {}, v => {
-    if(m) Object.assign(m, v);
-    else g.milestones.push({ id:uid(), title:v.title, done:false });
+    if(m) m.title = v.title;
+    else g.milestones.push({ id:uid(), title:v.title, done:false, subs:[] });
     save(); render(); toast('已保存');
   });
 }
 function delMilestone(gid,mid){
   const g = db.goals.find(x=>x.id===gid);
-  g.milestones = g.milestones.filter(x=>x.id!==mid); save(); render(); toast('里程碑已删除');
+  const m = g.milestones.find(x=>x.id===mid); if(!m) return;
+  const n = (m.subs||[]).length;
+  confirmBox('删除里程碑？', '「'+m.title+'」'+(n?('及其下 '+n+' 条里程表小项'):'')+'将被删除。', ()=>{
+    g.milestones = g.milestones.filter(x=>x.id!==mid); save(); render(); toast('里程碑已删除');
+  });
 }
 
 /* ============================================================
@@ -1293,7 +1557,12 @@ function editIdea(id){
     { k:'created', l:'记录日期', t:'date' }
   ], i, v => { Object.assign(i,v); save(); render(); toast('已保存'); });
 }
-function delIdea(id){ db.ideas = db.ideas.filter(x=>x.id!==id); save(); render(); toast('已删除'); }
+function delIdea(id){
+  const i = db.ideas.find(x=>x.id===id); if(!i) return;
+  confirmBox('删除这条灵感？', '「'+esc((i.text||'').slice(0,30))+(i.text&&i.text.length>30?'…':'')+'」删除后无法恢复，请确认。', ()=>{
+    db.ideas = db.ideas.filter(x=>x.id!==id); save(); render(); toast('已删除');
+  });
+}
 
 /* ============================================================
    模块 3：学习记录
@@ -2208,8 +2477,10 @@ function gratCalendar(){
   h += '<div class="cal-grid">';
   cells.forEach(c=>{
     if(c.other || !c.date){ h += '<div class="cal-day other"></div>'; return; }
+    const g = db.gratitude[c.date];
+    const moodFace = (g && g.mood && moodOf(g.mood)) ? '<span class="cal-mood" title="'+esc(g.mood)+'">'+moodIcon(g.mood,13)+'</span>' : '';
     const cls = 'cal-day'+(c.date===TODAY?' today':'')+(c.date===gratView.sel?' sel':'')+(gratHas(c.date)?' has':'')+(gratComplete(c.date)?' done':'');
-    h += '<div class="'+cls+'" onclick="selGratDay(\''+c.date+'\')">'+c.d+'</div>';
+    h += '<div class="'+cls+'" onclick="selGratDay(\''+c.date+'\')">'+c.d+moodFace+'</div>';
   });
   h += '</div></div>';
   return h;
@@ -2241,8 +2512,12 @@ function viewGratitude(){
   h += gratRewardHTML(d);
   h += '<div class="grat-head"><div class="gt-title">沫沫的感恩日记</div>'
     + '<div class="ed-date">'+fmtMD(d)+(gratComplete(d)?' <span class="done-pill">已完成</span>':'')+'</div></div>';
-  h += '<div class="mood-input"><label>今日心情</label><input id="gratMood" value="'+esc(g.mood||'')+'" placeholder="填一个词，比如：兴奋 / 平静 / 温暖" onchange="gratSetMood(this.value)"></div>';
-  h += '<div class="grat-bless">我衷心感恩我的宇宙和我周围的一切人事物，带给我今天的（<b>'+(g.mood||'___')+'</b>），我爱我自己，我爱宇宙，我爱我身边的一切。</div>';
+  h += '<div class="mood-pick"><label>今日心情</label><div class="mood-faces">';
+  MOODS.forEach(m => {
+    h += '<button class="mface'+(g.mood===m.k?' on':'')+'" data-k="'+m.k+'" title="'+m.k+'" style="--mc:'+m.c+'" onclick="gratSetMood(\''+m.k+'\')">'+moodIcon(m.k,26)+'</button>';
+  });
+  h += '</div></div>';
+  h += '<div class="grat-bless">我衷心感恩我的宇宙和我周围的一切人事物，带给我今天的（<b id="gratMoodRef">'+(g.mood||'___')+'</b>），我爱我自己，我爱宇宙，我爱我身边的一切。</div>';
   h += gratSection('grateful','今日感恩的事','至少五件',5,g.grateful);
   h += gratSection('great','今日很棒的事','至少五件',5,g.great);
   h += gratSection('want','想要实现的事','最多三件',3,g.want);
@@ -2252,13 +2527,74 @@ function viewGratitude(){
     + (gratHas(d)?'<button class="btn danger" onclick="gratDelDay()">删除当天</button>':'')+'</div>';
   h += '</div>';
 
-  h += '<div class="grat-calendar-wrap">'+gratCalendar()+'</div>';
+  h += '<div class="grat-calendar-wrap">'+gratCalendar()+gratMoodAnalysis()+'</div>';
   h += '</div>';
   return h;
 }
 
 function gratEnsure(d){ if(!db.gratitude[d]) db.gratitude[d] = { mood:'', grateful:[], great:[], want:[], tomorrow:[] }; }
-function gratSetMood(v){ gratEnsure(gratView.sel); db.gratitude[gratView.sel].mood = v.trim(); save(); render(); }
+function gratSetMood(k){
+  gratEnsure(gratView.sel);
+  const g = db.gratitude[gratView.sel];
+  g.mood = (g.mood === k) ? '' : k;   // 再次点击同一个即取消
+  save();
+  document.querySelectorAll('.mface').forEach(b => b.classList.toggle('on', b.getAttribute('data-k') === g.mood));
+  const ref = document.getElementById('gratMoodRef');
+  if(ref) ref.textContent = g.mood || '___';
+  paintGratMood();
+}
+function gratMoodAnalysis(){
+  const [y,m] = gratView.ym.split('-').map(Number);
+  const daysInMonth = new Date(y,m,0).getDate();
+  const counts = {}; MOODS.forEach(md => counts[md.k] = 0);
+  let total = 0;
+  for(let d=1; d<=daysInMonth; d++){
+    const date = y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const g = db.gratitude[date];
+    if(g && g.mood && counts[g.mood] !== undefined){ counts[g.mood]++; total++; }
+  }
+  const rows = MOODS.map(md => ({ k:md.k, c:md.c, n:counts[md.k] })).filter(r => r.n > 0).sort((a,b)=>b.n-a.n);
+  let h = '<div class="card grat-mood-an"><div class="card-h"><h3>本月心情分析</h3>'
+    + '<div class="r" style="font-size:12px;color:var(--muted)">'+y+'年'+m+'月 · '+total+' 天有记录</div></div>';
+  if(!total){
+    h += emptyBox('这个月还没有记录心情，挑一个可爱的小表情记下今天吧');
+  } else {
+    const maxN = rows[0].n || 1;
+    h += '<div class="mood-dist">';
+    rows.forEach(r => {
+      const pct = Math.round(r.n/maxN*100);
+      h += '<div class="md-row"><span class="md-face" style="color:'+r.c+'">'+moodIcon(r.k,18)+'</span>'
+        + '<span class="md-k">'+r.k+'</span>'
+        + '<span class="md-bar"><span class="md-fill" style="width:'+Math.max(8,pct)+'%;background:'+r.c+'"></span></span>'
+        + '<span class="md-n">'+r.n+'</span></div>';
+    });
+    h += '</div>';
+    h += '<div class="mood-verdict">'+ico('spark',14)+'<span>本月最常出现的心情是 <b>'+rows[0].k+'</b>，共 '+rows[0].n+' 天。</span></div>';
+  }
+  h += '</div>';
+  return h;
+}
+function paintGratMood(){
+  // 切换月份 / 选中日期后，刷新日历上的心情小脸
+  if(route.tab !== 'gratitude') return;
+  const wrap = document.querySelector('.grat-calendar-wrap .cal');
+  if(!wrap) return;
+  const [y,m] = gratView.ym.split('-').map(Number);
+  const daysInMonth = new Date(y,m,0).getDate();
+  const dateEls = wrap.querySelectorAll('.cal-day:not(.other)');
+  let i = 0;
+  for(let d=1; d<=daysInMonth; d++, i++){
+    const date = y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const el = dateEls[i]; if(!el) break;
+    let mf = el.querySelector('.cal-mood');
+    const g = db.gratitude[date];
+    const mood = g && g.mood && moodOf(g.mood) ? g.mood : '';
+    if(mood){
+      if(!mf){ mf = document.createElement('span'); mf.className='cal-mood'; el.appendChild(mf); }
+      mf.title = mood; mf.innerHTML = moodIcon(mood,13);
+    } else if(mf){ mf.remove(); }
+  }
+}
 function gratAddItem(sec){
   const el = $('grit_'+sec); const v = el.value.trim(); if(!v) return;
   gratEnsure(gratView.sel);
@@ -2806,7 +3142,34 @@ function viewPomo(){
     + stat('累计番茄', ps.length, '个')
     + stat('专注天数', days, '天') + '</div>';
 
-  h += '<div class="card pomo-hero">';
+  // 顶部：专注力总结与分析
+  const agg = {};
+  ps.forEach(p => {
+    const k = (p.linkType||'none') + '|' + (p.linkId||'');
+    if(!agg[k]) agg[k] = { n:0, min:0, label: p.label || '未关联的专注', type: p.linkType||'none' };
+    agg[k].n++; agg[k].min += (p.min||25);
+  });
+  const aggList = Object.values(agg).sort((a,b)=>b.min-a.min).slice(0,8);
+  h += '<div class="card pomo-analysis"><div class="card-h"><h3>专注力总结与分析</h3>'
+    + '<div class="r" style="font-size:12px;color:var(--muted)">累计 '+totalMin+' 分钟 · 平均每日 '+((days?Math.round(totalMin/days):0))+' 分钟</div></div>';
+  if(!aggList.length) h += emptyBox('完成第一个番茄后，这里会显示你的时间去向');
+  else{
+    const max = aggList[0].min || 1;
+    aggList.forEach(a => {
+      h += '<div class="pomo-bar">'
+        + '<span class="bn" title="'+esc(a.label)+'">'+esc(a.label)+'</span>'
+        + '<span class="bt"><span class="bf" style="width:'+Math.max(6, Math.round(a.min/max*100))+'%"></span></span>'
+        + '<span class="bv">'+a.n+' 个</span></div>';
+    });
+    if(aggList[0]) h += '<div class="pomo-insight">'+ico('spark',14)+'<span>投入最多的是 <b>'+esc(aggList[0].label)+'</b>，共 '+aggList[0].min+' 分钟。</span></div>';
+  }
+  h += '</div>';
+
+  // 左右布局：左番茄钟 / 右番茄记录
+  h += '<div class="pomo-lr">';
+
+  // 左：番茄钟独立卡片
+  h += '<div class="card pomo-timer">';
   h += '<div class="card-h"><h3>专注计时</h3>'
     + '<div class="r"><button class="pomo-sound'+(pomoCfg.sound?'':' off')+'" onclick="togglePomoSound()">'
     + ico(pomoCfg.sound?'volume':'mute',14) + (pomoCfg.sound?'滴答声开':'已静音') + '</button></div></div>';
@@ -2816,7 +3179,6 @@ function viewPomo(){
   const secInto = pomo.total - pomo.remain;
   const linkLab = curPomoLabel();
 
-  h += '<div class="pomo-hero-body">';
   h += '<div class="pomo-stage"><div class="pomo-ring-wrap">'
     + '<svg width="190" height="190" viewBox="0 0 240 240">'
     +   '<circle cx="120" cy="120" r="'+r+'" fill="none" stroke="var(--surface3)" stroke-width="13"/>'
@@ -2834,11 +3196,10 @@ function viewPomo(){
     +   '<div class="pomo-linked" id="pomoLinked">'+(linkLab?esc(pomoTypeName(pomoCfg.linkType)+' · '+linkLab):'')+'</div>'
     + '</div></div>';
 
-  h += '<div class="pomo-side">';
   h += '<div class="pomo-mins">';
   POMO_MINS.forEach(m => {
     h += '<button class="pomo-min'+(pomoCfg.minutes===m?' on':'')+'"'+(pomo.running||pomo.paused?' disabled':'')
-      + ' onclick="setPomoMinutes('+m+')">'+m+' 分钟</button>';
+      + ' onclick="setPomoMinutes('+m+')">'+m+'′</button>';
   });
   h += '</div>';
 
@@ -2860,36 +3221,11 @@ function viewPomo(){
   h += '<div class="pomo-hint-row">'+ico('clock',13)+'倒计时期间可切到其他页面，右下角有小计时条</div>';
 
   h += '</div>';
-  h += '</div>';
-  h += '</div>';
 
-  h += '<div class="pomo-grid">';
-
-  // 按关联对象统计
-  const agg = {};
-  ps.forEach(p => {
-    const k = (p.linkType||'none') + '|' + (p.linkId||'');
-    if(!agg[k]) agg[k] = { n:0, min:0, label: p.label || '未关联的专注', type: p.linkType||'none' };
-    agg[k].n++; agg[k].min += (p.min||25);
-  });
-  const aggList = Object.values(agg).sort((a,b)=>b.min-a.min).slice(0,8);
-  h += '<div class="card"><div class="card-h"><h3>专注都花在哪了</h3></div>';
-  if(!aggList.length) h += emptyBox('完成第一个番茄后，这里会显示你的时间去向');
-  else{
-    const max = aggList[0].min || 1;
-    aggList.forEach(a => {
-      h += '<div class="pomo-bar">'
-        + '<span class="bn" title="'+esc(a.label)+'">'+esc(a.label)+'</span>'
-        + '<span class="bt"><span class="bf" style="width:'+Math.max(6, Math.round(a.min/max*100))+'%"></span></span>'
-        + '<span class="bv">'+a.n+' 个</span></div>';
-    });
-  }
-  h += '</div>';
-
-  // 番茄记录
-  h += '<div class="card"><div class="card-h"><h3>番茄记录</h3><div class="r" style="font-size:12px;color:var(--muted)">共 '+ps.length+' 个</div></div>';
+  // 右：番茄记录
+  h += '<div class="card pomo-records"><div class="card-h"><h3>番茄记录</h3><div class="r" style="font-size:12px;color:var(--muted)">共 '+ps.length+' 个</div></div>';
   h += '<div class="pomo-list">';
-  if(!ps.length) h += emptyBox('还没有完成的番茄，点上面开始第一个');
+  if(!ps.length) h += emptyBox('还没有完成的番茄，点左边开始第一个');
   else{
     const gp = {};
     ps.forEach(p => { (gp[p.date] = gp[p.date] || []).push(p); });
@@ -2916,6 +3252,99 @@ function viewPomo(){
 }
 
 /* ============================================================
+   模块：账号管理
+============================================================ */
+const ACCT_GROUPS = [
+  { k:'work', n:'工作', desc:'公司邮箱 / OA / 内部系统' },
+  { k:'life', n:'生活', desc:'银行 / 会员 / 个人服务' }
+];
+const ACCT_SHOWN = new Set();
+
+function copyText(t, msg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast(msg||'已复制')).catch(()=>fallbackCopy(t,msg));
+  } else fallbackCopy(t,msg);
+}
+function fallbackCopy(t, msg){
+  const ta = document.createElement('textarea');
+  ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast(msg||'已复制'); }catch(e){ toast('复制失败，请手动复制'); }
+  ta.remove();
+}
+function maskPass(p){ return '•'.repeat(Math.max(6, Math.min((p||'').length, 12))); }
+function acctCard(a){
+  const shown = ACCT_SHOWN.has(a.id);
+  let h = '<div class="acct-card">';
+  h += '<div class="acct-top">';
+  h += '<div class="acct-name">'+ico(a.group==='work'?'lock':'heart',15)+esc(a.name||'未命名')+'</div>';
+  h += '<div class="acct-ops">'
+    + '<button class="iconbtn" title="编辑" onclick="editAcct(\''+a.id+'\')">'+ico('edit',14)+'</button>'
+    + '<button class="iconbtn del" title="删除" onclick="delAcct(\''+a.id+'\')">'+ico('del',14)+'</button>'
+    + '</div></div>';
+  if(a.url){
+    h += '<a class="acct-url" href="'+esc(a.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+ico('link',13)+esc(a.url)+'</a>';
+  }
+  h += '<div class="acct-row"><span class="acct-k">账号</span>'
+    + '<span class="acct-v">'+esc(a.user||'—')+'</span>'
+    + '<button class="iconbtn" title="复制账号" onclick="copyAcct(\''+a.id+'\',\'user\',\'账号已复制\')">'+ico('copy',13)+'</button></div>';
+  h += '<div class="acct-row"><span class="acct-k">密码</span>'
+    + '<span class="acct-v mono">'+(shown?esc(a.pass||'—'):maskPass(a.pass||''))+'</span>'
+    + '<button class="iconbtn" title="'+(shown?'隐藏密码':'显示密码')+'" onclick="acctToggle(\''+a.id+'\')">'+ico(shown?'eyeOff':'eye',14)+'</button>'
+    + '<button class="iconbtn" title="复制密码" onclick="copyAcct(\''+a.id+'\',\'pass\',\'密码已复制\')">'+ico('copy',13)+'</button></div>';
+  if(a.note) h += '<div class="acct-note">'+esc(a.note)+'</div>';
+  h += '</div>';
+  return h;
+}
+function viewAccounts(){
+  let h = '<div class="acct-tip">'+ico('lock',15)+'账号密码只存在本机浏览器、不上传服务器；若部署到线上，链接公开可访问，请勿填入真实敏感密码，或只记便于记忆的提示。</div>';
+  ACCT_GROUPS.forEach(g => {
+    const list = db.accounts.filter(a=>a.group===g.k);
+    h += '<div class="acct-group">';
+    h += '<div class="acct-group-h"><div class="ag-title">'+g.n+' <span class="cnt">'+list.length+'</span></div>'
+      + '<button class="btn primary sm" onclick="addAcct(\''+g.k+'\')">'+ico('plus',15)+'添加'+g.n+'账号</button></div>';
+    h += '<div class="acct-grid">';
+    if(!list.length) h += '<div class="card empty" style="grid-column:1/-1">'+ico('box2',30,1.5)+'<div>还没有'+g.n+'账号，点上面添加</div></div>';
+    else list.forEach(a => h += acctCard(a));
+    h += '</div></div>';
+  });
+  return h;
+}
+function acctToggle(id){ if(ACCT_SHOWN.has(id)) ACCT_SHOWN.delete(id); else ACCT_SHOWN.add(id); render(); }
+function copyAcct(id, field, msg){
+  const a = db.accounts.find(x=>x.id===id); if(!a) return;
+  copyText(field==='user'?(a.user||''):(a.pass||''), msg);
+}
+function acctFields(v){
+  return [
+    { k:'name', l:'名称', ph:'如：公司邮箱', req:true },
+    { k:'url',  l:'网址（可选）', ph:'https://...' },
+    { k:'user', l:'账号', ph:'用户名 / 手机号 / 邮箱' },
+    { k:'pass', l:'密码', ph:'留空则只记账号' },
+    { k:'note', l:'备注（可选）', t:'textarea', ph:'找回方式 / 提示等' }
+  ];
+}
+function addAcct(group){
+  openForm('添加'+(group==='life'?'生活':'工作')+'账号', acctFields(), { group: group||'work' }, (out)=>{
+    db.accounts.push({ id:uid(), group: group||'work', name:out.name, url:out.url, user:out.user, pass:out.pass, note:out.note, created:TODAY });
+    save(); render(); toast('已添加');
+  });
+}
+function editAcct(id){
+  const a = db.accounts.find(x=>x.id===id); if(!a) return;
+  openForm('编辑账号', acctFields(), a, (out)=>{
+    Object.assign(a, { name:out.name, url:out.url, user:out.user, pass:out.pass, note:out.note });
+    save(); render(); toast('已保存');
+  }, ()=>delAcct(id));
+}
+function delAcct(id){
+  const a = db.accounts.find(x=>x.id===id); if(!a) return;
+  confirmBox('删除账号「'+(a.name||'未命名')+'」？', '删除后无法恢复，请确认。', ()=>{
+    db.accounts = db.accounts.filter(x=>x.id!==id); ACCT_SHOWN.delete(id); save(); render(); toast('已删除');
+  });
+}
+
+/* ============================================================
    渲染
 ============================================================ */
 function dailySubNav(){
@@ -2939,6 +3368,7 @@ function render(){
   else if(route.tab === 'pomo') v.innerHTML = pre + viewPomo();
   else if(route.tab === 'gratitude') v.innerHTML = pre + viewGratitude();
   else if(route.tab === 'library') v.innerHTML = viewLibrary();
+  else if(route.tab === 'accounts') v.innerHTML = viewAccounts();
   else v.innerHTML = viewProjects();
   paintPomoMini();
 }
