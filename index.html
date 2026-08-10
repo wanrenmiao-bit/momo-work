@@ -653,14 +653,14 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pd-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pd-num{margin-left:auto;font-weight:700;color:var(--text)}
 .pd-heat-wrap{overflow-x:auto;padding-bottom:4px}
-.pd-heat{display:inline-grid;grid-template-columns:54px repeat(7,28px);gap:3px;min-width:100%}
-.pd-heat-row{display:contents}
-.pd-heat-corner{grid-column:1}
-.pd-heat-day{font-size:10.5px;color:var(--muted);text-align:center}
-.pd-heat-hour{font-size:10.5px;color:var(--muted);text-align:right;padding-right:6px;align-self:center}
-.pd-heat-day{font-size:10.5px;color:var(--muted);text-align:center;line-height:1.25}
-.pd-heat-cell{width:26px;height:20px;border-radius:2px;background:var(--surface2)}
-.pd-heat-cell.on{background:rgba(224,163,184,var(--ho,1))}
+.pd-heat{display:grid;grid-template-columns:54px repeat(7,28px);grid-template-rows:36px repeat(24,20px);gap:3px;position:relative;min-width:100%}
+.pd-heat-corner{grid-column:1;grid-row:1}
+.pd-heat-day{grid-row:1;font-size:10.5px;color:var(--muted);text-align:center;line-height:1.25}
+.pd-heat-hour{grid-column:1;font-size:10.5px;color:var(--muted);text-align:right;padding-right:6px;align-self:center}
+.pd-heat-cell{background:var(--surface2);border-radius:2px}
+.pd-heat-events-overlay{position:absolute;left:54px;top:36px;right:0;bottom:0;display:grid;grid-template-columns:repeat(7,1fr);gap:3px;pointer-events:none}
+.pd-heat-event{position:absolute;left:10%;width:80%;border-radius:3px;background:rgba(224,163,184,.75);pointer-events:auto;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:.15s;min-height:2px}
+.pd-heat-event:hover{background:rgba(224,163,184,.95);z-index:2}
 .pd-heat-month{display:flex;flex-direction:column;gap:6px}
 .pd-month-h{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:11px;color:var(--muted)}
 .pd-month-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
@@ -674,8 +674,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .pd-summary{grid-template-columns:1fr}
   .pd-metrics{grid-template-columns:repeat(2,1fr)}
   .pd-charts{grid-template-columns:1fr}
-  .pd-heat{grid-template-columns:46px repeat(7,24px)}
-  .pd-heat-cell{width:22px;height:18px}
+  .pd-heat{grid-template-columns:46px repeat(7,24px);grid-template-rows:32px repeat(24,18px)}
+  .pd-heat-events-overlay{left:46px;top:32px}
+  .pd-heat-event{left:8%;width:84%}
 }
 
 /* 每日生活子导航（移动端） */
@@ -4899,29 +4900,39 @@ function pomoHeatmapWeek(){
   const dayNames = ['周一','周二','周三','周四','周五','周六','周日'];
   const days = [];
   for(let i=0;i<7;i++){ days.push(addDays(start,i)); }
-  const grid = {};
+  const dsList = days.map(d=>d2s(d));
   const end = addDays(start,7);
+
+  // 收集本周事件：每个番茄作为一个连续色块
+  const events = [];
   db.pomos.filter(p => !p.aborted).forEach(p => {
     const pd = new Date(p.date);
     if(pd < start || pd >= end) return;
-    const hr = (p.at||'').slice(0,2); if(!hr) return;
-    const k = p.date+'_'+hr;
-    grid[k] = (grid[k]||0) + (p.actualMin||p.min||25);
+    const dayIdx = dsList.indexOf(p.date);
+    if(dayIdx < 0) return;
+    const [h,m] = (p.at||'00:00').split(':').map(Number);
+    const startMin = Math.max(0, Math.min(1439, h*60 + (m||0)));
+    const dur = Math.min(p.actualMin||p.min||25, 1440 - startMin);
+    if(dur <= 0) return;
+    events.push({ dayIdx, startMin, dur });
   });
-  const max = Math.max(1, ...Object.values(grid));
+
   let h = '<div class="pd-heat-wrap"><div class="pd-heat">';
-  h += '<div class="pd-heat-row"><span class="pd-heat-corner"></span>' + days.map((d,i)=>'<span class="pd-heat-day">'+fmtShortMD(d)+'<br>'+dayNames[i]+'</span>').join('') + '</div>';
+  h += '<span class="pd-heat-corner"></span>' + days.map((d,i)=>'<span class="pd-heat-day">'+fmtShortMD(d)+'<br>'+dayNames[i]+'</span>').join('');
   for(let hr=0; hr<24; hr++){
     const hrS = String(hr).padStart(2,'0');
-    h += '<div class="pd-heat-row"><span class="pd-heat-hour">'+hrS+':00</span>';
-    days.forEach(d=>{
-      const ds = d2s(d);
-      const v = grid[ds+'_'+hrS] || 0;
-      h += '<span class="pd-heat-cell'+(v?' on':'')+'" style="--ho:'+heatOp(v,max)+';background:rgba(224,163,184,'+heatOp(v,max)+')" title="'+ds+' '+hrS+':00 · '+v+' 分钟"></span>';
-    });
-    h += '</div>';
+    h += '<span class="pd-heat-hour">'+hrS+':00</span>';
+    for(let d=0; d<7; d++) h += '<span class="pd-heat-cell"></span>';
   }
-  h += '</div></div>';
+  h += '<div class="pd-heat-events-overlay">';
+  events.forEach(e => {
+    const top = (e.startMin / 1440 * 100).toFixed(2);
+    const height = Math.max(0.5, (e.dur / 1440 * 100)).toFixed(2);
+    const hh = Math.floor(e.startMin/60).toString().padStart(2,'0');
+    const mm = (e.startMin%60).toString().padStart(2,'0');
+    h += '<div class="pd-heat-event" style="grid-column:'+(e.dayIdx+1)+';top:'+top+'%;height:'+height+'%;" title="'+dsList[e.dayIdx]+' '+hh+':'+mm+' · '+e.dur+' 分钟"></div>';
+  });
+  h += '</div></div></div>';
   return h;
 }
 function pomoHeatmapMonth(){
