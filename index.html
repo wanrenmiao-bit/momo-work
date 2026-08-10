@@ -611,10 +611,21 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pomo-top-right .grid.g2>.stat{height:100%}
 .pomo-timer-body{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:14px;align-items:stretch;flex:1;min-height:0}
 .pomo-timer-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:4px 0}
-.pomo-timer-right{display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0}
-.pomo-timer-right .pomo-link-row,.pomo-timer-right .pomo-note-row{margin-top:0}
+.pomo-timer-right{display:flex;flex-direction:column;justify-content:flex-start;gap:10px;min-width:0;overflow-y:auto;max-height:100%;height:100%;padding-right:4px}
 .pomo-timer-right .pomo-interrupt{margin-top:0;flex-shrink:0}
-.pomo-timer-right .plk-name{max-width:120px}
+.pomo-timer-right .plk-name{max-width:160px}
+.pomo-side-block{display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;flex-shrink:0}
+.pomo-side-block .lb{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:5px}
+.pomo-scroll{max-height:118px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+.pomo-records-list .prk{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text)}
+.prk-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prk-x{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:.14s;flex-shrink:0}
+.prk-x:hover{background:var(--red-soft);color:var(--red)}
+.pomo-rec-add{display:flex;gap:8px;align-items:center}
+.pomo-rec-add input{flex:1;min-width:0;padding:7px 10px;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:13px;color:var(--text);outline:none}
+.pomo-rec-add input:focus{border-color:var(--accent);background:#fff}
+.pomo-link-block .plk-list{gap:6px}
+.pomo-link-block .plk-add{margin-top:2px}
 .pomo-interrupt{margin-top:12px;padding:12px;background:var(--surface2);border:1px dashed var(--border2);border-radius:8px}
 .pi-h{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);margin-bottom:8px}
 .pi-chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -3845,7 +3856,7 @@ let pomo = {
   endAt:0, timer:null, lastSec:-1, secTick:0,
   interrupts:[]
 };
-let pomoCfg = { minutes:25, sound:true, links:[], note:'' };
+let pomoCfg = { minutes:25, sound:true, links:[], note:'', records:[] };
 
 /* ---- 声音：Web Audio 合成机械滴答 ---- */
 let _AC = null, _tickBuf = {};
@@ -3958,9 +3969,31 @@ function addPomoLink(){
   if(pomoCfg.links.some(l => l.type === type && l.id === id)){ toast('这个已经关联啦'); return; }
   if(pomoCfg.links.length >= 6){ toast('最多同时关联 6 个'); return; }
   pomoCfg.links.push({ type, id });
-  paintPomo();
+  paintPomoLinks();
 }
-function removePomoLink(idx){ pomoCfg.links.splice(idx,1); paintPomo(); }
+function removePomoLink(idx){ pomoCfg.links.splice(idx,1); paintPomoLinks(); }
+function paintPomoLinks(){
+  const list = document.querySelector('.pomo-link-block .plk-list'); if(!list) return;
+  list.innerHTML = pomoCfg.links.length ? pomoCfg.links.map((l,i)=>linkBadge(i,l)).join('') : '<span class="plk-empty">还没关联任何对象</span>';
+}
+function pomoRecordBadge(idx, text){
+  return '<span class="prk" title="'+esc(text)+'">'
+    + '<span class="prk-text">'+esc(text)+'</span>'
+    + '<span class="prk-x" onclick="removePomoRecord('+idx+')">'+ico('del',12)+'</span></span>';
+}
+function addPomoRecord(){
+  const el = $('pomoRecInput'); if(!el) return;
+  const v = el.value.trim(); if(!v) return;
+  if(pomoCfg.records.length >= 10){ toast('最多 10 条记录'); return; }
+  pomoCfg.records.push(v);
+  el.value = '';
+  paintPomoRecords();
+}
+function removePomoRecord(idx){ pomoCfg.records.splice(idx,1); paintPomoRecords(); }
+function paintPomoRecords(){
+  const list = document.querySelector('.pomo-records-list'); if(!list) return;
+  list.innerHTML = pomoCfg.records.length ? pomoCfg.records.map((r,i)=>pomoRecordBadge(i,r)).join('') : '<span class="plk-empty">还没添加记录</span>';
+}
 function curPomoLabels(){
   return pomoCfg.links.map(l => pomoLinkLabel(l.type, l.id));
 }
@@ -4455,6 +4488,12 @@ function pausePomo(){
   if(pomo.timer){ clearInterval(pomo.timer); pomo.timer = null; }
   render();
 }
+function buildPomoNote(){
+  const parts = [];
+  if(pomoCfg.note && pomoCfg.note.trim()) parts.push(pomoCfg.note.trim());
+  if(pomoCfg.records && pomoCfg.records.length) parts.push(pomoCfg.records.map((r,i) => (i+1)+'. '+r).join('\n'));
+  return parts.join('\n\n');
+}
 function abortPomo(){
   confirmBox('放弃这个番茄？', '放弃的番茄会被记为「未完成」，用于计算完成率。', () => {
     const actualMin = Math.max(1, Math.round((pomo.total - pomo.remain)/60));
@@ -4464,12 +4503,12 @@ function abortPomo(){
     const links = pomoCfg.links.map(l=>({ type:l.type, id:l.id }));
     db.pomos.unshift({
       id: uid(), date: d2s(now), at: at, min: pomoCfg.minutes, actualMin: actualMin,
-      links: links, label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: pomoCfg.note || '',
+      links: links, label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: buildPomoNote(),
       interrupts: pomo.interrupts || [], aborted: true
     });
     save();
     pomo.interrupts = [];
-    pomoCfg.note = '';
+    pomoCfg.note = ''; pomoCfg.records = [];
     pomo.remain = pomoCfg.minutes*60;
     pomo.total = pomoCfg.minutes*60;
     render();
@@ -4500,12 +4539,12 @@ function finishPomo(){
   db.pomos.unshift({
     id: uid(), date: d2s(now), at: at, min: pomoCfg.minutes, actualMin: pomoCfg.minutes,
     links: links,
-    label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: pomoCfg.note || '',
+    label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: buildPomoNote(),
     interrupts: pomo.interrupts || [], aborted: false
   });
   save();
   pomo.interrupts = [];
-  pomoCfg.note = '';
+  pomoCfg.note = ''; pomoCfg.records = [];
   pomo.remain = pomoCfg.minutes*60;
   pomo.total = pomoCfg.minutes*60;
   render();
@@ -4549,11 +4588,6 @@ function paintPomo(){
   if(hand){
     const secInto = pomo.total - pomo.remain;
     hand.setAttribute('transform', 'rotate('+((secInto % 60) * 6)+' 60 60)');
-  }
-  const lk = $('pomoLinked');
-  if(lk){
-    const ls = curPomoLabels();
-    lk.innerHTML = ls.length ? ls.map((l,i)=> (i? ' · ':'') + (pomoCfg.links[i]?pomoTypeName(pomoCfg.links[i].type)+' · ':'') + esc(l)).join('') : '';
   }
   paintPomoMini();
 }
@@ -4639,17 +4673,25 @@ function viewPomo(){
   h += '</div>';
   h += '</div>'; // /pomo-timer-left
 
-  // 右侧：关联、备注、提示
+  // 右侧：可滚动的关联 + 本次记录
   h += '<div class="pomo-timer-right">';
-  h += '<div class="pomo-link-row"><div class="lb">'+ico('link',14)+' 关联目标 / 任务 / 项目</div>'
-    + '<div class="plk-list">'+(pomoCfg.links.length ? pomoCfg.links.map((l,i)=>linkBadge(i,l)).join('') : '<span class="plk-empty">还没关联任何对象</span>')+'</div>'
+
+  // 关联区
+  h += '<div class="pomo-side-block pomo-link-block">'
+    + '<div class="lb">'+ico('link',14)+' 关联</div>'
+    + '<div class="pomo-scroll plk-list">'+(pomoCfg.links.length ? pomoCfg.links.map((l,i)=>linkBadge(i,l)).join('') : '<span class="plk-empty">还没关联任何对象</span>')+'</div>'
     + '<div class="plk-add">'+dd('dd_pomoLink','pomoLink', pomoLinkOptions(), 'none|', ()=>{})+'<button class="btn sm" onclick="addPomoLink()">'+ico('plus',14)+'关联</button></div>'
     + '</div>';
 
-  h += '<div class="pomo-note-row"><div class="lb">'+ico('edit',14)+' 这次专注做了什么（选填）</div>'
-    + '<input id="pomoNote" placeholder="写一句话，结束时自动保存" value="'+esc(pomoCfg.note||'')+'" oninput="pomoCfg.note=this.value"></div>';
+  // 本次记录区（多条）
+  h += '<div class="pomo-side-block pomo-rec-block">'
+    + '<div class="lb">'+ico('edit',14)+' 记录这次番茄做了什么</div>'
+    + '<div class="pomo-scroll pomo-records-list">'+(pomoCfg.records.length ? pomoCfg.records.map((r,i)=>pomoRecordBadge(i,r)).join('') : '<span class="plk-empty">还没添加记录</span>')+'</div>'
+    + '<div class="pomo-rec-add"><input id="pomoRecInput" placeholder="写一句，回车添加" onkeydown="if(event.key===\'Enter\')addPomoRecord()">'
+    + '<button class="btn sm" onclick="addPomoRecord()">'+ico('plus',14)+'添加</button></div>'
+    + '</div>';
 
-  // 中断记录 / 提示
+  // 底部提示 / 中断记录
   h += '<div class="pomo-interrupt">';
   if(pomo.running){
     h += '<div class="pi-h">'+ico('zap',14)+' 遇到干扰？记下来，不影响计时</div>'
