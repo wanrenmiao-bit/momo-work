@@ -607,9 +607,16 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 /* 番茄钟：计时页 */
 .pomo-timer-wrap{display:flex;justify-content:center;margin-top:18px}
 .pomo-timer{max-width:460px;width:100%;display:flex;flex-direction:column;align-items:stretch;padding:14px 16px 16px}
-.pomo-top{display:grid;grid-template-columns:minmax(300px,340px) 1fr;gap:18px;align-items:center;margin-bottom:18px}
+.pomo-top{display:grid;grid-template-columns:minmax(460px,1.1fr) 1fr;gap:18px;align-items:stretch;margin-bottom:18px}
 .pomo-top .pomo-timer{max-width:none}
-.pomo-top-right .grid.g2{gap:12px}
+.pomo-top-right .grid.g2{gap:12px;height:100%}
+.pomo-top-right .grid.g2>.stat{height:100%}
+.pomo-timer-body{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:14px;align-items:stretch;flex:1;min-height:0}
+.pomo-timer-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:4px 0}
+.pomo-timer-right{display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0}
+.pomo-timer-right .pomo-link-row,.pomo-timer-right .pomo-note-row{margin-top:0}
+.pomo-timer-right .pomo-interrupt{margin-top:0;flex-shrink:0}
+.pomo-timer-right .plk-name{max-width:120px}
 .pomo-interrupt{margin-top:12px;padding:12px;background:var(--surface2);border:1px dashed var(--border2);border-radius:8px}
 .pi-h{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);margin-bottom:8px}
 .pi-chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -910,6 +917,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .pomo-lr{grid-template-columns:1fr}
   .pomo-top{grid-template-columns:1fr}
   .pomo-top-right{order:-1}
+  .pomo-timer-body{grid-template-columns:1fr;gap:16px}
+  .pomo-timer-right{gap:12px}
   .pomo-hero{padding:20px 14px 18px}
   .daily-sub{display:flex}
   .pomo-ring-wrap{width:150px;height:150px}
@@ -4591,6 +4600,10 @@ function viewPomo(){
   const secInto = pomo.total - pomo.remain;
   const linkLab = curPomoLabel();
 
+  h += '<div class="pomo-timer-body">';
+
+  // 左侧：计时核心
+  h += '<div class="pomo-timer-left">';
   h += '<div class="pomo-stage"><div class="pomo-ring-wrap">'
     + '<svg width="150" height="150" viewBox="0 0 240 240">'
     +   '<circle cx="120" cy="120" r="'+r+'" fill="none" stroke="var(--surface3)" stroke-width="13"/>'
@@ -4626,7 +4639,10 @@ function viewPomo(){
     h += '<button class="pomo-big ghost" onclick="abortPomo()">'+ico('stop',16)+'放弃</button>';
   }
   h += '</div>';
+  h += '</div>'; // /pomo-timer-left
 
+  // 右侧：关联、备注、提示
+  h += '<div class="pomo-timer-right">';
   h += '<div class="pomo-link-row"><div class="lb">'+ico('link',14)+' 关联目标 / 任务 / 项目</div>'
     + '<div class="plk-list">'+(pomoCfg.links.length ? pomoCfg.links.map((l,i)=>linkBadge(i,l)).join('') : '<span class="plk-empty">还没关联任何对象</span>')+'</div>'
     + '<div class="plk-add">'+dd('dd_pomoLink','pomoLink', pomoLinkOptions(), 'none|', ()=>{})+'<button class="btn sm" onclick="addPomoLink()">'+ico('plus',14)+'关联</button></div>'
@@ -4635,7 +4651,7 @@ function viewPomo(){
   h += '<div class="pomo-note-row"><div class="lb">'+ico('edit',14)+' 这次专注做了什么（选填）</div>'
     + '<input id="pomoNote" placeholder="写一句话，结束时自动保存" value="'+esc(pomoCfg.note||'')+'" oninput="pomoCfg.note=this.value"></div>';
 
-  // 中断记录
+  // 中断记录 / 提示
   h += '<div class="pomo-interrupt">';
   if(pomo.running){
     h += '<div class="pi-h">'+ico('zap',14)+' 遇到干扰？记下来，不影响计时</div>'
@@ -4647,6 +4663,9 @@ function viewPomo(){
     h += '<div class="pomo-hint-row" style="margin:0">'+ico('clock',13)+'倒计时期间可切到其他页面，右下角有小计时条</div>';
   }
   h += '</div>';
+  h += '</div>'; // /pomo-timer-right
+
+  h += '</div>'; // /pomo-timer-body
 
   h += '</div>';
 
