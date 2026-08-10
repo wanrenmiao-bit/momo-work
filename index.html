@@ -464,6 +464,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .task-title.done{text-decoration:line-through;color:var(--muted)}
 .task-title.abandoned{text-decoration:line-through;color:var(--muted);opacity:.7}
 .task-pri{font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;margin-left:6px}
+.gt-proj{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--orange);background:rgba(214,168,120,.16);padding:2px 7px;border-radius:3px;margin-left:6px;vertical-align:middle;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt-proj svg{opacity:.85;flex:none}
 .task-pri.P0{background:var(--red-soft);color:var(--red)}
 .task-pri.P1{background:rgba(159,180,196,.18);color:var(--blue)}
 .task-pri.P2{background:var(--green-soft);color:var(--green)}
@@ -720,6 +722,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .plan-src{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:3px;margin-top:3px;vertical-align:middle}
 .plan-src.src-project{background:rgba(155,135,210,.16);color:#8d72c4}
 .plan-src.src-gratitude{background:rgba(216,118,140,.16);color:#c46884}
+.plan-src.proj-tag{background:rgba(214,168,120,.16);color:var(--orange);display:inline-flex;align-items:center;gap:3px;margin-left:4px}
 .lp-row{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font-size:12px;color:var(--muted)}
 .lp-row b{font-size:12.5px;color:var(--text2)}
 .lp-row .dot{width:9px;height:9px;border-radius:50%}
@@ -2396,6 +2399,14 @@ function editProject(id){
 function delProject(id){
   const p = db.projects.find(x=>x.id===id);
   confirmBox('删除项目「'+p.name+'」？','包含 '+p.tasks.length+' 个任务、'+p.assets.length+' 条资料、'+p.outputs.length+' 项产出，全部删除且不可撤销。', ()=>{
+    // 清理感恩日记里关联此项目的「明天的任务」
+    Object.keys(db.gratitude).forEach(d=>{
+      const g = db.gratitude[d];
+      if(g && Array.isArray(g.tomorrow)) g.tomorrow.forEach(it=>{ if(typeof it==='object' && it.project===id) it.project=''; });
+    });
+    // 清理计划看板：移除来自此项目的关联项，并摘掉感恩任务带此项目的标签
+    db.plans = db.plans.filter(pl => !(pl.sourceType==='project' && pl.sourceId===id))
+                       .map(pl => { if(pl.sourceProject===id) pl.sourceProject=''; return pl; });
     db.projects = db.projects.filter(x=>x.id!==id); closeProject(); save(); render(); toast('已删除');
   });
 }
@@ -3193,6 +3204,7 @@ function planZone(cat, items, full){
       + '<div class="plan-check'+(p.done?' done':'')+'" onclick="togglePlan(\''+p.id+'\')">'+(p.done?ico('check',12,3):'')+'</div>'
       + '<div class="plan-t">'+esc(p.text)
       + (p.sourceType ? '<span class="plan-src src-'+p.sourceType+'">'+(p.sourceType==='project'?'项目':p.sourceType==='gratitude'?'感恩':'')+'</span>' : '')
+      + (p.sourceProject ? '<span class="plan-src proj-tag">'+ico('proj',11)+esc((db.projects.find(x=>x.id===p.sourceProject)||{}).name||'项目')+'</span>' : '')
       + '</div>'
       + '<div class="plan-ops">'
       +   '<button class="iconbtn plan-sun'+(isSunOn?' on':'')+'" title="'+(isSunOn?'今日必须完成':'设为今日必须完成')+'" onclick="togglePlanSun(\''+p.id+'\')">'+ico('sun',14)+'</button>'
@@ -3556,21 +3568,29 @@ function gratSection(sec, title, req, max, items){
   const isArr = items || [];
   const isTask = sec === 'tomorrow';
   const txt = it => typeof it === 'string' ? it : (it && it.text) || '';
+  // 项目下拉选项（仅「明天的任务」需要关联项目）
+  const projOpts = [['', '不关联项目']];
+  if(db.projects.length){ projOpts.push({ group:'关联项目' }); db.projects.forEach(p => projOpts.push([p.id, p.name])); }
   let h = '<div class="grat-sec"><div class="grat-sec-h">'+title
     + (req ? ' <span class="req">'+req+'</span>' : '')
     + ' <span class="n">'+isArr.length+(max?' / '+max:'')+'</span></div>';
   h += '<div class="grat-rows">';
   isArr.forEach((it,idx)=>{
     if(gratEdit && gratEdit.sec===sec && gratEdit.idx===idx){
-      h += '<div class="gitem editing"><input id="gredit_'+sec+'" value="'+esc(txt(it))+'" onkeydown="if(event.key===\'Enter\')gratCommitEdit(\''+sec+'\','+idx+')">'
+      const cur = typeof it === 'string' ? { text:it, project:'' } : it;
+      h += '<div class="gitem editing"><input id="gredit_'+sec+'" value="'+esc(txt(cur))+'" onkeydown="if(event.key===\'Enter\')gratCommitEdit(\''+sec+'\','+idx+')">'
+        + (isTask ? dd('gredit_proj_'+sec, 'gredit_projval_'+sec, projOpts, cur.project||'', ()=>{}) : '')
         + '<span class="gx" title="保存" onclick="gratCommitEdit(\''+sec+'\','+idx+')">'+ico('check',13)+'</span>'
         + '<span class="gx" title="取消" onclick="gratCancelEdit()">'+ico('del',13)+'</span></div>';
     } else if(isTask){
       const inPlan = db.plans.some(pl => pl.sourceType==='gratitude' && pl.sourceSub===gratView.sel && pl.text===it.text);
+      const pp = it.project ? db.projects.find(x=>x.id===it.project) : null;
       h += '<div class="gitem grat-task'+(it.done?' done':'')+(it.abandoned?' abandoned':'')+'">'
         + '<span class="gt-check'+(it.done?' done':'')+'" onclick="toggleGratTask('+idx+')">'+(it.done?ico('check',11,3):'')+'</span>'
         + '<span class="gt" onclick="gratEditItem(\''+sec+'\','+idx+')">'+esc(it.text)
-        +   '<span class="task-pri '+esc(it.pri||'P2')+'">'+(it.pri||'P2')+'</span></span>'
+        +   '<span class="task-pri '+esc(it.pri||'P2')+'">'+(it.pri||'P2')+'</span>'
+        +   (pp ? '<span class="gt-proj" title="关联项目：'+esc(pp.name)+'">'+ico('proj',12)+esc(pp.name)+'</span>' : '')
+        + '</span>'
         + '<span class="gt-ops">'
         +   '<span class="gx2 grat-sun'+(it.today?' on':'')+'" title="'+(it.today?'今日必须完成':'设为今日必须完成')+'" onclick="toggleGratTaskToday('+idx+')">'+ico('sun',14)+'</span>'
         +   '<span class="gx2'+(inPlan?' on':'')+'" title="'+(inPlan?'已在计划看板':'加入计划看板')+'" onclick="gratTomorrowToPlan('+idx+')">'+ico('todo',14)+'</span>'
@@ -3588,6 +3608,7 @@ function gratSection(sec, title, req, max, items){
     h += '<div class="grat-add grat-task-add">'
       +   priChips('grit_pri_'+sec, 'P2')
       +   '<button id="grit_sun_'+sec+'" class="task-sun-btn" title="今日必须完成" onclick="this.classList.toggle(\'on\')">'+ico('sun',16)+'</button>'
+      +   dd('grit_proj_'+sec, 'grit_projval_'+sec, projOpts, '', ()=>{})
       +   '<input id="grit_'+sec+'" placeholder="'+(max?('添加一条（最多 '+max+' 件）'):'添加一条')+'">'
       +   '<button class="btn sm" onclick="gratAddItem(\''+sec+'\')">'+ico('plus',15)+'</button></div>';
   }else{
@@ -3632,8 +3653,12 @@ function gratEnsure(d){
   if(!db.gratitude[d]) db.gratitude[d] = { mood:'', grateful:[], great:[], want:[], tomorrow:[] };
   const g = db.gratitude[d];
   if(!Array.isArray(g.tomorrow)) g.tomorrow = [];
-  // 防御：若从旧数据读入的仍是字符串，立即对象化
-  g.tomorrow = g.tomorrow.map(it => typeof it === 'string' ? { text:it, pri:'P2', today:false, abandoned:false, done:false } : it);
+  // 防御：若从旧数据读入的仍是字符串，立即对象化；并补上 project 字段
+  g.tomorrow = g.tomorrow.map(it => {
+    if(typeof it === 'string') return { text:it, pri:'P2', today:false, abandoned:false, done:false, project:'' };
+    if(!('project' in it)) it.project = '';
+    return it;
+  });
 }
 function gratSetMood(k){
   gratEnsure(gratView.sel);
@@ -3705,9 +3730,11 @@ function gratAddItem(sec){
   if(sec==='tomorrow'){
     const priEl = $('grit_pri_'+sec);
     const sunEl = $('grit_sun_'+sec);
+    const projEl = $('grit_projval_'+sec);
     const pri = priEl ? priEl.value : 'P2';
     const today = sunEl ? sunEl.classList.contains('on') : false;
-    const item = { text:v, pri, today, abandoned:false, done:false };
+    const project = projEl ? projEl.value : '';
+    const item = { text:v, pri, today, abandoned:false, done:false, project };
     arr.push(item);
     el.value=''; if(sunEl) sunEl.classList.remove('on');
     syncGratTaskToPlan(arr.length-1); // 明天的任务默认同步到计划看板
@@ -3724,20 +3751,29 @@ function gratEditItem(sec, idx){ gratEdit = { sec, idx }; render(); }
 function gratCancelEdit(){ gratEdit = null; render(); }
 function gratCommitEdit(sec, idx){
   const el = $('gredit_'+sec); const v = el.value.trim();
-  if(v){ gratEnsure(gratView.sel); const it = db.gratitude[gratView.sel][sec][idx]; if(typeof it === 'string') db.gratitude[gratView.sel][sec][idx]=v; else it.text=v; }
+  if(v){
+    gratEnsure(gratView.sel);
+    const it = db.gratitude[gratView.sel][sec][idx];
+    if(typeof it === 'string') db.gratitude[gratView.sel][sec][idx] = { text:v, pri:'P2', today:false, abandoned:false, done:false, project:'' };
+    else {
+      it.text = v;
+      if(sec==='tomorrow'){ const pe = $('gredit_projval_'+sec); it.project = pe ? pe.value : ''; }
+    }
+  }
   gratEdit = null; render();
 }
 function syncGratTaskToPlan(idx){
   gratEnsure(gratView.sel);
   const arr = db.gratitude[gratView.sel].tomorrow; const it = arr[idx]; if(!it) return;
+  const proj = it.project || '';
   const planIdx = db.plans.findIndex(pl => pl.sourceType==='gratitude' && pl.sourceSub===gratView.sel && pl.text===it.text);
   if(it.done || it.abandoned){ if(planIdx>=0){ db.plans.splice(planIdx,1); save(); } return; }
   const cat = it.today ? 'must' : priToCat(it.pri);
   const date = nextDay(gratView.sel);
   if(planIdx>=0){
-    const pl = db.plans[planIdx]; pl.text = it.text; pl.cat = cat; pl.date = date;
+    const pl = db.plans[planIdx]; pl.text = it.text; pl.cat = cat; pl.date = date; pl.sourceProject = proj;
   }else{
-    db.plans.unshift({ id:uid(), cat, text:it.text, date, done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel });
+    db.plans.unshift({ id:uid(), cat, text:it.text, date, done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:proj });
   }
   save();
 }
@@ -3747,7 +3783,7 @@ function gratTomorrowToPlan(idx){
   if(it.done || it.abandoned){ toast('已完成/放弃的任务不再加入计划'); return; }
   const planIdx = db.plans.findIndex(pl => pl.sourceType==='gratitude' && pl.sourceSub===gratView.sel && pl.text===it.text);
   if(planIdx>=0){ toast('这条已加入计划看板'); return; }
-  db.plans.unshift({ id:uid(), cat:priToCat(it.pri), text:it.text, date:nextDay(gratView.sel), done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel });
+  db.plans.unshift({ id:uid(), cat:priToCat(it.pri), text:it.text, date:nextDay(gratView.sel), done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:it.project||'' });
   save(); render(); toast('已加入明天的计划看板');
 }
 function toggleGratTask(idx){
