@@ -471,12 +471,14 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .task-row.abandoned{opacity:.75}
 .task-quick-add{display:flex;gap:8px;align-items:center}
 .task-quick-add input{flex:1;min-width:0}
-.task-pri-select{padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:13px;color:var(--text);outline:none;cursor:pointer}
-/* 快速添加行里的太阳：带框，和优先级下拉同高 */
-.task-sun-btn{width:36px;height:36px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--surface2);border:1px solid var(--border);transition:.15s;flex-shrink:0}
+.pri-chips{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.pri-chip{width:34px;height:34px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text2);background:var(--surface2);border:1px solid var(--border);transition:.15s;padding:0}
+.pri-chip:hover{border-color:var(--pc)}
+.pri-chip.on{background:var(--pc);border-color:var(--pc);color:#fff}
+/* 快速添加行里的太阳：带框，和优先级同高 */
+.task-sun-btn{width:34px;height:34px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--surface2);border:1px solid var(--border);transition:.15s;flex-shrink:0}
 .task-sun-btn.on{color:var(--red);background:rgba(207,155,148,.14);border-color:rgba(199,120,110,.4);box-shadow:0 0 10px rgba(207,155,148,.25)}
 .task-sun-btn:hover{color:var(--red)}
-.task-pri-select{height:36px;padding:0 8px}
 /* 任务行右侧操作区：太阳和其它图标同尺寸、同风格、并排 */
 .task-row .ops{display:flex;align-items:center;gap:2px;flex-shrink:0;margin-top:-3px}
 .task-row .ops .iconbtn{width:32px;height:32px;border-radius:6px;border:none;background:none}
@@ -548,16 +550,22 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pomo-big.ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);box-shadow:none}
 .pomo-big.ghost:hover{background:var(--surface3);color:var(--text);transform:none}
 .pomo-link-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;width:100%;justify-content:flex-start}
+.pomo-note-row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;width:100%}
+.pomo-note-row input{flex:1;min-width:0;padding:8px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:14px;color:var(--text);outline:none}
+.pomo-note-row input:focus{border-color:var(--accent);background:#fff}
 .pomo-hint-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:4px}
 .pomo-hint-row svg{color:var(--accent);flex-shrink:0}
-.pomo-link-row .lb{font-size:13px;color:var(--text2);flex-shrink:0;width:100%}
+.pomo-link-row .lb,.pomo-note-row .lb{font-size:13px;color:var(--text2);flex-shrink:0;width:100%}
 .pomo-link-row .dd{flex:1;min-width:180px}
 .plk-list{display:flex;flex-wrap:wrap;gap:7px;width:100%}
 .plk-empty{font-size:12.5px;color:var(--muted);font-style:italic}
-.plk{display:inline-flex;align-items:center;gap:6px;padding:5px 6px 5px 11px;border-radius:11px;background:var(--accent-soft);border:1px solid rgba(224,163,184,.32);font-size:12.5px;color:var(--accent2);font-weight:600}
-.plk i{font-style:normal;font-weight:700;color:var(--text2);font-size:11px;padding:1px 6px;border-radius:5px;background:var(--surface2)}
-.plk b{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;cursor:pointer;color:var(--accent2);font-weight:700;font-size:14px;line-height:1;transition:.14s}
-.plk b:hover{background:var(--red);color:#fff}
+.plk{display:inline-flex;align-items:center;gap:6px;padding:6px 9px 6px 8px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:13px;color:var(--text);transition:.15s}
+.plk:hover{border-color:var(--border2);background:var(--surface)}
+.plk-dot{width:7px;height:7px;border-radius:50%;background:var(--tc)}
+.plk-type{font-size:11px;font-weight:700;color:var(--muted);background:var(--surface);padding:2px 5px;border-radius:4px}
+.plk-name{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plk-x{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:.14s}
+.plk-x:hover{background:var(--red-soft);color:var(--red)}
 .plk-add{display:flex;gap:8px;align-items:center;width:100%}
 .plk-add .dd{flex:1;min-width:0}
 .pomo-sound{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);
@@ -641,8 +649,16 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pd-heat-corner{grid-column:1}
 .pd-heat-day{font-size:10.5px;color:var(--muted);text-align:center}
 .pd-heat-hour{font-size:10.5px;color:var(--muted);text-align:right;padding-right:6px;align-self:center}
+.pd-heat-day{font-size:10.5px;color:var(--muted);text-align:center;line-height:1.25}
 .pd-heat-cell{width:26px;height:20px;border-radius:2px;background:var(--surface2)}
 .pd-heat-cell.on{background:rgba(224,163,184,var(--ho,1))}
+.pd-heat-month{display:flex;flex-direction:column;gap:6px}
+.pd-month-h{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:11px;color:var(--muted)}
+.pd-month-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.pd-month-cell{aspect-ratio:1;border-radius:5px;background:var(--surface2);display:flex;align-items:flex-start;justify-content:flex-start;padding:5px;font-size:11px;color:var(--text2);position:relative;transition:.15s}
+.pd-month-cell.in{background:var(--surface)}
+.pd-month-cell.on{background:rgba(224,163,184,var(--ho))}
+.pd-month-d{line-height:1}
 .pomo-list .prow.aborted{opacity:.65;background:rgba(207,155,148,.1);border-color:rgba(199,120,110,.3)}
 .pomo-list .prow .tt i.int{color:var(--red);display:inline-flex;align-items:center;gap:4px;margin-top:4px}
 @media(max-width:768px){
@@ -1504,6 +1520,21 @@ function priLabel(pri){
     default: return pri;
   }
 }
+function priChips(name, cur){
+  cur = cur || 'P2';
+  const opts = [['P0','P0'],['P1','P1'],['P2','P2'],['P3','P3']];
+  let h = '<input type="hidden" id="'+name+'" value="'+esc(cur)+'"><div class="pri-chips" data-pri="'+name+'">';
+  opts.forEach(([v,l]) => {
+    h += '<button type="button" class="pri-chip '+v+(v===cur?' on':'')+'" style="--pc:'+priColor(v)+'" onclick="setPriChip(\''+name+'\',\''+v+'\')">'+l+'</button>';
+  });
+  h += '</div>';
+  return h;
+}
+function setPriChip(name, val){
+  const wrap = document.querySelector('.pri-chips[data-pri="'+name+'"]'); if(!wrap) return;
+  wrap.querySelectorAll('.pri-chip').forEach(b => b.classList.toggle('on', b.textContent === val));
+  const inp = document.getElementById(name); if(inp) inp.value = val;
+}
 
 function load(){
   let fresh = false;
@@ -2287,9 +2318,7 @@ function viewProjectDetail(){
   h += '<div class="project-col'+(route.projCol==='tasks'?' on':'')+'">'
     + '<div class="project-col-h" onclick="selectCol(\'tasks\')">'+ico('check',15)+'任务清单<span class="ex">'+(route.projCol==='tasks'?'收起':'展开')+'</span><span class="n">'+p.tasks.filter(x=>!x.done && !x.abandoned).length+' / '+t+'</span></div>'
     + '<div class="addline task-quick-add" style="margin-bottom:10px">'
-    +   '<select class="task-pri-select" title="优先级">'
-    +     '<option value="P0">P0</option><option value="P1">P1</option><option value="P2" selected>P2</option><option value="P3">P3</option>'
-    +   '</select>'
+    +   priChips('pri_'+p.id, 'P2')
     +   '<button class="task-sun-btn" title="今日必须完成" onclick="this.classList.toggle(\'on\')">'+ico('sun',16)+'</button>'
     +   '<input placeholder="快速添加任务，回车" onkeydown="if(event.key===\'Enter\')quickTask(\''+p.id+'\',this)">'
     + '</div>';
@@ -2304,9 +2333,10 @@ function viewProjectDetail(){
       +   '<button class="iconbtn task-sun'+(x.today?' on':'')+'" title="'+(x.today?'今日必须完成':'设为今日必须完成')+'" onclick="toggleTaskToday(\''+p.id+'\',\''+x.id+'\')">'+ico('sun',14)+'</button>'
       +   '<button class="iconbtn'+(inPlan?' on':'')+'" title="'+(inPlan?'已在计划看板':'加入计划看板')+'" onclick="taskToPlan(\''+p.id+'\',\''+x.id+'\')">'+ico('todo',14)+'</button>'
       +   '<button class="iconbtn" onclick="editTask(\''+p.id+'\',\''+x.id+'\')">'+ico('edit',14)+'</button>'
+      +   '<button class="iconbtn del" title="删除" onclick="deleteTask(\''+p.id+'\',\''+x.id+'\')">'+ico('del',14)+'</button>'
       +   (x.abandoned
            ? '<button class="iconbtn" title="重新启用" onclick="resumeTask(\''+p.id+'\',\''+x.id+'\')">'+ico('refresh',14)+'</button>'
-           : '<button class="iconbtn del" title="放弃" onclick="abandonTask(\''+p.id+'\',\''+x.id+'\')">'+ico('ban',14)+'</button>')
+           : '<button class="iconbtn" title="放弃" onclick="abandonTask(\''+p.id+'\',\''+x.id+'\')">'+ico('ban',14)+'</button>')
       + '</div></div>';
   });
   h += '</div>';
@@ -2355,13 +2385,11 @@ function editProject(id){
     { k:'status', l:'状态', t:'select', opts:['进行中','待启动','暂停','已完成'] },
     { k:'desc', l:'一句话说清这个项目要干嘛', t:'textarea' },
     { k:'created', l:'创建日期', t:'date' },
-    { k:'imp',  l:'', t:'check', cl:'重要（决定它在计划里的象限）' },
-    { k:'urg',  l:'', t:'check', cl:'紧急' },
-    { k:'today',l:'', t:'check', cl:'今日必须推进（置顶「今日必须完成」区）' }
-  ], p || { status:'进行中', created:TODAY, imp:false, urg:false, today:false }, v => {
+    { k:'planCat', l:'关联计划象限（可选）', t:'select', opts:[['','不关联'],['must','今日必须完成'],['q1','重要且紧急'],['q2','重要不紧急'],['q3','紧急不重要'],['q4','不紧急不重要']] }
+  ], p || { status:'进行中', created:TODAY, planCat:'' }, v => {
     if(p) Object.assign(p,v);
-    else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
-    p.imp = !!v.imp; p.urg = !!v.urg; p.today = !!v.today; p.planCat = projectPlanCat(p);
+    else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, planCat:v.planCat||'', tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
+    p.planCat = v.planCat || '';
     save(); render(); toast('已保存');
   });
 }
@@ -2428,10 +2456,19 @@ function abandonTask(pid,tid){
     toast('已放弃');
   });
 }
+function deleteTask(pid,tid){
+  const p = db.projects.find(x=>x.id===pid); if(!p) return;
+  const t = p.tasks.find(x=>x.id===tid); if(!t) return;
+  confirmBox('删除这条任务？','删除后不可恢复，关联的计划看板项也会一起移除。',()=>{
+    p.tasks = p.tasks.filter(x=>x.id!==tid);
+    db.plans = db.plans.filter(pl => !(pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid));
+    save(); render(); toast('已删除');
+  });
+}
 function quickTask(pid,el){
   const v = el.value.trim(); if(!v) return;
   const priWrap = el.parentElement;
-  const priEl = priWrap.querySelector('.task-pri-select');
+  const priEl = priWrap.querySelector('input[type=hidden]');
   const pri = priEl ? priEl.value : 'P2';
   const sun = priWrap.querySelector('.task-sun-btn');
   const today = sun ? sun.classList.contains('on') : false;
@@ -3549,7 +3586,7 @@ function gratSection(sec, title, req, max, items){
   h += '</div>';
   if(isTask){
     h += '<div class="grat-add grat-task-add">'
-      +   '<select id="grit_pri_'+sec+'" class="task-pri-select" title="优先级"><option value="P0">P0</option><option value="P1">P1</option><option value="P2" selected>P2</option><option value="P3">P3</option></select>'
+      +   priChips('grit_pri_'+sec, 'P2')
       +   '<button id="grit_sun_'+sec+'" class="task-sun-btn" title="今日必须完成" onclick="this.classList.toggle(\'on\')">'+ico('sun',16)+'</button>'
       +   '<input id="grit_'+sec+'" placeholder="'+(max?('添加一条（最多 '+max+' 件）'):'添加一条')+'">'
       +   '<button class="btn sm" onclick="gratAddItem(\''+sec+'\')">'+ico('plus',15)+'</button></div>';
@@ -3764,7 +3801,7 @@ let pomo = {
   endAt:0, timer:null, lastSec:-1, secTick:0,
   interrupts:[]
 };
-let pomoCfg = { minutes:25, sound:true, links:[] };
+let pomoCfg = { minutes:25, sound:true, links:[], note:'' };
 
 /* ---- 声音：Web Audio 合成机械滴答 ---- */
 let _AC = null, _tickBuf = {};
@@ -3864,6 +3901,9 @@ function pomoLinkLabel(type, id){
 function pomoTypeName(t){
   return { goal:'目标', task:'任务', plan:'计划', project:'项目' }[t] || '专注';
 }
+function pomoTypeColor(t){
+  return { goal:'var(--accent)', task:'var(--blue)', plan:'var(--green)', project:'var(--orange)' }[t] || 'var(--accent2)';
+}
 function pomoLinkParse(raw){ const i = raw.indexOf('|'); return { type: raw.slice(0,i), id: raw.slice(i+1) }; }
 function setPomoLink(){} // 占位，保留兼容
 function addPomoLink(){
@@ -3883,7 +3923,11 @@ function curPomoLabels(){
 function curPomoLabel(){ return curPomoLabels().join(' · '); }
 function linkBadge(idx, l){
   const lab = pomoLinkLabel(l.type, l.id);
-  return '<span class="plk"><i>'+pomoTypeName(l.type)+'</i>'+esc(lab||'未命名')+'<b onclick="removePomoLink('+idx+')">×</b></span>';
+  return '<span class="plk" style="--tc:'+pomoTypeColor(l.type)+'">'
+    + '<span class="plk-dot"></span>'
+    + '<span class="plk-type">'+pomoTypeName(l.type)+'</span>'
+    + '<span class="plk-name" title="'+esc(lab||'未命名')+'">'+esc(lab||'未命名')+'</span>'
+    + '<span class="plk-x" onclick="removePomoLink('+idx+')">'+ico('del',12)+'</span></span>';
 }
 
 /* ============================================================
@@ -4376,11 +4420,12 @@ function abortPomo(){
     const links = pomoCfg.links.map(l=>({ type:l.type, id:l.id }));
     db.pomos.unshift({
       id: uid(), date: d2s(now), at: at, min: pomoCfg.minutes, actualMin: actualMin,
-      links: links, label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: '',
+      links: links, label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: pomoCfg.note || '',
       interrupts: pomo.interrupts || [], aborted: true
     });
     save();
     pomo.interrupts = [];
+    pomoCfg.note = '';
     pomo.remain = pomoCfg.minutes*60;
     pomo.total = pomoCfg.minutes*60;
     render();
@@ -4411,11 +4456,12 @@ function finishPomo(){
   db.pomos.unshift({
     id: uid(), date: d2s(now), at: at, min: pomoCfg.minutes, actualMin: pomoCfg.minutes,
     links: links,
-    label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: '',
+    label: links.map(l=>pomoLinkLabel(l.type,l.id)).join(' · '), note: pomoCfg.note || '',
     interrupts: pomo.interrupts || [], aborted: false
   });
   save();
   pomo.interrupts = [];
+  pomoCfg.note = '';
   pomo.remain = pomoCfg.minutes*60;
   pomo.total = pomoCfg.minutes*60;
   render();
@@ -4423,6 +4469,13 @@ function finishPomo(){
   toast('番茄完成！' + (lab ? '「'+lab+'」+1' : '专注 '+pomoCfg.minutes+' 分钟'));
 }
 function delPomo(id){ db.pomos = db.pomos.filter(x=>x.id!==id); save(); render(); toast('已删除'); }
+function editPomoNote(id){
+  const p = db.pomos.find(x=>x.id===id); if(!p) return;
+  openModal('编辑专注备注', '<div class="field"><label>这次做了什么</label><textarea id="pn_'+id+'" rows="3">'+esc(p.note||'')+'</textarea></div>', [
+    { t:'取消', cls:'btn', fn:closeModal },
+    { t:'保存', cls:'btn primary', fn:()=>{ p.note = ($('pn_'+id)||{}).value.trim(); save(); closeModal(); render(); toast('备注已保存'); } }
+  ]);
+}
 function logInterrupt(reason){
   if(!pomo.running) return;
   pomo.interrupts = pomo.interrupts || [];
@@ -4538,10 +4591,13 @@ function viewPomo(){
   }
   h += '</div>';
 
-  h += '<div class="pomo-link-row"><div class="lb">'+ico('link',14)+' 这个番茄用来推进（可关联多个）</div>'
-    + '<div class="plk-list">'+(pomoCfg.links.length ? pomoCfg.links.map((l,i)=>linkBadge(i,l)).join('') : '<span class="plk-empty">还没关联任何目标 / 任务 / 项目</span>')+'</div>'
+  h += '<div class="pomo-link-row"><div class="lb">'+ico('link',14)+' 关联目标 / 任务 / 项目</div>'
+    + '<div class="plk-list">'+(pomoCfg.links.length ? pomoCfg.links.map((l,i)=>linkBadge(i,l)).join('') : '<span class="plk-empty">还没关联任何对象</span>')+'</div>'
     + '<div class="plk-add">'+dd('dd_pomoLink','pomoLink', pomoLinkOptions(), 'none|', ()=>{})+'<button class="btn sm" onclick="addPomoLink()">'+ico('plus',14)+'关联</button></div>'
     + '</div>';
+
+  h += '<div class="pomo-note-row"><div class="lb">'+ico('edit',14)+' 这次专注做了什么（选填）</div>'
+    + '<input id="pomoNote" placeholder="写一句话，结束时自动保存" value="'+esc(pomoCfg.note||'')+'" oninput="pomoCfg.note=this.value"></div>';
 
   // 中断记录
   h += '<div class="pomo-interrupt">';
@@ -4573,6 +4629,8 @@ function viewRecords(){
 
 let POMO_RANGE = 7; // 7 or 30
 function setPomoRange(n){ POMO_RANGE = n; render(); }
+let pomoHeatMode = 'week'; // 'week' | 'month'
+function setPomoHeatMode(m){ pomoHeatMode = m; render(); }
 
 function pomoDateSeries(days){
   const arr = [];
@@ -4653,8 +4711,10 @@ function pomoDashboard(){
   h += '</div>';
 
   // 热力图
-  h += '<div class="card" style="margin-top:16px"><div class="card-h"><h3>时间热力图</h3><span style="font-size:12px;color:var(--muted)">色块深浅代表专注程度 · 一眼看清「晨型人」还是「夜猫子」</span></div>'
-    + pomoHeatmap() + '</div>';
+  h += '<div class="card" style="margin-top:16px"><div class="card-h"><h3>时间热力图</h3>'
+    + '<div class="r"><button class="btn xs'+(pomoHeatMode==='week'?' on':'')+'" onclick="setPomoHeatMode(\'week\')">周</button>'
+    + '<button class="btn xs'+(pomoHeatMode==='month'?' on':'')+'" onclick="setPomoHeatMode(\'month\')">月</button></div></div>'
+    + (pomoHeatMode==='week'?pomoHeatmapWeek():pomoHeatmapMonth()) + '</div>';
 
   h += '</div>';
   return h;
@@ -4771,30 +4831,72 @@ function pomoPieTip(reason){
   };
   toast(tips[reason] || '找到规律，下次就能提前规避。');
 }
-function pomoHeatmap(){
-  const hours = [];
-  for(let h=0;h<24;h++) hours.push(String(h).padStart(2,'0'));
-  const days = ['周一','周二','周三','周四','周五','周六','周日'];
+function heatOp(v, max){ return Math.max(0.08, Math.min(1, v / Math.max(1, max))); }
+function weekStart(d){
+  const x = new Date(d); x.setHours(0,0,0,0);
+  const dow = (x.getDay()+6)%7; // Mon=0
+  x.setDate(x.getDate()-dow); return x;
+}
+function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function fmtShortMD(d){ return (d.getMonth()+1)+'/'+d.getDate(); }
+function pomoHeatmapWeek(){
+  const start = weekStart(new Date());
+  const dayNames = ['周一','周二','周三','周四','周五','周六','周日'];
+  const days = [];
+  for(let i=0;i<7;i++){ days.push(addDays(start,i)); }
   const grid = {};
+  const end = addDays(start,7);
   db.pomos.filter(p => !p.aborted).forEach(p => {
-    const h = (p.at||'').slice(0,2); if(!h) return;
-    const d = new Date(p.date); const dow = (d.getDay() + 6) % 7; // Mon=0
-    const k = dow+'_'+h;
+    const pd = new Date(p.date);
+    if(pd < start || pd >= end) return;
+    const hr = (p.at||'').slice(0,2); if(!hr) return;
+    const k = p.date+'_'+hr;
     grid[k] = (grid[k]||0) + (p.actualMin||p.min||25);
   });
   const max = Math.max(1, ...Object.values(grid));
-  const op = v => Math.max(0.08, Math.min(1, v / max));
   let h = '<div class="pd-heat-wrap"><div class="pd-heat">';
-  h += '<div class="pd-heat-row"><span class="pd-heat-corner"></span>' + days.map(d=>'<span class="pd-heat-day">'+d+'</span>').join('') + '</div>';
-  hours.forEach(hr=>{
-    h += '<div class="pd-heat-row"><span class="pd-heat-hour">'+hr+':00</span>';
-    days.forEach((_,dow)=>{
-      const v = grid[dow+'_'+hr] || 0;
-      h += '<span class="pd-heat-cell'+(v?' on':'')+'" style="--ho:'+op(v)+';background:rgba(224,163,184,'+op(v)+')" title="'+days[dow]+' '+hr+':00 · '+v+' 分钟"></span>';
+  h += '<div class="pd-heat-row"><span class="pd-heat-corner"></span>' + days.map((d,i)=>'<span class="pd-heat-day">'+fmtShortMD(d)+'<br>'+dayNames[i]+'</span>').join('') + '</div>';
+  for(let hr=0; hr<24; hr++){
+    const hrS = String(hr).padStart(2,'0');
+    h += '<div class="pd-heat-row"><span class="pd-heat-hour">'+hrS+':00</span>';
+    days.forEach(d=>{
+      const ds = d2s(d);
+      const v = grid[ds+'_'+hrS] || 0;
+      h += '<span class="pd-heat-cell'+(v?' on':'')+'" style="--ho:'+heatOp(v,max)+';background:rgba(224,163,184,'+heatOp(v,max)+')" title="'+ds+' '+hrS+':00 · '+v+' 分钟"></span>';
+    });
+    h += '</div>';
+  }
+  h += '</div></div>';
+  return h;
+}
+function pomoHeatmapMonth(){
+  const [y,m] = TODAY.split('-').map(Number);
+  const first = new Date(y, m-1, 1), last = new Date(y, m, 0);
+  let cur = weekStart(first);
+  const weeks = [];
+  while(weeks.length < 6 && cur <= last){
+    const w = []; for(let i=0;i<7;i++){ w.push(new Date(cur)); cur = addDays(cur,1); }
+    weeks.push(w);
+  }
+  const mins = {};
+  db.pomos.filter(p => !p.aborted).forEach(p => {
+    mins[p.date] = (mins[p.date]||0) + (p.actualMin||p.min||25);
+  });
+  const max = Math.max(1, ...Object.values(mins));
+  const dayNames = ['日','一','二','三','四','五','六'];
+  let h = '<div class="pd-heat-month">';
+  h += '<div class="pd-month-h">' + dayNames.map(d=>'<span>'+d+'</span>').join('') + '</div>';
+  weeks.forEach(w => {
+    h += '<div class="pd-month-row">';
+    w.forEach(d => {
+      const ds = d2s(d), inMonth = d.getMonth()+1 === m;
+      const v = inMonth ? (mins[ds]||0) : 0;
+      h += '<div class="pd-month-cell'+(inMonth?' in':'')+(v?' on':'')+'" style="--ho:'+heatOp(v,max)+';background:'+(inMonth?'rgba(224,163,184,'+heatOp(v,max)+')':'var(--surface2)')+'" title="'+ds+' · '+v+' 分钟">'
+        + '<span class="pd-month-d">'+(inMonth?d.getDate():'')+'</span></div>';
     });
     h += '</div>';
   });
-  h += '</div></div>';
+  h += '</div>';
   return h;
 }
 function pomoRecordList(){
@@ -4823,7 +4925,8 @@ function pomoRecordList(){
           +   (intN ? '<i class="int">'+ico('zap',11)+' '+intN+' 次干扰</i>' : '')
           + '</span>'
           + '<span class="mn">'+(p.actualMin||p.min||25)+'′</span>'
-          + '<span class="gx" onclick="delPomo(\''+p.id+'\')">'+ico('del',13)+'</span></div>';
+          + '<span class="gx" title="编辑备注" onclick="editPomoNote(\''+p.id+'\')">'+ico('edit',12)+'</span>'
+          + '<span class="gx" title="删除" onclick="delPomo(\''+p.id+'\')">'+ico('del',13)+'</span></div>';
       });
     });
   }
