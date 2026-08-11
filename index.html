@@ -360,35 +360,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .idea-add-card .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .idea-add-card .filters .chip{background:var(--surface)}
 .idea-add-card .filters .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-.idea-timeline{position:relative;padding-left:26px}
-.idea-timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:var(--surface3)}
-.idea-group{position:relative;margin-bottom:28px}
-.idea-dot{position:absolute;left:-19px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--accent);box-shadow:0 0 0 3px var(--bg)}
-.idea-month{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:12px;letter-spacing:.5px}
-.idea-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-@media(max-width:1100px){.idea-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:860px){.idea-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.idea-grid{grid-template-columns:1fr}}
-.idea-note{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;position:relative;transition:.2s;box-shadow:var(--shadow);border-top:3px solid var(--accent)}
-.idea-note:nth-child(4n+2){border-top-color:var(--cyan)}
-.idea-note:nth-child(4n+3){border-top-color:var(--orange)}
-.idea-note:nth-child(4n+4){border-top-color:var(--green)}
-.idea-note.done{opacity:.6;background:var(--surface2);border-color:var(--border)}
-.idea-note:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(120,105,90,.12);border-color:var(--border2)}
-.idea-note-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.idea-note-tag{margin-right:auto}
-.idea-note-text{font-size:14.2px;line-height:1.7;word-break:break-word;margin:0 0 14px;color:var(--text)}
-.idea-note.done .idea-note-text{text-decoration:line-through;color:var(--text2)}
-.idea-note-foot{display:flex;align-items:center;gap:8px}
-.idea-actions{position:static;opacity:1;display:flex;gap:4px}
-.idea-note.sel{grid-column:1 / -1;padding:22px 24px;border-color:var(--accent2);box-shadow:0 0 0 2px rgba(224,163,184,.4),0 14px 34px rgba(120,105,90,.16);transform:none}
-.idea-note.sel .idea-note-text{font-size:16.5px;line-height:1.85}
-@media(max-width:768px){.idea-actions{opacity:1}}
-/* 灵感库：小红书式多列瀑布流 */
 .idea-in{width:100%;flex:1 1 220px;resize:vertical;min-height:46px;font-size:14.5px !important;line-height:1.5;padding:12px 14px !important;font-family:inherit;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);transition:.16s}
 .idea-in:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
-.idea-masonry{columns:3 240px;column-gap:14px;margin-top:4px}
+
+/* 灵感库：按日期分组的时间轴瀑布流 */
+.idea-timeline{display:flex;flex-direction:column;gap:28px}
+.idea-day-group{display:flex;flex-direction:column;gap:12px}
+.idea-day-title{font-size:15px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.idea-day-title::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.idea-masonry{columns:4 220px;column-gap:14px}
 .idea-card{break-inside:avoid;display:inline-block;width:100%;margin:0 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:15px 15px 13px;box-shadow:var(--shadow);border-top:3px solid var(--accent);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative}
 .idea-card:nth-child(4n+2){border-top-color:var(--cyan)}
 .idea-card:nth-child(4n+3){border-top-color:var(--orange)}
@@ -401,7 +381,11 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .idea-card-top{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .idea-card-text{font-size:14.2px;line-height:1.7;word-break:break-word;margin:0 0 12px;color:var(--text);white-space:pre-wrap}
 .idea-card-foot{display:flex;align-items:center;gap:8px}
-@media(max-width:768px){.idea-masonry{columns:2 150px;column-gap:10px}.idea-card:hover{transform:none}}
+.idea-actions{position:static;opacity:1;display:flex;gap:4px}
+@media(max-width:1100px){.idea-masonry{columns:3 200px}}
+@media(max-width:860px){.idea-masonry{columns:2 180px}}
+@media(max-width:520px){.idea-masonry{columns:1}}
+@media(max-width:768px){.idea-masonry{column-gap:10px}.idea-card:hover{transform:none}}
 .btn-done{padding:5px 11px;border-radius:5px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text2);background:var(--surface3);transition:.16s}
 .btn-done:hover{border-color:var(--green);color:#5f7d5a}
 .btn-done.on{background:var(--green-soft);border-color:rgba(148,176,142,.35);color:#5f7d5a}
@@ -609,14 +593,14 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .pomo-top .pomo-timer{max-width:none}
 .pomo-top-right .grid.g2{gap:12px;height:100%}
 .pomo-top-right .grid.g2>.stat{height:100%}
-.pomo-timer-body{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:14px;align-items:stretch;flex:1;min-height:0}
+.pomo-timer-body{display:grid;grid-template-columns:minmax(180px,1fr) minmax(300px,1.45fr);gap:14px;align-items:stretch;flex:1;min-height:0}
 .pomo-timer-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:4px 0}
 .pomo-timer-right{display:flex;flex-direction:column;justify-content:flex-start;gap:10px;min-width:0;overflow-y:auto;max-height:100%;height:100%;padding-right:4px}
 .pomo-timer-right .pomo-interrupt{margin-top:0;flex-shrink:0}
 .pomo-timer-right .plk-name{max-width:160px}
 .pomo-side-block{display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;flex-shrink:0}
 .pomo-side-block .lb{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:5px}
-.pomo-scroll{max-height:118px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+.pomo-scroll{max-height:142px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
 .pomo-records-list .prk{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text)}
 .prk-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prk-x{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:.14s;flex-shrink:0}
@@ -694,18 +678,25 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   border:1px solid var(--border);font-size:13.5px;color:var(--text2);min-height:40px;white-space:nowrap}
 .daily-sub button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
 
-.plan-zone{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:15px 15px 13px;margin-bottom:14px;transition:.16s;min-height:120px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(120,105,90,.04)}
+.plan-layout{display:grid;grid-template-columns:minmax(280px,1fr) minmax(420px,1.8fr);gap:16px;align-items:stretch;margin-bottom:18px;min-height:0}
+.plan-must-col{display:flex;flex-direction:column;min-height:0}
+.plan-must-col .plan-zone{flex:1;display:flex;flex-direction:column;min-height:0;margin-bottom:0}
+.plan-quadrant-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;min-height:0}
+.plan-quadrant-grid .plan-zone{display:flex;flex-direction:column;min-height:0;margin-bottom:0}
+.plan-zone{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;transition:.16s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(120,105,90,.04)}
 .plan-zone::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--zc,var(--border2))}
 .plan-zone.dragover{border-color:var(--accent);background:var(--accent-soft)}
-.plan-zone-h{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;margin-bottom:10px;color:var(--text)}
+.plan-zone-h{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;margin-bottom:10px;color:var(--text);flex-shrink:0}
 .plan-zone-h .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .plan-zone-h .cnt{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
-.plan-zone-add{display:flex;gap:6px;margin-bottom:10px}
+.plan-zone-add{display:flex;gap:6px;margin-bottom:8px;flex-shrink:0}
 .plan-zone-add input{flex:1;min-width:0;padding:8px 11px;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:14px;outline:none;color:var(--text)}
 .plan-zone-add .btn{padding:7px 10px;min-height:36px}
-.plan-zone-empty{font-size:12px;color:var(--muted);text-align:center;padding:16px 0}
+.plan-zone-empty{font-size:12px;color:var(--muted);text-align:center;padding:12px 0;flex-shrink:0}
+.plan-zone-body{flex:1;overflow-y:auto;min-height:0;padding-right:4px}
 .plan-ops{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .plan-ops .iconbtn{width:30px;height:30px;border-radius:6px}
+.plan-cat-dot{font-size:10px;font-weight:700;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cc);color:#fff;cursor:default;flex-shrink:0}
 .plan-sun{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:.15s}
 .plan-sun:hover{color:var(--red);background:var(--red-soft)}
 .plan-sun.on{color:var(--red);background:rgba(207,155,148,.16)}
@@ -908,7 +899,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .hamburger svg{display:block}
 .nav-overlay{display:none;position:fixed;inset:0;background:rgba(60,40,50,.38);z-index:75;opacity:0;transition:opacity .2s}
 .nav-overlay.open{display:block;opacity:1}
-@media(max-width:1024px){.plan-grid{grid-template-columns:1fr}}
+@media(max-width:1024px){.plan-grid{grid-template-columns:1fr}.plan-layout{grid-template-columns:1fr}.plan-must-col{min-height:auto}.plan-zone-body{max-height:360px}}
 @media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
 @media(max-width:768px){
   .sidebar{display:none}
@@ -963,7 +954,6 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .inc-row .inc-date{grid-column:1/-1;margin-bottom:-4px}
   .stat .v{font-size:21px}
   .g4.stats{grid-template-columns:repeat(2,1fr);gap:10px}
-  .idea-grid{grid-template-columns:1fr}
   .goal-head{flex-direction:column;gap:10px}
   .idea-actions{opacity:1}
 }
@@ -1239,7 +1229,7 @@ function seedDB(){
       { id:uid(), title:'个人财务与理财入门', content:'《小狗钱钱》读书笔记：先存钱再花钱，比什么理财技巧都重要。\n\n指数基金定投的底层逻辑是相信长期国运，不择时。', tags:['通识','理财'], created:off(-60), createdAt:off(-60)+' 22:05', duration:20 }
     ],
     projects:[
-      { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8), imp:true, urg:true, today:true, planCat:'must',
+      { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8), imp:true, urg:true, today:true, planCat:'q1',
         tasks:[
           { id:uid(), title:'确定模块清单与优先级', pri:'P0', done:true, today:false, abandoned:false },
           { id:TID0, title:'完成五大模块原型', pri:'P0', done:false, today:true, abandoned:false },
@@ -1278,14 +1268,14 @@ function seedDB(){
       { id:uid(), date:off(-64), amount:18000, source:'公司薪资', cat:'主业', note:'6 月工资' }
     ],
     plans:[
-      { id:uid(), cat:'must', text:'完成工作台配色改版', date:TODAY, done:false, created:TODAY },
-      { id:uid(), cat:'must', text:'给妈妈回个电话', date:TODAY, done:true, doneAt:TODAY, created:TODAY },
+      { id:uid(), cat:'q2', must:true, text:'完成工作台配色改版', date:TODAY, done:false, created:TODAY },
+      { id:uid(), cat:'q2', must:true, text:'给妈妈回个电话', date:TODAY, done:true, doneAt:TODAY, created:TODAY },
       { id:uid(), cat:'q1', text:'处理账单逾期提醒', date:TODAY, done:false, created:TODAY },
       { id:uid(), cat:'q2', text:'读完《认知觉醒》第 4 章', date:TODAY, done:true, doneAt:TODAY, created:TODAY },
       { id:uid(), cat:'q3', text:'回复不重要的群消息', date:TODAY, done:false, created:TODAY },
       { id:uid(), cat:'q4', text:'刷一会儿短视频放松', date:TODAY, done:false, created:TODAY },
       { id:uid(), cat:'q2', text:'整理本月信用卡账单', date:off(-2), done:false, created:off(-2) },
-      { id:uid(), cat:'must', text:'晨跑 5 公里', date:off(-1), done:true, doneAt:off(-1), created:off(-1) }
+      { id:uid(), cat:'q2', must:true, text:'晨跑 5 公里', date:off(-1), done:true, doneAt:off(-1), created:off(-1) }
     ],
     reviews:[
       { id:uid(), title:'本周工作台迭代复盘', type:'daily', time:off(-1), fields:{ keep:['一次性大改比零敲碎打更省心'], improve:['改之前把数据结构想清楚'], stop:['临时加需求'], start:['先画结构再写代码'] }, content:'', created:off(-1) },
@@ -1457,12 +1447,20 @@ function migrateData(d){
     if(p.urg == null) p.urg = false;
     if(p.today == null) p.today = false;
     if(p.planCat == null) p.planCat = projectPlanCat(p);
+    // 旧版 planCat:'must' 已不存在，按重要性重新归类
+    if(p.planCat === 'must') p.planCat = projectPlanCat(p);
   });
   if(!d.plans) d.plans = [];
   if(Array.isArray(d.plans)) d.plans.forEach(p=>{
     if(p.sourceType == null) p.sourceType = '';
     if(p.sourceId == null) p.sourceId = '';
     if(p.sourceSub == null) p.sourceSub = '';
+    // 今日必做从 cat 中独立出来
+    if(p.must == null){
+      if(p.cat === 'must'){ p.must = true; p.cat = p.originCat || 'q2'; delete p.originCat; }
+      else { p.must = false; }
+    }
+    if(!p.cat || p.cat === 'must') p.cat = 'q2';
   });
   if(!d.reviews) d.reviews = [];
   if(Array.isArray(d.reviews)) d.reviews.forEach(r=>{
@@ -1509,7 +1507,6 @@ function migrateData(d){
   return d;
 }
 function projectPlanCat(p){
-  if(p.today) return 'must';
   if(p.imp && p.urg) return 'q1';
   if(p.imp) return 'q2';
   if(p.urg) return 'q3';
@@ -2117,27 +2114,19 @@ function viewIdeas(){
 
   if(!list.length) return h + emptyBox('这里还是空的，想法不记下来就跑掉了');
 
-  if(ideaMobile()){
-    // 移动端：瀑布流（保持原布局）
-    h += '<div class="idea-masonry">';
-    list.forEach(i => { h += ideaCard(i); });
-    h += '</div>';
-  } else {
-    // 桌面端：时间轴 + 4 列纵向卡片组
-    const groups = {};
-    list.forEach(i => { const m = (i.created||'').slice(0,7); (groups[m] = groups[m] || []).push(i); });
-    const months = Object.keys(groups).sort().reverse();
-    h += '<div class="idea-timeline">';
-    months.forEach(m => {
-      h += '<div class="idea-group">'
-        + '<div class="idea-dot"></div>'
-        + '<div class="idea-month">'+m+' · '+groups[m].length+' 条</div>'
-        + '<div class="idea-grid">';
-      groups[m].forEach(i => { h += ideaCard(i); });
-      h += '</div></div>';
-    });
-    h += '</div>';
-  }
+  // 按日期分组的时间轴瀑布流
+  const groups = {};
+  list.forEach(i => { const d = i.created || TODAY; (groups[d] = groups[d] || []).push(i); });
+  const dates = Object.keys(groups).sort().reverse();
+  h += '<div class="idea-timeline">';
+  dates.forEach(d => {
+    h += '<div class="idea-day-group">'
+      + '<div class="idea-day-title">'+d.slice(0,4)+'年'+fmtMD(d)+'</div>'
+      + '<div class="idea-masonry">';
+    groups[d].forEach(i => { h += ideaCard(i); });
+    h += '</div></div>';
+  });
+  h += '</div>';
   return h;
 }
 function chip(k,label){ return '<button class="chip'+(route.filter===k?' on':'')+'" onclick="setFilter(\''+k+'\')">'+esc(label)+'</button>'; }
@@ -2407,7 +2396,7 @@ function editProject(id){
     { k:'status', l:'状态', t:'select', opts:['进行中','待启动','暂停','已完成'] },
     { k:'desc', l:'一句话说清这个项目要干嘛', t:'textarea' },
     { k:'created', l:'创建日期', t:'date' },
-    { k:'planCat', l:'关联计划象限（可选）', t:'select', opts:[['','不关联'],['must','今日必须完成'],['q1','重要且紧急'],['q2','重要不紧急'],['q3','紧急不重要'],['q4','不紧急不重要']] }
+    { k:'planCat', l:'关联计划象限（可选）', t:'select', opts:[['','不关联'],['q1','重要且紧急'],['q2','重要不紧急'],['q3','紧急不重要'],['q4','不紧急不重要']] }
   ], p || { status:'进行中', created:TODAY, planCat:'' }, v => {
     if(p) Object.assign(p,v);
     else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, planCat:v.planCat||'', tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
@@ -2442,12 +2431,12 @@ function syncProjectTaskToPlan(pid,tid){
   const idx = db.plans.findIndex(pl => pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid);
   // 已完成或已放弃：移除计划看板中的关联项
   if(t.done || t.abandoned){ if(idx>=0){ db.plans.splice(idx,1); save(); } return; }
-  const cat = t.today ? 'must' : priToCat(t.pri);
+  const cat = priToCat(t.pri);
   if(idx>=0){
     const pl = db.plans[idx];
-    pl.text = t.title; pl.cat = cat; pl.date = TODAY;
+    pl.text = t.title; pl.cat = cat; pl.must = !!t.today; pl.date = TODAY;
   }else{
-    db.plans.unshift({ id:uid(), cat, text:t.title, date:TODAY, done:false, created:TODAY, sourceType:'project', sourceId:pid, sourceSub:tid });
+    db.plans.unshift({ id:uid(), cat, must:!!t.today, text:t.title, date:TODAY, done:false, created:TODAY, sourceType:'project', sourceId:pid, sourceSub:tid });
   }
   save();
 }
@@ -2456,7 +2445,7 @@ function taskToPlan(pid, tid){
   if(t.done || t.abandoned){ toast('已完成/放弃的任务不再加入计划'); return; }
   const idx = db.plans.findIndex(pl => pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid);
   if(idx>=0){ toast('这条任务已经在计划看板里了'); return; }
-  db.plans.unshift({ id:uid(), cat:priToCat(t.pri), text:t.title, date:TODAY, done:false, created:TODAY, sourceType:'project', sourceId:pid, sourceSub:tid });
+  db.plans.unshift({ id:uid(), cat:priToCat(t.pri), must:!!t.today, text:t.title, date:TODAY, done:false, created:TODAY, sourceType:'project', sourceId:pid, sourceSub:tid });
   save(); render(); toast('已加入计划看板（'+PLAN_CATS.find(c=>c.k===priToCat(t.pri)).n+'）');
 }
 function toggleTaskToday(pid,tid){
@@ -3127,7 +3116,6 @@ function emptyBox(txt){
    模块 6：计划
 ============================================================ */
 const PLAN_CATS = [
-  { k:'must', n:'今日必须完成', color:'var(--red)',  desc:'今天无论如何都要做完' },
   { k:'q1',   n:'重要且紧急',   color:'var(--red)',  desc:'立刻做' },
   { k:'q2',   n:'重要不紧急',   color:'var(--green)',desc:'排期做，别拖' },
   { k:'q3',   n:'紧急不重要',   color:'var(--blue)', desc:'能委托就委托' },
@@ -3147,22 +3135,18 @@ function viewPlan(){
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
     + stat('累计完成', doneAll.length, '条') + stat('逾期率', rate, '%') + '</div>';
 
-  // 顶部：今日必须完成（横跨整行）
-  h += '<div class="pr-must">';
-  h += planZone('must', all.filter(p=>p.cat==='must'), true);
-  h += '</div>';
-
-  // 四象限矩阵
-  h += '<div class="plan-grid">';
+  // 新布局：左侧今日必须完成（大列） + 右侧 2×2 四象限
+  h += '<div class="plan-layout">';
+  h += '<div class="plan-must-col">' + planZone('must', all.filter(p=>p.must), true) + '</div>';
+  h += '<div class="plan-quadrant-grid">';
   ['q1','q2','q3','q4'].forEach(k=>{ h += planZone(k, all.filter(p=>p.cat===k), false); });
-  h += '</div>';
+  h += '</div></div>';
 
   // 关联项目（按计划四象限归类，点击进入项目）
   if(db.projects.length){
     h += '<div class="card"><div class="card-h"><h3>关联项目</h3><span class="tag" style="margin-left:8px">按计划象限归类</span></div>';
-    ['must','q1','q2','q3','q4'].forEach(cat=>{
-      const ps = db.projects.filter(p=>p.planCat===cat); if(!ps.length) return;
-      const c = PLAN_CATS.find(x=>x.k===cat);
+    PLAN_CATS.forEach(c=>{
+      const ps = db.projects.filter(p=>p.planCat===c.k); if(!ps.length) return;
       h += '<div class="lp-row"><span class="dot" style="background:'+c.color+'"></span><b>'+esc(c.n)+'</b><span class="lp-n">'+ps.length+' 个</span></div>';
       ps.forEach(p=>{
         const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
@@ -3201,8 +3185,8 @@ function viewPlan(){
 }
 
 function planZone(cat, items, full){
-  const c = PLAN_CATS.find(x=>x.k===cat);
   const isMust = cat === 'must';
+  const c = isMust ? { k:'must', n:'今日必须完成的', color:'var(--red)', desc:'今天无论如何都要做完' } : PLAN_CATS.find(x=>x.k===cat);
   let h = '<div class="plan-zone'+(isMust?' must':'')+'" style="--zc:'+c.color+'" data-cat="'+cat+'" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropPlan(event,\''+cat+'\')">';
   h += '<div class="plan-zone-h">';
   if(isMust) h += '<span class="must-flag">'+ico('flag',13)+'</span>';
@@ -3215,24 +3199,29 @@ function planZone(cat, items, full){
       + '<button class="btn sm primary" onclick="addPlan(\''+cat+'\')">'+ico('plus',14)+'</button></div>';
   }
 
-  if(!items.length) h += '<div class="plan-zone-empty">'+(isMust?'从右侧四象限点亮小太阳，把任务提升过来':c.desc)+'</div>';
-  items.forEach(p=>{
-    const isLinked = p.sourceType === 'project' || p.sourceType === 'gratitude';
-    const isSunOn = p.cat === 'must';
-    h += '<div class="plan'+(p.done?' done':'')+'" draggable="true" ondragstart="dragPlan(event,\''+p.id+'\')">'
-      + '<div class="plan-check'+(p.done?' done':'')+'" onclick="togglePlan(\''+p.id+'\')">'+(p.done?ico('check',12,3):'')+'</div>'
-      + '<div class="plan-t">'+esc(p.text)
-      + (p.sourceType ? '<span class="plan-src src-'+p.sourceType+'">'+(p.sourceType==='project'?'项目':p.sourceType==='gratitude'?'感恩':'')+'</span>' : '')
-      + (p.sourceProject ? '<span class="plan-src proj-tag">'+ico('proj',11)+esc((db.projects.find(x=>x.id===p.sourceProject)||{}).name||'项目')+'</span>' : '')
-      + '</div>'
-      + '<div class="plan-ops">'
-      +   '<button class="iconbtn plan-sun'+(isSunOn?' on':'')+'" title="'+(isSunOn?'今日必须完成':'设为今日必须完成')+'" onclick="togglePlanSun(\''+p.id+'\')">'+ico('sun',14)+'</button>'
-      +   (isLinked ? '' : '<button class="iconbtn del" title="删除" onclick="delPlan(\''+p.id+'\')">'+ico('del',14)+'</button>')
-      + '</div>'
-      + '</div>';
-  });
+  h += '<div class="plan-zone-body">';
+  if(!items.length) h += '<div class="plan-zone-empty">'+(isMust?'从右侧点亮小太阳，把任务提升过来':c.desc)+'</div>';
+  items.forEach(p=>{ h += planItemHTML(p); });
+  h += '</div>';
   h += '</div>';
   return h;
+}
+
+function planItemHTML(p){
+  const catInfo = PLAN_CATS.find(x=>x.k===p.cat) || PLAN_CATS[1];
+  const isLinked = p.sourceType === 'project' || p.sourceType === 'gratitude';
+  return '<div class="plan'+(p.done?' done':'')+'" draggable="true" ondragstart="dragPlan(event,\''+p.id+'\')">'
+    + '<div class="plan-check'+(p.done?' done':'')+'" onclick="togglePlan(\''+p.id+'\')">'+(p.done?ico('check',12,3):'')+'</div>'
+    + '<div class="plan-t">'+esc(p.text)
+    + (p.sourceType ? '<span class="plan-src src-'+p.sourceType+'">'+(p.sourceType==='project'?'项目':p.sourceType==='gratitude'?'感恩':'')+'</span>' : '')
+    + (p.sourceProject ? '<span class="plan-src proj-tag">'+ico('proj',11)+esc((db.projects.find(x=>x.id===p.sourceProject)||{}).name||'项目')+'</span>' : '')
+    + '</div>'
+    + '<div class="plan-ops">'
+    +   '<span class="plan-cat-dot" style="--cc:'+catInfo.color+'" title="'+catInfo.n+'">'+catInfo.k.toUpperCase()+'</span>'
+    +   '<button class="iconbtn plan-sun'+(p.must?' on':'')+'" title="'+(p.must?'今日必须完成':'设为今日必须完成')+'" onclick="togglePlanSun(\''+p.id+'\')">'+ico('sun',14)+'</button>'
+    +   (isLinked ? '' : '<button class="iconbtn del" title="删除" onclick="delPlan(\''+p.id+'\')">'+ico('del',14)+'</button>')
+    + '</div>'
+    + '</div>';
 }
 
 function dragPlan(e,id){ e.dataTransfer.setData('text/plain', id); }
@@ -3242,7 +3231,12 @@ function dropPlan(e,cat){
   e.preventDefault(); e.currentTarget.classList.remove('dragover');
   const id = e.dataTransfer.getData('text/plain');
   const p = db.plans.find(x=>x.id===id);
-  if(p && p.cat !== cat){ p.cat = cat; save(); render(); toast('已移动到「'+PLAN_CATS.find(c=>c.k===cat).n+'」'); }
+  if(!p) return;
+  if(cat === 'must'){
+    if(!p.must){ p.must = true; save(); render(); toast('已设为今日必须完成'); }
+  }else if(p.cat !== cat){
+    p.cat = cat; save(); render(); toast('已移动到「'+PLAN_CATS.find(c=>c.k===cat).n+'」');
+  }
 }
 /* 手机端没有拖拽：提供「移动到」快捷选择 */
 function movePlan(id){
@@ -3267,7 +3261,7 @@ function addPlan(cat){
   cat = cat || planAddCat || 'q1';
   const el = $('planInput_'+cat); if(!el) return;
   const t = el.value.trim(); if(!t){ el.focus(); return; }
-  db.plans.unshift({ id:uid(), cat, text:t, date:TODAY, done:false, created:TODAY });
+  db.plans.unshift({ id:uid(), cat, must:false, text:t, date:TODAY, done:false, created:TODAY });
   save(); render(); toast('已添加到「'+PLAN_CATS.find(c=>c.k===cat).n+'」');
 }
 function togglePlan(id){
@@ -3287,7 +3281,7 @@ function togglePlan(id){
 }
 function togglePlanSun(id){
   const p = db.plans.find(x=>x.id===id); if(!p) return;
-  const toMust = p.cat !== 'must';
+  const toMust = !p.must;
   // 关联任务：通过原模块的太阳状态同步
   if(p.sourceType==='project' && p.sourceId && p.sourceSub){
     const t = db.projects.find(x=>x.id===p.sourceId)?.tasks.find(x=>x.id===p.sourceSub);
@@ -3301,9 +3295,8 @@ function togglePlanSun(id){
     }
     return;
   }
-  // 普通计划项：本地切换 must / originCat
-  if(toMust){ p.originCat = p.cat; p.cat = 'must'; }
-  else { p.cat = p.originCat || 'q2'; }
+  // 普通计划项：只切换 must 字段，cat 保持不动
+  p.must = toMust;
   save(); render();
   toast(toMust?'已设为今日必须完成':'已移出今日必须完成');
 }
@@ -3787,12 +3780,12 @@ function syncGratTaskToPlan(idx){
   const proj = it.project || '';
   const planIdx = db.plans.findIndex(pl => pl.sourceType==='gratitude' && pl.sourceSub===gratView.sel && pl.text===it.text);
   if(it.done || it.abandoned){ if(planIdx>=0){ db.plans.splice(planIdx,1); save(); } return; }
-  const cat = it.today ? 'must' : priToCat(it.pri);
+  const cat = priToCat(it.pri);
   const date = nextDay(gratView.sel);
   if(planIdx>=0){
-    const pl = db.plans[planIdx]; pl.text = it.text; pl.cat = cat; pl.date = date; pl.sourceProject = proj;
+    const pl = db.plans[planIdx]; pl.text = it.text; pl.cat = cat; pl.must = !!it.today; pl.date = date; pl.sourceProject = proj;
   }else{
-    db.plans.unshift({ id:uid(), cat, text:it.text, date, done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:proj });
+    db.plans.unshift({ id:uid(), cat, must:!!it.today, text:it.text, date, done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:proj });
   }
   save();
 }
@@ -3802,7 +3795,7 @@ function gratTomorrowToPlan(idx){
   if(it.done || it.abandoned){ toast('已完成/放弃的任务不再加入计划'); return; }
   const planIdx = db.plans.findIndex(pl => pl.sourceType==='gratitude' && pl.sourceSub===gratView.sel && pl.text===it.text);
   if(planIdx>=0){ toast('这条已加入计划看板'); return; }
-  db.plans.unshift({ id:uid(), cat:priToCat(it.pri), text:it.text, date:nextDay(gratView.sel), done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:it.project||'' });
+  db.plans.unshift({ id:uid(), cat:priToCat(it.pri), must:!!it.today, text:it.text, date:nextDay(gratView.sel), done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:it.project||'' });
   save(); render(); toast('已加入明天的计划看板');
 }
 function toggleGratTask(idx){
