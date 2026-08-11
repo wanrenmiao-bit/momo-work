@@ -2942,11 +2942,9 @@ let projShowDone = false;
 function projToggleDone(){ projShowDone = !projShowDone; render(); }
 function archiveTask(pid,tid){
   const t = db.projects.find(x=>x.id===pid).tasks.find(x=>x.id===tid); if(!t) return;
-  confirmBox('归档这条任务？','归档后它将从任务列表彻底移出（不再计入进度），可在下方「已归档任务」里随时恢复。',()=>{
-    t.archived = true; t.done = false; t.today = false; t.doneAt = null;
-    db.plans = db.plans.filter(pl => !(pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid));
-    save(); render(); toast('已归档');
-  });
+  t.archived = true; t.done = false; t.today = false; t.doneAt = null;
+  db.plans = db.plans.filter(pl => !(pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid));
+  save(); render(); toast('已归档');
 }
 function unarchiveTask(pid,tid){
   const t = db.projects.find(x=>x.id===pid).tasks.find(x=>x.id===tid); if(!t) return;
@@ -4039,10 +4037,8 @@ function togglePlanSun(id){
 function delPlan(id){ db.plans=db.plans.filter(x=>x.id!==id); save(); render(); toast('已删除'); }
 function archivePlan(id){
   const p=db.plans.find(x=>x.id===id); if(!p) return;
-  confirmBox('归档这条计划？','归档后它将从四象限任务列表中彻底移出，可在下方「已归档任务」里随时恢复。',()=>{
-    p.archived = true; p.done = false; p.doneAt = '';
-    save(); render(); toast('已归档');
-  });
+  p.archived = true; p.done = false; p.doneAt = '';
+  save(); render(); toast('已归档');
 }
 function unarchivePlan(id){
   const p=db.plans.find(x=>x.id===id); if(!p) return;
