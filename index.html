@@ -102,6 +102,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   padding:9px 17px;border-radius:6px;background:var(--surface2);
   border:1px solid var(--border);color:var(--text);font-size:14px;
   min-height:42px;transition:.16s;white-space:nowrap;
+  line-height:1;text-align:center;
 }
 .btn:hover{background:var(--surface3);border-color:var(--border2)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
@@ -1128,11 +1129,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
         </button>
         <button class="btn sm" id="acctBtn" onclick="openAccount()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span id="acctLabel">登录</span>
+          <span class="dsk" id="acctLabel">登录</span>
+        </button>
+        <button class="btn sm" onclick="pushCloud(true,{force:true})" title="推送本机数据到云端">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 12V3"/><path d="M8 8l4-4 4 4"/></svg>
+          <span class="dsk">同步</span>
         </button>
         <button class="btn sm" onclick="pullCloud(true)" title="从云端拉取最新">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 12v9"/><path d="M8 16l4 4 4-4"/></svg>
-          <span class="dsk">同步</span>
+          <span class="dsk">拉取</span>
         </button>
       </div>
     </header>
@@ -1774,6 +1779,7 @@ const ICO = {
   download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/>',
   file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   reflect:'<path d="M12 3v18M4 7h16M4 17h16"/><circle cx="12" cy="12" r="2"/>',
   list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
@@ -3364,8 +3370,8 @@ function stopSyncInterval(){ if(_syncInterval){ clearInterval(_syncInterval); _s
 /* ---------- 登录 / 游客 / 账号 ---------- */
 function paintAccount(){
   const el = $('acctBtn'); if(!el) return;
-  if(SESSION.user && SKEY) el.innerHTML = ico('user',14)+'<span id="acctLabel">'+esc(SESSION.user)+'</span>';
-  else el.innerHTML = ico('user',14)+'<span id="acctLabel">登录</span>';
+  if(SESSION.user && SKEY) el.innerHTML = ico('user',14)+'<span class="dsk" id="acctLabel">'+esc(SESSION.user)+'</span>';
+  else el.innerHTML = ico('user',14)+'<span class="dsk" id="acctLabel">登录</span>';
 }
 function openLogin(){
   const isUnlock = SESSION.user && !SKEY;
