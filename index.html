@@ -508,6 +508,16 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .arch-block{margin-top:14px;border-top:1px dashed var(--border);padding-top:10px}
 .arch-h{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
 .arch-h .n{font-size:12px;background:var(--surface3);color:var(--text2);border-radius:10px;padding:1px 8px}
+/* 独立归档模块 */
+.arch-proj-group{margin-bottom:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);overflow:hidden}
+.arch-proj-h{display:flex;align-items:center;gap:8px;padding:11px 14px;font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer;background:var(--surface3);transition:.15s}
+.arch-proj-h:hover{background:var(--surface)}
+.arch-proj-list{padding:6px 14px}
+.arch-task-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)}
+.arch-task-row:first-child{border-top:none}
+.arch-task-title{flex:1;min-width:0;font-size:13.5px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arch-task-ops{display:flex;gap:2px;flex-shrink:0}
+/* 计划归档复用 .plan-arch-list 等样式 */
 .task-row.archived-row{opacity:.85}
 .plan-arch-list{margin-top:6px}
 .plan-arch-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;opacity:.9}
@@ -1947,7 +1957,8 @@ const TABS = [
   { k:'studies', n:'学习记录', i:'study', sub:'按标签筛选的笔记' },
   { k:'incomes', n:'收入记录', i:'money', sub:'每一笔都记下来源' },
   { k:'library', n:'资料库',   i:'folder', sub:'项目与学习的资料集中管理' },
-  { k:'accounts',n:'账号管理', i:'lock',  sub:'工作与生活的账号集中保管' }
+  { k:'accounts',n:'账号管理', i:'lock',  sub:'工作与生活的账号集中保管' },
+  { k:'archive', n:'归档',     i:'archive', sub:'已归档的任务统一管理' }
 ];
 const DAILY_TABS = [
   { k:'plan',      n:'计划',       i:'todo',      sub:'今日计划矩阵' },
@@ -2782,20 +2793,6 @@ function viewProjectDetail(){
     }
     h += '</div>';
   });
-  // 已归档任务列表（任务管理下面的归档区，可随时恢复）
-  const arch = p.tasks.filter(x=>x.archived);
-  if(arch.length && !isDone){
-    h += '<div class="arch-block"><div class="arch-h">'+ico('archive',15)+'已归档任务 <span class="n">'+arch.length+'</span></div>';
-    arch.forEach(x=>{
-      h += '<div class="task-row archived-row"><div class="task-title">'+esc(x.title)
-        + '<span class="task-pri '+(x.pri||'P2')+'">'+(x.pri||'P2')+'</span></div>'
-        + '<div class="ops">'
-        + '<button class="iconbtn" title="恢复任务" onclick="unarchiveTask(\''+p.id+'\',\''+x.id+'\')">'+ico('refresh',14)+'</button>'
-        + '<button class="iconbtn del" title="彻底删除" onclick="deleteTask(\''+p.id+'\',\''+x.id+'\')">'+ico('del',14)+'</button>'
-        + '</div></div>';
-    });
-    h += '</div>';
-  }
   h += '</div>';
 
   h += '<div class="project-col'+(route.projCol==='assets'?' on':'')+'">'
@@ -3855,7 +3852,6 @@ function viewPlan(){
   const overdue = open.filter(p=>p.date && p.date < TODAY).length;
   const rate = active.length ? Math.round(overdue/active.length*100) : 0;
   const rateWarn = rate > 10;
-  const archived = all.filter(p=>p.archived);
 
   let h = '<div class="grid g4 stats" style="margin-bottom:18px">'
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
@@ -3886,12 +3882,56 @@ function viewPlan(){
     });
   }
   h += '</div></div>';
+  return h;
+}
 
-  // 已归档任务
-  if(archived.length){
-    h += '<div class="card"><div class="card-h"><h3>'+ico('archive',15)+'已归档任务 <span class="n" style="font-size:12px;background:var(--surface3);color:var(--text2);border-radius:10px;padding:1px 8px;margin-left:6px">'+archived.length+'</span></h3></div>';
+/* ============================================================
+   模块 6.5：归档（独立模块）
+============================================================ */
+function viewArchive(){
+  let h = '<div class="card"><div class="card-h"><h2>'+ico('archive',18)+'归档</h2><span style="font-size:12px;color:var(--muted)">已归档的任务统一放在这里管理</span></div></div>';
+
+  // 已归档的项目任务
+  h += '<div class="card"><div class="card-h"><h3>'+ico('proj',15)+'已归档的项目任务</h3></div>';
+  const archProjects = [];
+  db.projects.forEach(p => {
+    p.tasks.filter(t => t.archived).forEach(t => archProjects.push({ p, t }));
+  });
+  if(!archProjects.length){
+    h += '<div class="empty" style="padding:18px 0">还没有归档的项目任务</div>';
+  } else {
+    // 按项目分组
+    const groups = {};
+    archProjects.forEach(item => {
+      const pid = item.p.id;
+      if(!groups[pid]) groups[pid] = { p:item.p, tasks:[] };
+      groups[pid].tasks.push(item.t);
+    });
+    Object.values(groups).forEach(g => {
+      h += '<div class="arch-proj-group">'
+        + '<div class="arch-proj-h" onclick="openProject(\''+g.p.id+'\')">'+esc(g.p.name)+'<span class="tag '+(g.p.status==='进行中'?'green':g.p.status==='已完成'?'purple':'amber')+'">'+esc(g.p.status)+'</span></div>'
+        + '<div class="arch-proj-list">';
+      g.tasks.forEach(t => {
+        h += '<div class="arch-task-row">'
+          + '<div class="arch-task-title">'+esc(t.title)+'<span class="task-pri '+esc(t.pri||'P2')+'">'+(t.pri||'P2')+'</span></div>'
+          + '<div class="arch-task-ops">'
+          +   '<button class="iconbtn" title="恢复任务" onclick="unarchiveTask(\''+g.p.id+'\',\''+t.id+'\')">'+ico('refresh',14)+'</button>'
+          +   '<button class="iconbtn del" title="彻底删除" onclick="deleteTask(\''+g.p.id+'\',\''+t.id+'\')">'+ico('del',14)+'</button>'
+          + '</div></div>';
+      });
+      h += '</div></div>';
+    });
+  }
+  h += '</div>';
+
+  // 已归档的计划任务
+  h += '<div class="card"><div class="card-h"><h3>'+ico('todo',15)+'已归档的计划任务</h3></div>';
+  const archPlans = db.plans.filter(p => p.archived);
+  if(!archPlans.length){
+    h += '<div class="empty" style="padding:18px 0">还没有归档的计划任务</div>';
+  } else {
     h += '<div class="plan-arch-list">';
-    archived.forEach(p=>{
+    archPlans.forEach(p => {
       const c = PLAN_CATS.find(x=>x.k===p.cat) || PLAN_CATS[0];
       h += '<div class="plan-arch-row">'
         + '<span class="plan-arch-text">'+esc(p.text)+'</span>'
@@ -3901,8 +3941,10 @@ function viewPlan(){
         +   '<button class="iconbtn del" title="彻底删除" onclick="delPlan(\''+p.id+'\')">'+ico('del',14)+'</button>'
         + '</div></div>';
     });
-    h += '</div></div>';
+    h += '</div>';
   }
+  h += '</div>';
+
   return h;
 }
 
@@ -6106,6 +6148,7 @@ function render(){
   else if(route.tab === 'gratitude') v.innerHTML = pre + viewGratitude();
   else if(route.tab === 'library') v.innerHTML = viewLibrary();
   else if(route.tab === 'accounts') v.innerHTML = viewAccounts();
+  else if(route.tab === 'archive') v.innerHTML = viewArchive();
   else v.innerHTML = viewProjects();
   if(libTreeScroll){
     const newLibTree = document.querySelector('.lib-tree');
