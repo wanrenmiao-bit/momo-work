@@ -1057,6 +1057,23 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-pv-tip{font-size:12.5px;color:var(--muted);text-align:center}
 .lib-pv-none{display:flex;flex-direction:column;align-items:center;gap:8px;padding:34px 10px;color:var(--muted)}
 .lib-pv-none p{margin:0;font-size:15px;color:var(--text2)}
+
+/* 资料库交互增强：目录宽度拖动 / 行内编辑 / 拖拽归类 */
+.lib-resizer{position:absolute;top:0;right:-5px;width:11px;height:100%;cursor:col-resize;z-index:7}
+.lib-resizer::after{content:'';position:absolute;top:50%;right:4px;transform:translateY(-50%);width:3px;height:38px;border-radius:3px;background:var(--surface3);transition:background .15s}
+.lib-resizer:hover::after,.lib-resizer.drag::after{background:var(--accent)}
+.lib-grip{width:26px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:grab;border-radius:6px;transition:.15s}
+.lib-grip:hover{color:var(--accent);background:var(--accent-soft)}
+.lib-grip:active{cursor:grabbing}
+.lib-item.dragging{opacity:.4}
+.lib-node-row.dragover{background:var(--accent-soft);color:var(--accent2);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.lib-node-row[draggable="true"]{cursor:grab}
+.lib-node-row[draggable="true"]:active{cursor:grabbing}
+.lib-form{display:flex;flex-direction:column;gap:9px}
+.lib-form .field{margin:0}
+.lib-form-btns{display:flex;gap:8px;margin-top:2px}
+.lib-item.lib-add-row,.lib-item.lib-edit-row{align-items:flex-start}
+.lib-drop-hint{font-size:12px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:6px}
 .lib-pv-none span{font-size:12.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .modal.lib-preview{max-width:min(940px,94vw);width:94vw}
 .modal.lib-preview .modal-b{padding:16px}
@@ -1603,7 +1620,7 @@ function migrateData(d){
     if(p.aborted == null) p.aborted = false;
   });
   if(!d.library) d.library = [];
-  if(!d.frameworks || !d.frameworks.length) d.frameworks = defaultFrameworks();
+  if(d.frameworks === undefined) d.frameworks = defaultFrameworks();   // 仅在从未初始化时铺默认框架；用户清空后保持空，不再自动补
   if(!d.accounts) d.accounts = [];
   if(Array.isArray(d.accounts)) d.accounts.forEach(a=>{ if(!a.group) a.group='work'; });
   if(Array.isArray(d.studies)) d.studies.forEach(s=>{ if(!s.createdAt) s.createdAt=(s.created||TODAY)+' 09:00'; if(s.duration==null) s.duration=0; });
@@ -1818,6 +1835,8 @@ const EMOTION_TABS = [
 const POMO_INTERRUPTS = ['手机干扰','通知/消息','他人打断','走神/杂念','身体需求','其他'];
 let route = { tab:'goals', detail:null, filter:'all', showDone:true, projCol:null, selIdea:null };
 let libSearchTerm = '', libCat = 'all', libCatId = '';
+let libEditId = '', libAddingLink = false;
+let libSideW = +(localStorage.getItem('wb_momo_libside_w')) || 288;
 
 function toggleNav(){ const s=document.querySelector('.sidebar'); const o=document.getElementById('navOverlay'); if(s)s.classList.toggle('open'); if(o)o.classList.toggle('open'); }
 function closeNav(){ const s=document.querySelector('.sidebar'); const o=document.getElementById('navOverlay'); if(s)s.classList.remove('open'); if(o)o.classList.remove('open'); }
@@ -4523,7 +4542,7 @@ function libTreeHTML(parent, depth){
     const hasKid = libChildren(n.id).length > 0;
     const open = LIB_EXP.has(n.id);
     h += '<div class="lib-node d'+Math.min(d,2)+(libCatId===n.id?' on':'')+(open?' open':'')+'">'
-      + '<div class="lib-node-row" onclick="libSetCatId(\''+n.id+'\')">'
+      + '<div class="lib-node-row" draggable="true" ondragstart="dragFw(event,\''+n.id+'\')" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\''+n.id+'\')" onclick="libSetCatId(\''+n.id+'\')">'
       +   (hasKid
             ? '<button class="ln-caret'+(open?' open':'')+'" title="展开 / 收起" onclick="event.stopPropagation();libToggleExp(\''+n.id+'\')">'+ico('chev',12)+'</button>'
             : '<span class="ln-caret ph"></span>')
@@ -4615,31 +4634,78 @@ let libCatSet = new Set();
 function libListHTML(){
   const all = db.library;
   libCatSet = libCatId && libCatId !== '__none__' ? new Set(libDescendants(libCatId)) : new Set();
+  let h = '';
+  if(libAddingLink) h += libAddLinkInlineHTML();
   const filtered = all.filter(libMatch).sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-  if(!filtered.length) return emptyBox(all.length ? '这个分类下还没有资料' : '还没有资料，点右上角上传文件或加链接');
-  let h = '<div class="lib-list">';
+  if(!filtered.length && !libAddingLink) return emptyBox(all.length ? '这个分类下还没有资料' : '还没有资料，点右上角「加链接」或上传文件');
+  h += '<div class="lib-list">';
   filtered.forEach(x=>{
-    const isLink = x.type === 'link';
-    const catName = libCatLabel(x.catId||'');
-    const catBadge = catName ? '<span class="lib-badge cat">'+ico('folder',12)+esc(catName)+'</span>' : '<span class="lib-badge muted">未分类</span>';
-    const linked = (x.linkedType && x.linkedType!=='none' && libLinkLabel(x.linkedType,x.linkedId)) ? '<span class="lib-badge '+(x.linkedType)+'">'+libTypeName(x.linkedType)+' · '+esc(libLinkLabel(x.linkedType,x.linkedId))+'</span>' : '';
-    const sizeStr = isLink ? '' : (x.size ? fmtSize(x.size) : '');
-    h += '<div class="lib-item">'
-      + '<div class="lib-ico">'+ico(isLink?'link':'file',20)+'</div>'
-      + '<div class="lib-main">'
-      +   '<div class="lib-name">'+(isLink ? '<a class="lib-link" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>' : esc(x.name))+'</div>'
-      +   '<div class="lib-meta">'+(isLink?'链接':esc(x.type||'文件'))+(sizeStr?' · '+sizeStr:'')+' · '+fmtMD(x.date||'')+(x.note?' · '+esc(x.note):'')+'</div>'
-      +   '<div class="lib-badges">'+catBadge+linked+'</div>'
-      + '</div>'
-      + '<div class="lib-ops">'
-      +   (isLink ? '' : '<button class="iconbtn" title="打开" onclick="libOpen(\''+x.id+'\')">'+ico('open',16)+'</button>')
-      +   (isLink ? '' : '<button class="iconbtn" title="下载" onclick="libDownload(\''+x.id+'\')">'+ico('download',16)+'</button>')
-      +   '<button class="iconbtn" title="编辑（分类 / 项目）" onclick="libEdit(\''+x.id+'\')">'+ico('edit',16)+'</button>'
-      +   '<button class="iconbtn del" title="删除" onclick="libDel(\''+x.id+'\')">'+ico('del',15)+'</button>'
-      + '</div></div>';
+    if(x.id === libEditId) h += libEditInlineHTML(x);
+    else h += libItemHTML(x);
   });
   h += '</div>';
   return h;
+}
+function libItemHTML(x){
+  const isLink = x.type === 'link';
+  const catName = libCatLabel(x.catId||'');
+  const catBadge = catName ? '<span class="lib-badge cat">'+ico('folder',12)+esc(catName)+'</span>' : '<span class="lib-badge muted">未分类</span>';
+  const linked = (x.linkedType && x.linkedType!=='none' && libLinkLabel(x.linkedType,x.linkedId)) ? '<span class="lib-badge '+(x.linkedType)+'">'+libTypeName(x.linkedType)+' · '+esc(libLinkLabel(x.linkedType,x.linkedId))+'</span>' : '';
+  const sizeStr = isLink ? '' : (x.size ? fmtSize(x.size) : '');
+  return '<div class="lib-item">'
+    + '<div class="lib-grip" draggable="true" ondragstart="libDragRes(event,\''+x.id+'\')" ondragend="libResDragEnd(event)" title="拖动到左侧目录归类">'+ico('move',16)+'</div>'
+    + '<div class="lib-ico">'+ico(isLink?'link':'file',20)+'</div>'
+    + '<div class="lib-main">'
+    +   '<div class="lib-name">'+(isLink ? '<a class="lib-link" href="'+esc(x.url)+'" target="_blank" rel="noopener" draggable="false">'+esc(x.name)+'</a>' : esc(x.name))+'</div>'
+    +   '<div class="lib-meta">'+(isLink?'链接':esc(x.type||'文件'))+(sizeStr?' · '+sizeStr:'')+' · '+fmtMD(x.date||'')+(x.note?' · '+esc(x.note):'')+'</div>'
+    +   '<div class="lib-badges">'+catBadge+linked+'</div>'
+    + '</div>'
+    + '<div class="lib-ops">'
+    +   (isLink ? '' : '<button class="iconbtn" title="打开" onclick="libOpen(\''+x.id+'\')">'+ico('open',16)+'</button>')
+    +   (isLink ? '' : '<button class="iconbtn" title="下载" onclick="libDownload(\''+x.id+'\')">'+ico('download',16)+'</button>')
+    +   '<button class="iconbtn" title="行内编辑（分类 / 归属）" onclick="libEditInline(\''+x.id+'\')">'+ico('edit',16)+'</button>'
+    +   '<button class="iconbtn del" title="删除" onclick="libDel(\''+x.id+'\')">'+ico('del',15)+'</button>'
+    + '</div></div>';
+}
+function libAddLinkInlineHTML(){
+  const defCat = (libCatId && libCatId !== '__none__') ? libCatId : '';
+  return '<div class="lib-item lib-add-row">'
+    + '<div class="lib-ico">'+ico('link',20)+'</div>'
+    + '<div class="lib-main lib-form">'
+    +   '<div class="field"><label>链接地址 <span style="color:var(--red)">*</span></label>'
+    +   '<div class="url-grab">'
+    +     '<input id="f_url" type="url" inputmode="url" placeholder="粘贴链接，自动读取标题和摘要" onblur="libGrab(false)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();libGrab(true)}">'
+    +     '<button class="btn primary" id="grabBtn" type="button" onclick="libGrab(true)">'+ico('spark',14)+'抓取</button>'
+    +   '</div>'
+    +   '<div class="hint" id="grabTip">粘贴链接后会自动读取网页标题与文章摘要，也可以点「抓取」手动触发。</div></div>'
+    +   '<div class="field"><label>资料名称 <span style="color:var(--red)">*</span></label>'
+    +   '<input id="f_name" placeholder="抓取成功会自动填入网页标题"></div>'
+    +   '<div class="field"><label>内容摘要 / 备注</label>'
+    +   '<textarea id="f_note" style="min-height:60px" placeholder="抓取成功会自动填入文章摘要，可自行修改"></textarea></div>'
+    +   '<div class="field"><label>知识分类</label>'+dd('dd_catId','f_catId',[['','未分类']].concat(libCatOptions()), defCat)+'</div>'
+    +   '<div class="field"><label>归属项目 / 学习 / 目标</label>'+dd('dd_target','f_target',libLinkOptions(),'none|')+'</div>'
+    +   '<div class="lib-form-btns">'
+    +     '<button class="btn primary" type="button" onclick="libSaveAddLink()">保存</button>'
+    +     '<button class="btn" type="button" onclick="libCancelAddLink()">取消</button>'
+    +   '</div>'
+    + '</div></div>';
+}
+function libEditInlineHTML(x){
+  return '<div class="lib-item lib-edit-row">'
+    + '<div class="lib-ico">'+ico(x.type==='link'?'link':'file',20)+'</div>'
+    + '<div class="lib-main lib-form">'
+    +   '<div class="field"><label>资料名称 <span style="color:var(--red)">*</span></label>'
+    +   '<input id="ie_name" value="'+esc(x.name)+'"></div>'
+    +   (x.type==='link' ? '<div class="field"><label>链接地址</label><input id="ie_url" value="'+esc(x.url||'')+'"></div>' : '')
+    +   '<div class="field"><label>知识分类</label>'+dd('dd_iecat','ie_catId',[['','未分类']].concat(libCatOptions()), x.catId||'')+'</div>'
+    +   '<div class="field"><label>归属项目 / 学习 / 目标</label>'+dd('dd_ietarget','ie_target',libLinkOptions(),(x.linkedType||'none')+'|'+(x.linkedId||''))+'</div>'
+    +   '<div class="field"><label>内容摘要 / 备注</label>'
+    +   '<textarea id="ie_note" style="min-height:54px">'+esc(x.note||'')+'</textarea></div>'
+    +   '<div class="lib-form-btns">'
+    +     '<button class="btn primary" type="button" onclick="libSaveInline(\''+x.id+'\')">保存</button>'
+    +     '<button class="btn" type="button" onclick="libCancelInline()">取消</button>'
+    +   '</div>'
+    + '</div></div>';
 }
 function viewLibrary(){
   const all = db.library;
@@ -4654,24 +4720,25 @@ function viewLibrary(){
 
   /* 左侧：知识框架树 */
   const anyOpen = LIB_EXP.size > 0;
-  h += '<div class="card lib-side"><div class="card-h"><h3>知识框架</h3>'
+  h += '<div class="card lib-side" style="width:'+libSideW+'px"><div class="lib-resizer" onmousedown="libStartResize(event)" ontouchstart="libStartResize(event)"></div><div class="card-h"><h3>知识框架</h3>'
     + '<div class="r"><button class="iconbtn sm" title="'+(anyOpen?'全部收起':'全部展开')+'" onclick="libExpandAll('+(anyOpen?'false':'true')+')">'+ico(anyOpen?'up':'down',14)+'</button>'
     + '<button class="iconbtn sm" title="导入推荐框架（全维度知识体系）" onclick="fwRestoreDefaults()">'+ico('spark',14)+'</button>'
+    + '<button class="iconbtn sm" title="清空全部分类目录" onclick="fwClearAll()">'+ico('trash',14)+'</button>'
     + '<button class="btn sm" onclick="fwAdd(\'\')">'+ico('plus',14)+'顶层分类</button></div></div>'
     + '<div class="lib-tree">'
     +   '<div class="lib-node root d0'+(libCatId===''?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'\')">'
     +     '<span class="ln-caret ph"></span><span class="ln-name">全部资料</span><span class="ln-cnt">'+all.length+'</span></div></div>'
-    +   '<div class="lib-node root d0'+(libCatId==='__none__'?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'__none__\')">'
+    +   '<div class="lib-node root d0'+(libCatId==='__none__'?' on':'')+'"><div class="lib-node-row" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\'\')" onclick="libSetCatId(\'__none__\')">'
     +     '<span class="ln-caret ph"></span><span class="ln-name">未分类</span><span class="ln-cnt">'+noCat+'</span></div></div>'
     +   (db.frameworks.length ? libTreeHTML('', 0) : '<div class="lib-tree-empty">还没有分类，点右上角'+ico('spark',12)+'一键导入《全维度个人知识体系》推荐框架</div>')
     + '</div>'
-    + '<div class="lib-tree-tip">'+ico('spark',13)+'点箭头展开子分类；分类可随时新增 / 改名 / 删除</div>'
+    + '<div class="lib-tree-tip">'+ico('spark',13)+'拖动分类可调整顺序；把资料的拖拽手柄拖到分类上即可归类</div>'
     + '</div>';
 
   /* 右侧：资料列表 */
   const curName = libCatId==='' ? '全部资料' : (libCatId==='__none__' ? '未分类' : libCatLabel(libCatId));
   h += '<div class="card lib-main-col"><div class="card-h"><h3>'+esc(curName||'资料')+'</h3>'
-    + '<div class="r"><button class="btn primary sm" onclick="libAddLink()">'+ico('link',15)+'加链接</button>'
+    + '<div class="r"><button class="btn primary sm" onclick="libStartAddLink()">'+ico('link',15)+'加链接</button>'
     + '<label class="btn sm" style="cursor:pointer">'+ico('upload',15)+'上传文件'
     + '<input type="file" id="libFile" multiple style="display:none" onchange="libUpload(this)"></label></div></div>';
   h += '<div class="lib-tools">'
@@ -4813,55 +4880,122 @@ function libGrab(manual){
     if(b){ b.disabled = false; b.innerHTML = ico('refresh',14) + '重新抓取'; }
   });
 }
-function libAddLink(){
-  const defCat = (libCatId && libCatId !== '__none__') ? libCatId : '';
+/* ============ 资料库：行内添加 / 编辑（不再用弹窗） ============ */
+function libStartAddLink(){
+  libAddingLink = true; libEditId = '';
   _grabbedUrl = '';
-  const body = ''
-    + '<div class="field"><label>链接地址 <span style="color:var(--red)">*</span></label>'
-    +   '<div class="url-grab">'
-    +     '<input id="f_url" type="url" inputmode="url" placeholder="粘贴链接，自动读取标题和摘要" onblur="libGrab(false)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();libGrab(true)}">'
-    +     '<button class="btn primary" id="grabBtn" onclick="libGrab(true)">'+ico('spark',14)+'抓取</button>'
-    +   '</div>'
-    +   '<div class="hint" id="grabTip">粘贴链接后会自动读取网页标题与文章摘要，也可以点「抓取」手动触发。</div></div>'
-    + '<div class="field"><label>资料名称 <span style="color:var(--red)">*</span></label>'
-    +   '<input id="f_name" placeholder="抓取成功会自动填入网页标题"></div>'
-    + '<div class="field"><label>内容摘要 / 备注</label>'
-    +   '<textarea id="f_note" style="min-height:88px" placeholder="抓取成功会自动填入文章摘要，可自行修改"></textarea></div>'
-    + '<div class="field"><label>知识分类</label>'+dd('dd_catId','f_catId',[['','未分类']].concat(libCatOptions()), defCat)+'</div>'
-    + '<div class="field"><label>归属项目 / 学习 / 目标</label>'+dd('dd_target','f_target',libLinkOptions(),'none|')+'</div>';
-  openModal('添加链接资料', body, [
-    { t:'取消', cls:'btn', fn:closeModal },
-    { t:'保存', cls:'btn primary', fn:()=>{
-      const url = normUrl($('f_url') ? $('f_url').value : '');
-      const name = ($('f_name') ? $('f_name').value : '').trim();
-      if(!url){ toast('「链接地址」不能为空'); return; }
-      if(!name){ toast('「资料名称」不能为空'); const n=$('f_name'); n && n.focus(); return; }
-      const out = {
-        catId: $('f_catId') ? $('f_catId').value : '',
-        target: $('f_target') ? $('f_target').value : 'none|',
-        note: ($('f_note') ? $('f_note').value : '').trim()
-      };
-      const x = { id:uid(), name, type:'link', url, size:0, date:TODAY, catId:'', linkedType:'none', linkedId:'', note:'' };
-      libApplyTarget(x, out);
-      db.library.unshift(x);
-      closeModal(); save(); render(); toast('链接已添加');
-    } }
-  ]);
-  setTimeout(()=>{ const el=$('f_url'); if(el && window.innerWidth>768) el.focus(); }, 60);
+  paintLibList();
+  setTimeout(()=>{ const el=$('f_url'); if(el) el.focus(); }, 30);
 }
-function libEdit(id){
+function libCancelAddLink(){ libAddingLink = false; paintLibList(); }
+function libSaveAddLink(){
+  const url = normUrl($('f_url') ? $('f_url').value : '');
+  const name = ($('f_name') ? $('f_name').value : '').trim();
+  if(!url){ toast('「链接地址」不能为空'); const u=$('f_url'); u&&u.focus(); return; }
+  if(!name){ toast('「资料名称」不能为空'); const n=$('f_name'); n&&n.focus(); return; }
+  const out = {
+    catId: $('f_catId') ? $('f_catId').value : '',
+    target: $('f_target') ? $('f_target').value : 'none|',
+    note: ($('f_note') ? $('f_note').value : '').trim()
+  };
+  const x = { id:uid(), name, type:'link', url, size:0, date:TODAY, catId:'', linkedType:'none', linkedId:'', note:'' };
+  libApplyTarget(x, out);
+  db.library.unshift(x);
+  libAddingLink = false;
+  save(); render(); toast('链接已添加');
+}
+function libEditInline(id){
   const x = db.library.find(z=>z.id===id); if(!x) return;
-  const fields = [{ k:'name', l:'资料名称', req:true }]
-    .concat(x.type==='link' ? [{ k:'url', l:'链接地址' }] : [])
-    .concat(libFields());
-  openForm('编辑资料', fields, { name:x.name, url:x.url||'', catId:x.catId||'', target:(x.linkedType||'none')+'|'+(x.linkedId||''), note:x.note||'' }, out=>{
-    x.name = out.name || x.name;
-    if(x.type==='link' && out.url) x.url = out.url;
-    libApplyTarget(x, out);
-    save(); render(); toast('已更新');
-  });
+  libEditId = id; libAddingLink = false;
+  paintLibList();
+  setTimeout(()=>{ const el=$('ie_name'); if(el) el.focus(); }, 30);
 }
-function libOpenLink(id){ libEdit(id); }
+function libCancelInline(){ libEditId = ''; paintLibList(); }
+function libSaveInline(id){
+  const x = db.library.find(z=>z.id===id); if(!x) return;
+  const name = ($('ie_name') ? $('ie_name').value : '').trim();
+  if(!name){ toast('「资料名称」不能为空'); const n=$('ie_name'); n&&n.focus(); return; }
+  if(x.type==='link'){ const u=$('ie_url'); if(u) x.url = u.value.trim(); }
+  const catId = $('ie_catId') ? $('ie_catId').value : '';
+  const target = $('ie_target') ? $('ie_target').value : 'none|';
+  const note = $('ie_note') ? $('ie_note').value.trim() : '';
+  x.name = name;
+  const i = target.indexOf('|');
+  x.linkedType = target.slice(0,i) || 'none';
+  x.linkedId = target.slice(i+1);
+  x.catId = catId || '';
+  x.note = note;
+  libEditId = '';
+  save(); render(); toast('已更新');
+}
+function libOpenLink(id){ libEditInline(id); }
+
+/* ============ 资料库：拖拽归类 + 目录拖拽排序 + 侧栏宽度调节 ============ */
+function libDragRes(e, id){ e.dataTransfer.setData('text/plain', 'res:'+id); e.dataTransfer.effectAllowed='move'; const it=e.currentTarget.closest('.lib-item'); if(it) it.classList.add('dragging'); }
+function libResDragEnd(e){ const it=e.currentTarget.closest('.lib-item'); if(it) it.classList.remove('dragging'); }
+function dragFw(e, id){ e.dataTransfer.setData('text/plain', 'fw:'+id); e.dataTransfer.effectAllowed='move'; }
+function libFwDragOver(e, el){ e.preventDefault(); el.classList.add('dragover'); }
+function libFwDragLeave(e, el){ el.classList.remove('dragover'); }
+function libFwDrop(e, targetId){
+  e.preventDefault();
+  const row = e.currentTarget.querySelector('.lib-node-row') || e.currentTarget;
+  row.classList.remove('dragover');
+  const data = (e.dataTransfer.getData('text/plain')||'');
+  if(data.startsWith('res:')){
+    const id = data.slice(4);
+    const x = db.library.find(z=>z.id===id); if(!x) return;
+    if(x.catId === targetId) return;
+    x.catId = targetId;
+    save(); render();
+    toast('已移动到「'+(targetId?libCatLabel(targetId):'未分类')+'」');
+    return;
+  }
+  if(data.startsWith('fw:')){
+    const id = data.slice(3);
+    if(id === targetId) return;
+    const dragged = db.frameworks.find(x=>x.id===id);
+    const target = db.frameworks.find(x=>x.id===targetId);
+    if(!dragged || !target) return;
+    if(dragged.parent !== target.parent) return;   // 仅同级重排，避免误改层级
+    const from = db.frameworks.findIndex(x=>x.id===id);
+    const [moved] = db.frameworks.splice(from, 1);
+    let to = db.frameworks.findIndex(x=>x.id===targetId);
+    if(to < 0) to = db.frameworks.length;
+    db.frameworks.splice(to, 0, moved);
+    save(); render(); toast('已调整分类顺序');
+    return;
+  }
+}
+function libStartResize(e){
+  e.preventDefault();
+  const side = document.querySelector('.lib-side'); if(!side) return;
+  const startX = e.clientX, startW = side.getBoundingClientRect().width;
+  document.body.style.userSelect='none'; document.body.style.cursor='col-resize';
+  const res = e.currentTarget; if(res) res.classList.add('drag');
+  const move = ev => {
+    let w = startW + (ev.clientX - startX);
+    w = Math.max(180, Math.min(560, w));
+    side.style.width = w + 'px'; libSideW = w;
+  };
+  const up = () => {
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+    document.body.style.userSelect=''; document.body.style.cursor='';
+    if(res) res.classList.remove('drag');
+    localStorage.setItem('wb_momo_libside_w', String(libSideW));
+  };
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', up);
+}
+function fwClearAll(){
+  confirmBoxCustom('清空全部分类目录？',
+    '会移除所有知识分类节点（共 '+db.frameworks.length+' 个），资料本身不会删除，只是变回「未分类」。你可以随时点'+ico('spark',12)+'重新导入推荐框架，或手动新建分类。',
+    '清空', ()=>{
+      db.frameworks = [];
+      if(libCatId && libCatId !== '' && libCatId !== '__none__') libCatId = '';
+      save(); render(); toast('已清空分类目录');
+    });
+}
 let _libUrl = null;
 function libModal(title, body, btns){
   openModal(title, body, btns);
