@@ -483,6 +483,11 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .arch-h{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
 .arch-h .n{font-size:12px;background:var(--surface3);color:var(--text2);border-radius:10px;padding:1px 8px}
 .task-row.archived-row{opacity:.85}
+.plan-arch-list{margin-top:6px}
+.plan-arch-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;opacity:.9}
+.plan-arch-text{flex:1;min-width:0;font-size:14px;color:var(--text2);word-break:normal;overflow-wrap:break-word;text-decoration:line-through}
+.plan-arch-cat{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--cc);color:#fff;flex-shrink:0}
+.plan-arch-ops{display:flex;gap:2px;flex-shrink:0}
 .task-quick-add{display:flex;gap:8px;align-items:center}
 .task-quick-add input{flex:1;min-width:0}
 .pri-chips{display:flex;gap:5px;align-items:center;flex-shrink:0}
@@ -1392,14 +1397,14 @@ function seedDB(){
       { id:uid(), date:off(-64), amount:18000, source:'公司薪资', cat:'主业', note:'6 月工资' }
     ],
     plans:[
-      { id:uid(), cat:'q2', must:true, text:'完成工作台配色改版', date:TODAY, done:false, created:TODAY },
-      { id:uid(), cat:'q2', must:true, text:'给妈妈回个电话', date:TODAY, done:true, doneAt:TODAY, created:TODAY },
-      { id:uid(), cat:'q1', text:'处理账单逾期提醒', date:TODAY, done:false, created:TODAY },
-      { id:uid(), cat:'q2', text:'读完《认知觉醒》第 4 章', date:TODAY, done:true, doneAt:TODAY, created:TODAY },
-      { id:uid(), cat:'q3', text:'回复不重要的群消息', date:TODAY, done:false, created:TODAY },
-      { id:uid(), cat:'q4', text:'刷一会儿短视频放松', date:TODAY, done:false, created:TODAY },
-      { id:uid(), cat:'q2', text:'整理本月信用卡账单', date:off(-2), done:false, created:off(-2) },
-      { id:uid(), cat:'q2', must:true, text:'晨跑 5 公里', date:off(-1), done:true, doneAt:off(-1), created:off(-1) }
+      { id:uid(), cat:'q2', must:true, text:'完成工作台配色改版', date:TODAY, done:false, created:TODAY, archived:false },
+      { id:uid(), cat:'q2', must:true, text:'给妈妈回个电话', date:TODAY, done:true, doneAt:TODAY, created:TODAY, archived:false },
+      { id:uid(), cat:'q1', text:'处理账单逾期提醒', date:TODAY, done:false, created:TODAY, archived:false },
+      { id:uid(), cat:'q2', text:'读完《认知觉醒》第 4 章', date:TODAY, done:true, doneAt:TODAY, created:TODAY, archived:false },
+      { id:uid(), cat:'q3', text:'回复不重要的群消息', date:TODAY, done:false, created:TODAY, archived:false },
+      { id:uid(), cat:'q4', text:'刷一会儿短视频放松', date:TODAY, done:false, created:TODAY, archived:false },
+      { id:uid(), cat:'q2', text:'整理本月信用卡账单', date:off(-2), done:false, created:off(-2), archived:false },
+      { id:uid(), cat:'q2', must:true, text:'晨跑 5 公里', date:off(-1), done:true, doneAt:off(-1), created:off(-1), archived:false }
     ],
     reviews:[
       { id:uid(), title:'本周工作台迭代复盘', type:'daily', time:off(-1), fields:{ keep:['一次性大改比零敲碎打更省心'], improve:['改之前把数据结构想清楚'], stop:['临时加需求'], start:['先画结构再写代码'] }, content:'', created:off(-1) },
@@ -1624,6 +1629,8 @@ function migrateData(d){
     if(p.sourceType == null) p.sourceType = '';
     if(p.sourceId == null) p.sourceId = '';
     if(p.sourceSub == null) p.sourceSub = '';
+    if(p.archived == null) p.archived = false;
+    if(p.archived) p.done = false;
     // 今日必做从 cat 中独立出来
     if(p.must == null){
       if(p.cat === 'must'){ p.must = true; p.cat = p.originCat || 'q2'; delete p.originCat; }
@@ -2829,7 +2836,7 @@ function syncProjectTaskToPlan(pid,tid){
     const pl = db.plans[idx];
     pl.text = t.title; pl.cat = cat; pl.must = !!t.today; pl.date = TODAY;
   }else{
-    db.plans.unshift({ id:uid(), cat, must:!!t.today, text:t.title, date:TODAY, done:false, created:TODAY, sourceType:'project', sourceId:pid, sourceSub:tid });
+    db.plans.unshift({ id:uid(), cat, must:!!t.today, text:t.title, date:TODAY, done:false, created:TODAY, archived:false, sourceType:'project', sourceId:pid, sourceSub:tid });
   }
   save();
 }
@@ -2838,7 +2845,7 @@ function taskToPlan(pid, tid){
   if(t.done || t.abandoned){ toast('已完成/放弃的任务不再加入计划'); return; }
   const idx = db.plans.findIndex(pl => pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid);
   if(idx>=0){ toast('这条任务已经在计划看板里了'); return; }
-  db.plans.unshift({ id:uid(), cat:priToCat(t.pri), must:!!t.today, text:t.title, date:TODAY, done:false, created:TODAY, sourceType:'project', sourceId:pid, sourceSub:tid });
+  db.plans.unshift({ id:uid(), cat:priToCat(t.pri), must:!!t.today, text:t.title, date:TODAY, done:false, created:TODAY, archived:false, sourceType:'project', sourceId:pid, sourceSub:tid });
   save(); render(); toast('已加入计划看板（'+PLAN_CATS.find(c=>c.k===priToCat(t.pri)).n+'）');
 }
 function toggleTaskToday(pid,tid){
@@ -3768,12 +3775,14 @@ let planAddCat = 'q1';
 
 function viewPlan(){
   const all = db.plans;
-  const open = all.filter(p=>!p.done);
-  const doneAll = all.filter(p=>p.done);
+  const active = all.filter(p=>!p.archived);
+  const open = active.filter(p=>!p.done);
+  const doneAll = active.filter(p=>p.done);
   const doneToday = doneAll.filter(p=>p.doneAt === TODAY).length;
   const overdue = open.filter(p=>p.date && p.date < TODAY).length;
-  const rate = all.length ? Math.round(overdue/all.length*100) : 0;
+  const rate = active.length ? Math.round(overdue/active.length*100) : 0;
   const rateWarn = rate > 10;
+  const archived = all.filter(p=>p.archived);
 
   let h = '<div class="grid g4 stats" style="margin-bottom:18px">'
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
@@ -3781,14 +3790,14 @@ function viewPlan(){
 
   // 新布局：左侧今日必须完成（大列） + 右侧 2×2 四象限
   h += '<div class="plan-layout">';
-  h += '<div class="plan-must-col">' + planZone('must', all.filter(p=>p.must), true) + '</div>';
+  h += '<div class="plan-must-col">' + planZone('must', active.filter(p=>p.must), true) + '</div>';
   h += '<div class="plan-quadrant-grid">';
-  ['q1','q2','q3','q4'].forEach(k=>{ h += planZone(k, all.filter(p=>p.cat===k), false); });
+  ['q1','q2','q3','q4'].forEach(k=>{ h += planZone(k, active.filter(p=>p.cat===k), false); });
   h += '</div></div>';
 
   // 每日完成记录
   h += '<div class="card"><div class="card-h"><h3>每日完成记录</h3></div><div class="pr-hist">';
-  const donePlans = all.filter(p=>p.done && p.doneAt);
+  const donePlans = active.filter(p=>p.done && p.doneAt);
   if(!donePlans.length) h += '<div class="empty" style="padding:18px 0">还没有完成的计划，勾选一条试试</div>';
   else {
     const groups = {};
@@ -3804,6 +3813,23 @@ function viewPlan(){
     });
   }
   h += '</div></div>';
+
+  // 已归档任务
+  if(archived.length){
+    h += '<div class="card"><div class="card-h"><h3>'+ico('archive',15)+'已归档任务 <span class="n" style="font-size:12px;background:var(--surface3);color:var(--text2);border-radius:10px;padding:1px 8px;margin-left:6px">'+archived.length+'</span></h3></div>';
+    h += '<div class="plan-arch-list">';
+    archived.forEach(p=>{
+      const c = PLAN_CATS.find(x=>x.k===p.cat) || PLAN_CATS[0];
+      h += '<div class="plan-arch-row">'
+        + '<span class="plan-arch-text">'+esc(p.text)+'</span>'
+        + '<span class="plan-arch-cat" style="--cc:'+c.color+'">'+c.n+'</span>'
+        + '<div class="plan-arch-ops">'
+        +   '<button class="iconbtn" title="恢复任务" onclick="unarchivePlan(\''+p.id+'\')">'+ico('refresh',14)+'</button>'
+        +   '<button class="iconbtn del" title="彻底删除" onclick="delPlan(\''+p.id+'\')">'+ico('del',14)+'</button>'
+        + '</div></div>';
+    });
+    h += '</div></div>';
+  }
   return h;
 }
 
@@ -3853,6 +3879,7 @@ function planItemHTML(p){
     + '<div class="plan-ops">'
     +   '<span class="plan-cat-dot" style="--cc:'+catInfo.color+'" title="'+catInfo.n+'">'+catInfo.k.toUpperCase()+'</span>'
     +   '<button class="iconbtn plan-sun'+(p.must?' on':'')+'" title="'+(p.must?'今日必须完成':'设为今日必须完成')+'" onclick="togglePlanSun(\''+p.id+'\')">'+ico('sun',14)+'</button>'
+    +   (p.done && !isLinked ? '<button class="iconbtn" title="归档（移出任务列表）" onclick="archivePlan(\''+p.id+'\')">'+ico('archive',14)+'</button>' : '')
     +   (isLinked ? '' : '<button class="iconbtn del" title="删除" onclick="delPlan(\''+p.id+'\')">'+ico('del',14)+'</button>')
     + '</div>'
     + '</div>';
@@ -3895,7 +3922,7 @@ function addPlan(cat){
   cat = cat || planAddCat || 'q1';
   const el = $('planInput_'+cat); if(!el) return;
   const t = el.value.trim(); if(!t){ el.focus(); return; }
-  db.plans.unshift({ id:uid(), cat, must:false, text:t, date:TODAY, done:false, created:TODAY });
+  db.plans.unshift({ id:uid(), cat, must:false, text:t, date:TODAY, done:false, created:TODAY, archived:false });
   save(); render(); toast('已添加到「'+PLAN_CATS.find(c=>c.k===cat).n+'」');
 }
 function togglePlan(id){
@@ -3935,6 +3962,18 @@ function togglePlanSun(id){
   toast(toMust?'已设为今日必须完成':'已移出今日必须完成');
 }
 function delPlan(id){ db.plans=db.plans.filter(x=>x.id!==id); save(); render(); toast('已删除'); }
+function archivePlan(id){
+  const p=db.plans.find(x=>x.id===id); if(!p) return;
+  confirmBox('归档这条计划？','归档后它将从四象限任务列表中彻底移出，可在下方「已归档任务」里随时恢复。',()=>{
+    p.archived = true; p.done = false; p.doneAt = '';
+    save(); render(); toast('已归档');
+  });
+}
+function unarchivePlan(id){
+  const p=db.plans.find(x=>x.id===id); if(!p) return;
+  p.archived = false;
+  save(); render(); toast('已恢复到任务列表');
+}
 function setPlanCat(c){ planAddCat=c; }
 
 /* ============================================================
@@ -4422,7 +4461,7 @@ function syncGratTaskToPlan(idx){
   if(planIdx>=0){
     const pl = db.plans[planIdx]; pl.text = it.text; pl.cat = cat; pl.must = !!it.today; pl.date = date; pl.sourceProject = proj;
   }else{
-    db.plans.unshift({ id:uid(), cat, must:!!it.today, text:it.text, date, done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:proj });
+    db.plans.unshift({ id:uid(), cat, must:!!it.today, text:it.text, date, done:false, created:TODAY, archived:false, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:proj });
   }
   save();
 }
@@ -4432,7 +4471,7 @@ function gratTomorrowToPlan(idx){
   if(it.done || it.abandoned){ toast('已完成/放弃的任务不再加入计划'); return; }
   const planIdx = db.plans.findIndex(pl => pl.sourceType==='gratitude' && pl.sourceSub===gratView.sel && pl.text===it.text);
   if(planIdx>=0){ toast('这条已加入计划看板'); return; }
-  db.plans.unshift({ id:uid(), cat:priToCat(it.pri), must:!!it.today, text:it.text, date:nextDay(gratView.sel), done:false, created:TODAY, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:it.project||'' });
+  db.plans.unshift({ id:uid(), cat:priToCat(it.pri), must:!!it.today, text:it.text, date:nextDay(gratView.sel), done:false, created:TODAY, archived:false, sourceType:'gratitude', sourceSub:gratView.sel, sourceProject:it.project||'' });
   save(); render(); toast('已加入明天的计划看板');
 }
 function toggleGratTask(idx){
@@ -4570,7 +4609,7 @@ function pomoLinkOptions(){
   }
   const openTasks = [];
   db.projects.forEach(p => p.tasks.filter(t=>!t.done).forEach(t => openTasks.push(['task|'+t.id, t.title + '（' + p.name + '）'])));
-  const openPlans = db.plans.filter(p => !p.done).map(p => ['plan|'+p.id, p.text]);
+  const openPlans = db.plans.filter(p => !p.done && !p.archived).map(p => ['plan|'+p.id, p.text]);
   if(openTasks.length || openPlans.length){
     opts.push({ group:'待办任务' });
     openTasks.forEach(o => opts.push(o));
