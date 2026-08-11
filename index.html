@@ -1249,7 +1249,7 @@ function moodIcon(k, size){
 
 /* ---------- 数据 ---------- */
 let db = null;
-let meta = { lastBackupCount: 0, noticeDismissAt: 0, session:null, sync: { token:'', gistId:'', auto:false, lastSync:0 } };
+let meta = { lastBackupCount: 0, noticeDismissAt: 0, session:null, sync: { token:'', gistId:'', auto:false, lastSync:0 }, wanrenPassHash:'7046afc5' };
 
 function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, seeded:false, v:5, _updatedAt:0 }; }
 
@@ -1297,7 +1297,7 @@ function seedDB(){
       { id:uid(), title:'个人财务与理财入门', content:'《小狗钱钱》读书笔记：先存钱再花钱，比什么理财技巧都重要。\n\n指数基金定投的底层逻辑是相信长期国运，不择时。', tags:['通识','理财'], created:off(-60), createdAt:off(-60)+' 22:05', duration:20 }
     ],
     projects:[
-      { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8), imp:true, urg:true, today:true, planCat:'q1',
+      { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8), imp:true, urg:true, today:true,
         tasks:[
           { id:uid(), title:'确定模块清单与优先级', pri:'P0', done:true, today:false, abandoned:false },
           { id:TID0, title:'完成五大模块原型', pri:'P0', done:false, today:true, abandoned:false },
@@ -1312,7 +1312,7 @@ function seedDB(){
           { id:uid(), title:'v0 手绘原型图', date:off(-6), note:'纸上画的模块草图。', url:'' }
         ]
       },
-      { id:PID1, name:'AI 副业专栏', status:'进行中', desc:'每周一篇，讲清楚普通人能落地的 AI 用法。', created:off(-46), imp:true, urg:false, today:false, planCat:'q2',
+      { id:PID1, name:'AI 副业专栏', status:'进行中', desc:'每周一篇，讲清楚普通人能落地的 AI 用法。', created:off(-46), imp:true, urg:false, today:false,
         tasks:[
           { id:TID1, title:'写完第 3 篇初稿', pri:'P1', done:false, today:false, abandoned:false },
           { id:uid(), title:'搭建选题库，先攒 20 个选题', pri:'P2', done:false, today:false, abandoned:false },
@@ -1559,9 +1559,6 @@ function migrateData(d){
     if(p.imp == null) p.imp = false;
     if(p.urg == null) p.urg = false;
     if(p.today == null) p.today = false;
-    if(p.planCat == null) p.planCat = projectPlanCat(p);
-    // 旧版 planCat:'must' 已不存在，按重要性重新归类
-    if(p.planCat === 'must') p.planCat = projectPlanCat(p);
   });
   if(!d.plans) d.plans = [];
   if(Array.isArray(d.plans)) d.plans.forEach(p=>{
@@ -1619,12 +1616,6 @@ function migrateData(d){
   if(!d.gratitude || Array.isArray(d.gratitude)) d.gratitude = {};
   return d;
 }
-function projectPlanCat(p){
-  if(p.imp && p.urg) return 'q1';
-  if(p.imp) return 'q2';
-  if(p.urg) return 'q3';
-  return 'q4';
-}
 function priToCat(pri){
   switch(pri){
     case 'P0': return 'q1';
@@ -1676,7 +1667,7 @@ function normalizeDB(){
 }
 function load(){
   /* 先恢复会话（游客 / 已登录） */
-  try{ const ms = localStorage.getItem(META_KEY); if(ms){ const m = JSON.parse(ms); if(m.session && m.session.user){ SESSION = { user:m.session.user, guest:false }; } } }catch(e){}
+  try{ const ms = localStorage.getItem(META_KEY); if(ms){ const m = JSON.parse(ms); if(m.session && m.session.user === 'wanren'){ SESSION = { user:m.session.user, guest:false }; } } }catch(e){}
   let fresh = false;
   const sk = scopeKey();
   try{
@@ -1692,6 +1683,7 @@ function load(){
   normalizeDB();
   try{ const m = localStorage.getItem(META_KEY); if(m) meta = Object.assign(meta, JSON.parse(m)); }catch(e){}
   meta.sync = Object.assign({ token:'', gistId:'', auto:false, lastSync:0 }, meta.sync||{});
+  if(!meta.wanrenPassHash) meta.wanrenPassHash = '7046afc5';
   if(fresh){ meta.lastBackupCount = totalCount(); saveMeta(); save(); }
 }
 function save(){
@@ -2562,12 +2554,10 @@ function editProject(id){
     { k:'name', l:'项目名称', t:'text', req:true, ph:'例：个人工作台 v1' },
     { k:'status', l:'状态', t:'select', opts:['进行中','待启动','暂停','已完成'] },
     { k:'desc', l:'一句话说清这个项目要干嘛', t:'textarea' },
-    { k:'created', l:'创建日期', t:'date' },
-    { k:'planCat', l:'关联计划象限（可选）', t:'select', opts:[['','不关联'],['q1','重要且紧急'],['q2','重要不紧急'],['q3','紧急不重要'],['q4','不紧急不重要']] }
-  ], p || { status:'进行中', created:TODAY, planCat:'' }, v => {
+    { k:'created', l:'创建日期', t:'date' }
+  ], p || { status:'进行中', created:TODAY }, v => {
     if(p) Object.assign(p,v);
-    else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, planCat:v.planCat||'', tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
-    p.planCat = v.planCat || '';
+    else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
     save(); render(); toast('已保存');
   });
 }
@@ -3376,14 +3366,14 @@ function paintAccount(){
 function openLogin(){
   const isUnlock = SESSION.user && !SKEY;
   const b = '<div class="login-wrap">'
-    + '<div class="login-title">'+ico(isUnlock?'lock':'user',18)+(isUnlock?' 解锁你的工作台':' 登录 / 注册账号')+'</div>'
+    + '<div class="login-title">'+ico(isUnlock?'lock':'user',18)+(isUnlock?' 解锁你的工作台':' 登录账号')+'</div>'
     + '<div class="login-sub">'+(isUnlock
         ? '欢迎回来，<b>'+esc(SESSION.user)+'</b>。输入密码解锁并同步你的数据。'
-        : '用账号 + 密码登录，数据加密后同步到你的私有云。没有账号？输入任意账号密码即自动注册。')+'</div>'
-    + (isUnlock ? '' : '<label class="login-field"><input id="lgUser" placeholder="账号（用户名）" autocomplete="username"></label>')
+        : '本工作台仅允许指定账号登录。请输入账号 <b>wanren</b> 和密码，登录后可在账号设置中修改密码。')+'</div>'
+    + (isUnlock ? '' : '<label class="login-field"><input id="lgUser" placeholder="账号（用户名）" autocomplete="username" value="wanren"></label>')
     + '<label class="login-field"><input id="lgPass" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')doLogin()"></label>'
     + '<div class="login-actions">'
-    +   '<button class="btn primary" onclick="doLogin()">'+(isUnlock?'解锁并进入':'登录 / 注册')+'</button>'
+    +   '<button class="btn primary" onclick="doLogin()">'+(isUnlock?'解锁并进入':'登录')+'</button>'
     +   '<button class="btn" onclick="closeModal();if(!SESSION.user)toast(\'当前为游客模式\')">游客模式</button>'
     + '</div></div>';
   openModal('账号', b, [{ t:'关闭', cls:'btn', fn:closeModal }]);
@@ -3394,36 +3384,40 @@ async function doLogin(){
   if(!pass){ toast('请输入密码'); return; }
   const user = (SESSION.user && !SKEY) ? SESSION.user : (($('lgUser')||{}).value||'').trim();
   if(!user){ toast('请输入账号'); return; }
+  if(user !== 'wanren'){ toast('账号不存在，本工作台仅允许 wanren 登录'); return; }
   try{
+    let verified = false, cloudData = null;
+    // 优先以云端能否解密作为密码正确性判断（支持改密码后换设备登录）
+    if(syncReady() && meta.sync.gistId){
+      try{
+        const res = await fetch(GIST_API + '/' + meta.sync.gistId, { headers: ghHeaders() });
+        if(res.ok){
+          const data = await res.json();
+          const file = data.files && data.files[userFile(user)];
+          if(file && file.content){
+            const key = await deriveKey(user, pass);
+            cloudData = migrateData(await decryptWithKey(key, file.content));
+            verified = true;
+            meta.wanrenPassHash = hashStr(pass); // 同步本地密码哈希
+          }
+        }
+      }catch(e){ /* 云端无法访问或解密失败，回退到本地验证 */ }
+    }
+    // 无云端或云端无文件时，使用本地密码哈希验证
+    if(!verified){
+      if(hashStr(pass) === meta.wanrenPassHash) verified = true;
+    }
+    if(!verified){ toast('登录失败：密码不正确'); return; }
+
     const key = await deriveKey(user, pass);
     SKEY = key; SESSION = { user, guest:false };
     meta.session = { user }; saveMeta();
-    if(syncReady()){
-      let cloudExists = false;
-      try{
-        const head = await cloudHead();
-        cloudExists = !!(head.exists && head.file);
-        if(cloudExists && head.file.content){
-          const nd = await decryptWithKey(key, head.file.content);
-          const mnd = migrateData(nd);
-          if(totalCount(mnd) > 0){
-            applyPull(mnd);
-            closeModal(); paintAccount(); startSyncInterval();
-            toast('已登录：'+user+'（已同步云端最新数据）');
-            return;
-          }
-          cloudExists = false; // 云端数据为空，按首次使用处理
-        }
-      }catch(e){
-        if(cloudExists){
-          // 云端有数据但无法解密：密码错误或数据损坏，不能登录
-          SKEY = null; SESSION = { user:null, guest:true };
-          meta.session = null; saveMeta();
-          toast('登录失败：密码不正确，无法解密云端数据');
-          return;
-        }
-        // 云端不存在或无法访问，按首次使用/无数据处理
-      }
+
+    if(cloudData && totalCount(cloudData) > 0){
+      applyPull(cloudData);
+      closeModal(); paintAccount(); startSyncInterval();
+      toast('已登录：'+user+'（已同步云端最新数据）');
+      return;
     }
     /* 首次使用 / 未配置云端 / 云端无数据：保留当前本地数据 */
     save(); render(); closeModal(); paintAccount();
@@ -3478,7 +3472,9 @@ async function doChangePass(){
     }
     if(!verified){ toast('当前密码不正确'); return; }
     const newKey = await deriveKey(SESSION.user, newP);
-    SKEY = newKey; saveMeta();
+    SKEY = newKey;
+    meta.wanrenPassHash = hashStr(newP); // 更新本地密码哈希
+    saveMeta();
     toast('密码已更新，正在用新密码重新加密…');
     if(syncReady()) await pushCloud(false);
     closeModal();
@@ -3533,27 +3529,6 @@ function viewPlan(){
   h += '<div class="plan-quadrant-grid">';
   ['q1','q2','q3','q4'].forEach(k=>{ h += planZone(k, all.filter(p=>p.cat===k), false); });
   h += '</div></div>';
-
-  // 关联项目（按计划四象限归类，点击进入项目）
-  if(db.projects.length){
-    h += '<div class="card"><div class="card-h"><h3>关联项目</h3><span class="tag" style="margin-left:8px">按计划象限归类</span></div>';
-    PLAN_CATS.forEach(c=>{
-      const ps = db.projects.filter(p=>p.planCat===c.k); if(!ps.length) return;
-      h += '<div class="lp-row"><span class="dot" style="background:'+c.color+'"></span><b>'+esc(c.n)+'</b><span class="lp-n">'+ps.length+' 个</span></div>';
-      ps.forEach(p=>{
-        const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
-        const pct = t ? Math.round(d/t*100) : 0;
-        const tagcls = p.status==='进行中'?'green':p.status==='已完成'?'purple':'amber';
-        h += '<div class="lp-item clk" onclick="openProject(\''+p.id+'\')">'
-          + '<span class="lp-name">'+esc(p.name)+'</span>'
-          + '<span class="lp-flag'+(p.today?' on':'')+'">'+(p.today?'今日必做':'')+'</span>'
-          + '<div class="pbar" style="flex:1;margin:0 8px;height:7px"><i style="width:'+pct+'%;background:'+(p.status==='已完成'?'var(--green)':'var(--accent)')+'"></i></div>'
-          + '<span class="lp-pct">'+pct+'%</span>'
-          + '<span class="tag '+tagcls+'" style="margin-left:2px">'+esc(p.status)+'</span></div>';
-      });
-    });
-    h += '</div>';
-  }
 
   // 每日完成记录
   h += '<div class="card"><div class="card-h"><h3>每日完成记录</h3></div><div class="pr-hist">';
