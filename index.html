@@ -352,14 +352,14 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 /* 目标内联新建 */
 .goal-add-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
 .ga-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.goal-add-card input{flex:1;min-width:200px;padding:12px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:16px;outline:none;color:var(--text)}
+.goal-add-card input{flex:1;min-width:180px;padding:12px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:16px;outline:none;color:var(--text)}
 .goal-add-card input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
 .goal-add-card .btn.primary{flex-shrink:0;min-height:46px}
 .ga-row2{margin-top:11px}
 .ga-cats{display:flex;gap:6px;flex-wrap:wrap}
 .ga-cats .chip{background:var(--surface2)}
 .ga-cats .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.ga-note{margin-top:10px;width:100%;font-size:14.5px !important;padding:10px 15px !important}
+.ga-note{font-size:14.5px !important}
 
 /* 灵感库 */
 .idea-add-card{background:linear-gradient(135deg,var(--accent-soft),rgba(224,163,184,.05));border:1px solid rgba(224,163,184,.28);border-radius:var(--radius);padding:18px;margin-bottom:20px}
@@ -1887,12 +1887,12 @@ function viewGoals(){
   h += '<div class="goal-add-card">'
     + '<div class="ga-row">'
     +   '<input id="gaTitle" placeholder="写下一个大目标，比如：三年内成为能养活自己的独立开发者" onkeydown="if(event.key===\'Enter\')addGoalInline()">'
+    +   '<input id="gaNote" class="ga-note" placeholder="备注 / 为什么想做这件事（可留空）">'
     +   '<button class="btn primary" onclick="addGoalInline()">'+ico('plus',15)+'添加</button>'
     + '</div>'
     + '<div class="ga-row2">'
     +   '<div class="ga-cats">'+GOAL_CATS.map(c=>'<button class="chip'+(goalNewCat===c?' on':'')+'" onclick="setGoalNewCat(\''+c+'\')">'+c+'</button>').join('')+'</div>'
     + '</div>'
-    + '<input id="gaNote" class="ga-note" placeholder="备注 / 为什么想做这件事（可留空）">'
     + '</div>';
 
   if(!gs.length) return h + emptyBox('还没有目标，在上面直接写下第一个想实现的事');
