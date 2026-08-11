@@ -1056,6 +1056,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-node:hover>.lib-node-ops{display:flex}
 .lib-node-ops .iconbtn.sm{width:24px;height:24px;padding:0}
 .lib-tree-empty{font-size:13px;color:var(--muted);line-height:1.7;padding:14px 10px}
+.lib-side-r .lib-side-icons{display:flex;gap:2px;align-items:center;margin-right:5px}
+.lib-side-r .lib-side-icons .iconbtn.sm{width:30px;height:30px}
 .lib-tree-tip{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--surface3)}
 .lib-tree-tip svg{flex-shrink:0;margin-top:2px}
 
@@ -4909,10 +4911,11 @@ function viewLibrary(){
   /* 左侧：知识框架树 */
   const anyOpen = LIB_EXP.size > 0;
   h += '<div class="card lib-side" style="width:'+libSideW+'px"><div class="lib-resizer" onmousedown="libStartResize(event)" ontouchstart="libStartResize(event)"></div><div class="card-h"><h3>知识框架</h3>'
-    + '<div class="r"><button class="iconbtn sm" title="'+(anyOpen?'全部收起':'全部展开')+'" onclick="libExpandAll('+(anyOpen?'false':'true')+')">'+ico(anyOpen?'up':'down',14)+'</button>'
+    + '<div class="r lib-side-r"><span class="lib-side-icons">'
+    + '<button class="iconbtn sm" title="'+(anyOpen?'全部收起':'全部展开')+'" onclick="libExpandAll('+(anyOpen?'false':'true')+')">'+ico(anyOpen?'up':'down',14)+'</button>'
     + '<button class="iconbtn sm" title="清空全部分类目录" onclick="fwClearAll()">'+ico('trash',14)+'</button>'
     + '<button class="iconbtn sm'+(libBatchMode?' on':'')+'" title="批量删除目录（勾选后批量删除，保留文件）" onclick="libToggleBatch()">'+ico('del',14)+'</button>'
-    + '<button class="btn sm" onclick="fwAdd(\'\')">'+ico('plus',14)+'顶层分类</button></div></div>'
+    + '</span><button class="btn sm" onclick="fwAdd(\'\')">'+ico('plus',14)+'顶层分类</button></div></div>'
     + '<div class="lib-tree">'
     +   '<div class="lib-node root d0'+(libCatId===''?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'\')">'
     +     '<span class="ln-caret ph"></span><span class="ln-name">全部资料</span><span class="ln-cnt">'+all.length+'</span></div></div>'
