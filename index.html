@@ -1049,6 +1049,19 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-tree-tip{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--surface3)}
 .lib-tree-tip svg{flex-shrink:0;margin-top:2px}
 
+/* 资料库批量清除（一次性临时功能，用完会移除）：仅删选中分类，保留文件 */
+.lib-node-row.batch{cursor:default}
+.lib-node-row.batch:hover{background:transparent}
+.lib-node.batch.sel>.lib-node-row{background:var(--accent-soft);color:var(--accent2);font-weight:600}
+.ln-check{display:none}
+.lib-node-row.batch .ln-check{display:flex;width:18px;height:18px;flex-shrink:0;align-items:center;justify-content:center;border:2px solid var(--surface3);border-radius:5px;cursor:pointer;transition:.15s}
+.lib-node-row.batch .ln-check.on{background:var(--accent);border-color:var(--accent)}
+.ln-check svg{opacity:0;color:#fff;display:block}
+.lib-node-row.batch .ln-check.on svg{opacity:1}
+.lib-batch-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--surface3);background:var(--surface2)}
+.lib-batch-bar .cnt{font-size:13px;color:var(--muted);margin-right:auto}
+.iconbtn.on{background:var(--accent-soft);color:var(--accent2)}
+
 .lib-pv-imgwrap{display:flex;justify-content:center;background:var(--surface3);border-radius:8px;padding:10px}
 .lib-pv-img{max-width:100%;max-height:72vh;border-radius:5px}
 .lib-pv-frame{width:100%;height:74vh;border:0;border-radius:8px;background:#fff}
@@ -4572,8 +4585,16 @@ function libTreeHTML(parent, depth){
     const cnt = db.library.filter(x=>set.has(x.catId||'')).length;
     const hasKid = libChildren(n.id).length > 0;
     const open = LIB_EXP.has(n.id);
+    const rowCls = 'lib-node-row'+(libBatchMode?' batch':'')+(libBatchSel.has(n.id)?' sel':'');
+    const rowAttrs = libBatchMode
+      ? 'onclick="libBatchToggle(\''+n.id+'\')"'
+      : 'draggable="true" ondragstart="dragFw(event,\''+n.id+'\')" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\''+n.id+'\')" onclick="libSetCatId(\''+n.id+'\')"';
+    const checkBox = libBatchMode
+      ? '<span class="ln-check'+(libBatchSel.has(n.id)?' on':'')+'" onclick="event.stopPropagation();libBatchToggle(\''+n.id+'\')">'+ico('check',12)+'</span>'
+      : '';
     h += '<div class="lib-node d'+Math.min(d,2)+(libCatId===n.id?' on':'')+(open?' open':'')+'">'
-      + '<div class="lib-node-row" draggable="true" ondragstart="dragFw(event,\''+n.id+'\')" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\''+n.id+'\')" onclick="libSetCatId(\''+n.id+'\')">'
+      + '<div class="'+rowCls+'" '+rowAttrs+'>'
+      +   checkBox
       +   (hasKid
             ? '<button class="ln-caret'+(open?' open':'')+'" title="展开 / 收起" onclick="event.stopPropagation();libToggleExp(\''+n.id+'\')">'+ico('chev',12)+'</button>'
             : '<span class="ln-caret ph"></span>')
@@ -4662,6 +4683,9 @@ function libMatch(x){
   return true;
 }
 let libCatSet = new Set();
+/* 资料库批量清除（一次性临时功能，用完会移除）：仅删选中分类，保留文件 */
+let libBatchMode = false;
+let libBatchSel = new Set();
 function libListHTML(){
   const all = db.library;
   libCatSet = libCatId && libCatId !== '__none__' ? new Set(libDescendants(libCatId)) : new Set();
@@ -4755,6 +4779,7 @@ function viewLibrary(){
     + '<div class="r"><button class="iconbtn sm" title="'+(anyOpen?'全部收起':'全部展开')+'" onclick="libExpandAll('+(anyOpen?'false':'true')+')">'+ico(anyOpen?'up':'down',14)+'</button>'
     + '<button class="iconbtn sm" title="导入推荐框架（全维度知识体系）" onclick="fwRestoreDefaults()">'+ico('spark',14)+'</button>'
     + '<button class="iconbtn sm" title="清空全部分类目录" onclick="fwClearAll()">'+ico('trash',14)+'</button>'
+    + '<button class="iconbtn sm'+(libBatchMode?' on':'')+'" title="批量清除目录（勾选后批量删除，保留文件）" onclick="libToggleBatch()">'+ico('check',14)+'</button>'
     + '<button class="btn sm" onclick="fwAdd(\'\')">'+ico('plus',14)+'顶层分类</button></div></div>'
     + '<div class="lib-tree">'
     +   '<div class="lib-node root d0'+(libCatId===''?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'\')">'
@@ -4764,6 +4789,12 @@ function viewLibrary(){
     +   (db.frameworks.length ? libTreeHTML('', 0) : '<div class="lib-tree-empty">还没有分类，点右上角'+ico('spark',12)+'一键导入《全维度个人知识体系》推荐框架</div>')
     + '</div>'
     + '<div class="lib-tree-tip">'+ico('spark',13)+'拖动分类可调整顺序；把资料的拖拽手柄拖到分类上即可归类</div>'
+    + (libBatchMode
+        ? '<div class="lib-batch-bar"><span class="cnt">已选 '+libBatchSel.size+' 个</span>'
+          + '<button class="btn sm" onclick="libBatchAll()">全选</button>'
+          + '<button class="btn sm" onclick="libToggleBatch()">取消</button>'
+          + '<button class="btn danger sm" onclick="libBatchDel()">删除选中</button></div>'
+        : '')
     + '</div>';
 
   /* 右侧：资料列表 */
@@ -5025,6 +5056,34 @@ function fwClearAll(){
       db.frameworks = [];
       if(libCatId && libCatId !== '' && libCatId !== '__none__') libCatId = '';
       save(); render(); toast('已清空分类目录');
+    });
+}
+/* 资料库批量清除（一次性临时功能，用完会移除）：仅删除选中的分类目录，保留所有资料文件 */
+function libToggleBatch(){
+  libBatchMode = !libBatchMode;
+  libBatchSel = new Set();
+  render();
+}
+function libBatchToggle(id){
+  if(libBatchSel.has(id)) libBatchSel.delete(id); else libBatchSel.add(id);
+  render();
+}
+function libBatchAll(){
+  db.frameworks.forEach(f=>libBatchSel.add(f.id));
+  render();
+}
+function libBatchDel(){
+  if(!libBatchSel.size){ toast('请先勾选要清除的分类'); return; }
+  const rm = new Set();
+  libBatchSel.forEach(id=>libDescendants(id).forEach(d=>rm.add(d)));
+  confirmBoxCustom('批量清除选中的分类？',
+    '将删除选中的 '+libBatchSel.size+' 个分类及其下级（共 '+rm.size+' 个节点）。<b>资料文件不会删除</b>，只是从已删除分类下移到「未分类」，你可随时重新归类。',
+    '删除', ()=>{
+      db.frameworks = db.frameworks.filter(f=>!rm.has(f.id));
+      db.library.forEach(x=>{ if(rm.has(x.catId||'')) x.catId = ''; });
+      if(libCatId && rm.has(libCatId)) libCatId = '';
+      libBatchSel = new Set(); libBatchMode = false;
+      save(); render(); toast('已批量清除 '+rm.size+' 个分类，文件已保留');
     });
 }
 let _libUrl = null;
