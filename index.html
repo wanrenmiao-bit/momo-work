@@ -239,6 +239,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 
 /* 人生目标 */
 .goal-card{padding:20px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);margin-bottom:16px;box-shadow:var(--shadow)}
+.goal-list{display:flex;flex-direction:column}
+.goal-card.dragover{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 26px rgba(224,163,184,.2)}
+.goal-card.dragover::after{display:none}
+.goal-grip{color:var(--muted);cursor:grab}
+.goal-grip:hover{color:var(--accent)}
+.goal-move-up,.goal-move-down{display:none}
+.goal-drop-last{margin-top:14px;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.goal-drop-last.dragover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2)}
+@media(max-width:768px){.goal-grip{display:none}.goal-move-up,.goal-move-down{display:inline-flex}.goal-move-up{order:-1}}
 .goal-head{display:flex;align-items:flex-start;gap:14px}
 .goal-ring{flex-shrink:0}
 .goal-ring text{fill:var(--text)}
@@ -1841,13 +1850,14 @@ function viewGoals(){
 
   if(!gs.length) return h + emptyBox('还没有目标，在上面直接写下第一个想实现的事');
 
+  h += '<div class="goal-list">';
   gs.forEach(g => {
     const gp = goalProgress(g);
     const msTotal = g.milestones.length, msDone = g.milestones.filter(msIsDone).length;
     const allDone = msTotal && msDone === msTotal;
     const expanded = EXPANDED.has(g.id);
     const lastDone = allDone ? (g.milestones.map(m=>m.doneAt).filter(Boolean).sort().pop()||'') : '';
-    h += '<div class="goal-card'+(allDone?' achieved':'')+'">'
+    h += '<div class="goal-card'+(allDone?' achieved':'')+'" draggable="true" ondragstart="dragGoal(event,\''+g.id+'\')" ondragover="allowGoalDrop(event)" ondragleave="goalDragLeave(event)" ondrop="dropGoal(event,\''+g.id+'\')">'
       + '<div class="goal-head">'
       +   (allDone
             ? '<div class="goal-medal">'+ico('trophy',34)+'<span class="goal-medal-spark">'+ico('spark',13)+'</span></div>'
@@ -1862,6 +1872,9 @@ function viewGoals(){
       +     '<div style="font-size:12.5px;color:var(--muted);margin-top:8px">里程碑 '+msDone+'/'+msTotal+' · 小项 '+gp.done+'/'+gp.total+'</div>'
       +   '</div>'
       +   '<div class="ops">'
+      +     '<button class="iconbtn goal-grip" title="拖动调整顺序" onclick="event.stopPropagation()">'+ico('move',15)+'</button>'
+      +     '<button class="iconbtn goal-move-up" title="上移" onclick="event.stopPropagation();moveGoal(\''+g.id+'\',-1)">'+ico('up',14)+'</button>'
+      +     '<button class="iconbtn goal-move-down" title="下移" onclick="event.stopPropagation();moveGoal(\''+g.id+'\',1)">'+ico('down',14)+'</button>'
       +     '<button class="iconbtn" onclick="event.stopPropagation();editGoal(\''+g.id+'\')" title="编辑">'+ico('edit',15)+'</button>'
       +     '<button class="iconbtn del" onclick="event.stopPropagation();delGoal(\''+g.id+'\')" title="删除">'+ico('del',15)+'</button>'
       +   '</div>'
@@ -1923,7 +1936,44 @@ function viewGoals(){
     }
     h += '</div>';
   });
+  h += '</div>';
+  h += '<div class="goal-drop-last" ondragover="allowGoalDrop(event)" ondragleave="goalDragLeave(event)" ondrop="dropGoalLast(event)">'+ico('down',13)+'拖动目标到这里，放到最后</div>';
   return h;
+}
+function dragGoal(e, id){ e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; }
+function allowGoalDrop(e){ e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+function goalDragLeave(e){ e.currentTarget.classList.remove('dragover'); }
+function dropGoal(e, targetId){
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const id = e.dataTransfer.getData('text/plain');
+  if(!id || id === targetId) return;
+  const from = db.goals.findIndex(x=>x.id===id);
+  if(from < 0) return;
+  const [moved] = db.goals.splice(from, 1);
+  let to = db.goals.findIndex(x=>x.id===targetId);
+  if(to < 0) to = db.goals.length;
+  db.goals.splice(to, 0, moved);
+  save(); render(); toast('已调整目标顺序');
+}
+function dropGoalLast(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const id = e.dataTransfer.getData('text/plain');
+  const from = db.goals.findIndex(x=>x.id===id);
+  if(from < 0 || from === db.goals.length - 1) return;
+  const [moved] = db.goals.splice(from, 1);
+  db.goals.push(moved);
+  save(); render(); toast('已放到最后');
+}
+function moveGoal(id, dir){
+  const i = db.goals.findIndex(x=>x.id===id);
+  if(i < 0) return;
+  const j = i + dir;
+  if(j < 0 || j >= db.goals.length) return;
+  const [m] = db.goals.splice(i, 1);
+  db.goals.splice(j, 0, m);
+  save(); render();
 }
 function toggleGoal(id){ if(EXPANDED.has(id)) EXPANDED.delete(id); else EXPANDED.add(id); render(); }
 function setGoalNewCat(c){ goalNewCat = c; render(); }
