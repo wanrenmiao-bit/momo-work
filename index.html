@@ -378,23 +378,23 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .idea-day-title{font-size:15px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:8px;letter-spacing:.3px}
 .idea-day-title::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .idea-masonry{columns:4 220px;column-gap:14px}
-.idea-card{break-inside:avoid;display:inline-block;width:100%;margin:0 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:15px 15px 13px;box-shadow:var(--shadow);border-top:3px solid var(--accent);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative}
+.idea-card{break-inside:avoid;display:inline-block;width:100%;margin:0 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:15px 15px 13px;box-shadow:var(--shadow);border-top:3px solid var(--accent);cursor:pointer;transition:box-shadow .18s ease,border-color .18s ease,background .18s ease;position:relative;will-change:box-shadow,border-color}
 .idea-card:nth-child(4n+2){border-top-color:var(--cyan)}
 .idea-card:nth-child(4n+3){border-top-color:var(--orange)}
 .idea-card:nth-child(4n+4){border-top-color:var(--green)}
-.idea-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(120,105,90,.14);border-color:rgba(224,163,184,.55);background:linear-gradient(180deg,rgba(224,163,184,.07),var(--surface) 46%)}
-.idea-card:hover .idea-card-foot .iconbtn{opacity:1}
+.idea-card:hover{box-shadow:0 12px 30px rgba(120,105,90,.14);border-color:rgba(224,163,184,.55);background:linear-gradient(180deg,rgba(224,163,184,.07),var(--surface) 46%)}
+.idea-card:hover .idea-actions{opacity:1;visibility:visible;transform:translateY(0)}
 .idea-card.sel{z-index:2;border-color:var(--accent2);box-shadow:0 0 0 2px rgba(224,163,184,.42),0 10px 26px rgba(120,105,90,.13)}
 .idea-card.done{opacity:.62;background:var(--surface2)}
 .idea-card.done .idea-card-text{text-decoration:line-through;color:var(--text2)}
 .idea-card-top{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .idea-card-text{font-size:14.2px;line-height:1.7;word-break:break-word;margin:0 0 12px;color:var(--text);white-space:pre-wrap}
 .idea-card-foot{display:flex;align-items:center;gap:8px}
-.idea-actions{position:static;opacity:1;display:flex;gap:4px}
+.idea-actions{opacity:0;visibility:hidden;transform:translateY(-2px);display:flex;gap:4px;transition:opacity .15s,visibility .15s,transform .15s}
 @media(max-width:1100px){.idea-masonry{columns:3 200px}}
 @media(max-width:860px){.idea-masonry{columns:2 180px}}
 @media(max-width:520px){.idea-masonry{columns:1}}
-@media(max-width:768px){.idea-masonry{column-gap:10px}.idea-card:hover{transform:none}}
+@media(max-width:768px){.idea-masonry{column-gap:10px}.idea-actions{opacity:1;visibility:visible;transform:translateY(0)}}
 .btn-done{padding:5px 11px;border-radius:5px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text2);background:var(--surface3);transition:.16s}
 .btn-done:hover{border-color:var(--green);color:#5f7d5a}
 .btn-done.on{background:var(--green-soft);border-color:rgba(148,176,142,.35);color:#5f7d5a}
@@ -1129,7 +1129,10 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
           <span class="dsk">导入</span>
         </button>
-        <button class="btn sm" id="acctBtn" onclick="openAccount()"><span id="acctLabel">登录</span></button>
+        <button class="btn sm" id="acctBtn" onclick="openAccount()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="acctLabel">登录</span>
+        </button>
         <button class="btn sm" onclick="pullCloud(true)" title="从云端拉取最新">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 12v9"/><path d="M8 16l4 4 4-4"/></svg>
           <span class="dsk">同步</span>
@@ -1246,7 +1249,7 @@ function moodIcon(k, size){
 let db = null;
 let meta = { lastBackupCount: 0, noticeDismissAt: 0, session:null, sync: { token:'', gistId:'', auto:false, lastSync:0 } };
 
-function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, seeded:false, v:5 }; }
+function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, seeded:false, v:5, _updatedAt:0 }; }
 
 function seedDB(){
   const SUB = (t, done, at) => ({ id:uid(), title:t, done:!!done, doneAt:done?(at||off(-6)):'' });
@@ -1690,6 +1693,7 @@ function load(){
   if(fresh){ meta.lastBackupCount = totalCount(); saveMeta(); save(); }
 }
 function save(){
+  db._updatedAt = Date.now();
   try{ localStorage.setItem(scopeKey(), JSON.stringify(db)); }
   catch(e){ toast('存储空间不足，建议先导出备份再清理旧数据'); }
   schedulePush();
@@ -1712,17 +1716,18 @@ function putFile(id, blob){ return openFilesDB().then(db=>new Promise((res,rej)=
 function getFile(id){ return openFilesDB().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('files','readonly'); const r=tx.objectStore('files').get(id); r.onsuccess=()=>res(r.result?r.result.blob:null); r.onerror=()=>rej(r.error); })); }
 function delFile(id){ return openFilesDB().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('files','readwrite'); tx.objectStore('files').delete(id); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
 function clearFiles(){ return openFilesDB().then(db=>new Promise((res)=>{ const tx=db.transaction('files','readwrite'); tx.objectStore('files').clear(); tx.oncomplete=()=>res(); tx.onerror=()=>res(); })).catch(()=>{}); }
-function totalCount(){
-  return db.goals.length + db.goals.reduce((a,g)=>a+g.milestones.length,0)
-    + db.ideas.length
-    + db.studies.length
-    + db.projects.length + db.projects.reduce((a,p)=>a+p.tasks.length+p.assets.length+p.outputs.length,0)
-    + db.incomes.length
-    + db.plans.length
-    + db.reviews.length
-    + db.pomos.length
-    + db.library.length
-    + Object.keys(db.gratitude).length;
+function totalCount(obj){
+  const d = obj || db;
+  return d.goals.length + d.goals.reduce((a,g)=>a+g.milestones.length,0)
+    + d.ideas.length
+    + d.studies.length
+    + d.projects.length + d.projects.reduce((a,p)=>a+p.tasks.length+p.assets.length+p.outputs.length,0)
+    + d.incomes.length
+    + d.plans.length
+    + d.reviews.length
+    + d.pomos.length
+    + d.library.length
+    + Object.keys(d.gratitude).length;
 }
 
 /* ---------- 图标 ---------- */
@@ -3168,7 +3173,7 @@ function clearAll(){
 const GIST_API = 'https://api.github.com/gists';
 const SYNC_FILE = 'momo-workbench.json';
 
-function syncReady(){ return meta.sync && meta.sync.token && meta.sync.gistId; }
+function syncReady(){ return !!(meta.sync && meta.sync.token && meta.sync.gistId); }
 function ghHeaders(){ return { 'Authorization':'Bearer ' + meta.sync.token, 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' }; }
 
 function openSync(){
@@ -3196,27 +3201,70 @@ function openSync(){
   openModal('云端同步', b, [{ t:'关闭', cls:'btn', fn:closeModal }]);
 }
 
-function saveSyncCfg(){
+async function saveSyncCfg(){
   meta.sync = meta.sync || {};
+  const hadId = meta.sync.gistId;
   meta.sync.token = $('syncToken').value.trim();
   meta.sync.gistId = $('syncGist').value.trim();
   meta.sync.auto = $('syncAuto').checked;
   saveMeta();
   closeModal();
-  if(meta.sync.token){
-    toast('同步设置已保存，正在尝试连接云端…');
-    pushCloud(false);
-  } else {
-    toast('已保存（未填令牌，暂不能同步）');
+  if(!SESSION.user || !SKEY){ toast('已保存（未登录，暂不能同步）'); return; }
+  if(!meta.sync.token){ toast('已保存（未填令牌，暂不能同步）'); return; }
+  toast('同步设置已保存，正在校验云端…');
+  try{
+    if(!meta.sync.gistId){
+      // 新建 Gist：把本地数据推上去
+      await pushCloud(true);
+    } else {
+      // 已有 Gist：先拉取，避免本地空数据覆盖云端完整数据
+      await pullCloud(false, { noConfirm:true });
+    }
+  }catch(e){
+    // 拉取失败（Gist 不存在/无文件）则尝试推送本地
+    if(e.message === 'Gist not found' || e.message === 'No file'){
+      await pushCloud(true);
+    } else {
+      toast('同步校验失败：' + e.message);
+    }
   }
 }
 
-async function pushCloud(manual){
+/* 读取云端 Gist 元信息（文件名、更新时间），用于 push 前冲突检查 */
+async function cloudHead(){
+  if(!meta.sync.gistId) return { exists:false, updatedAt:0, file:null };
+  const res = await fetch(GIST_API + '/' + meta.sync.gistId, { headers: ghHeaders() });
+  if(!res.ok){
+    if(res.status === 404) return { exists:false, updatedAt:0, file:null, notFound:true };
+    throw new Error('HTTP ' + res.status);
+  }
+  const data = await res.json();
+  const fname = userFile(SESSION.user);
+  const file = data.files && data.files[fname];
+  return { exists:true, updatedAt:new Date(data.updated_at).getTime(), file, data };
+}
+
+async function pushCloud(manual, opts){
+  opts = opts || {};
   if(!SESSION.user || !SKEY){ if(manual) toast('请先登录账号再同步'); return; }
   if(!meta.sync || !meta.sync.token){ if(manual) toast('请先在「云端同步」填写令牌'); openSync(); return; }
   try{
-    const b64 = await encryptWithKey(SKEY, db);
     const fname = userFile(SESSION.user);
+    // 推送前检查云端版本：若云端比本机新，阻止自动覆盖
+    if(meta.sync.gistId && !opts.force){
+      try{
+        const head = await cloudHead();
+        if(head.exists && head.file && head.updatedAt > (db._updatedAt || 0) + 3000){
+          if(manual){
+            confirmBoxCustom('云端数据更新', '云端数据比本机新（'+new Date(head.updatedAt).toLocaleString('zh-CN')+'）。直接推送会覆盖云端，建议先「从云端拉取」。', '仍要强制推送', ()=>pushCloud(manual, {force:true}));
+          } else {
+            console.warn('auto push skipped: cloud newer');
+          }
+          return;
+        }
+      }catch(e){ /* 版本检查失败仍继续推送 */ }
+    }
+    const b64 = await encryptWithKey(SKEY, db);
     let url = GIST_API, method = 'POST', recreate = false;
     const body = { files:{ [fname]:{ content:b64 } }, description:'沫沫人生工作台 用户数据同步' };
     if(meta.sync.gistId){ url = GIST_API + '/' + meta.sync.gistId; method = 'PATCH'; }
@@ -3229,6 +3277,7 @@ async function pushCloud(manual){
     const data = await res.json();
     if(data.id){ meta.sync.gistId = data.id; }
     meta.sync.lastSync = Date.now(); saveMeta();
+    db._updatedAt = Math.max(db._updatedAt || 0, new Date(data.updated_at).getTime());
     if(manual) toast(recreate ? '云端 Gist 不存在，已重新创建并同步' : '已同步到云端');
   }catch(e){
     if(manual) toast('同步失败：' + e.message + '（检查令牌/网络，GitHub API 需联网）');
@@ -3236,32 +3285,44 @@ async function pushCloud(manual){
   }
 }
 
-async function pullCloud(manual){
+async function pullCloud(manual, opts){
+  opts = opts || {};
   if(!SESSION.user || !SKEY){ if(manual) toast('请先登录账号'); openLogin(); return; }
   if(!meta.sync || !meta.sync.token){ if(manual) toast('请先在「云端同步」填写令牌'); openSync(); return; }
-  if(!meta.sync.gistId){ if(manual) toast('还没有云端 Gist，请先点「推送本机数据到云端」创建'); return; }
+  if(!meta.sync.gistId){ if(manual) toast('还没有云端 Gist，请先点「推送本机数据到云端」创建'); throw new Error('No gistId'); }
+  let data;
   try{
     const res = await fetch(GIST_API + '/' + meta.sync.gistId, { headers: ghHeaders() });
     if(!res.ok){
       if(res.status === 404){
         if(manual) toast('云端 Gist 不存在，可能是 ID 填错或被删除，请重新推送创建');
-        return;
+        throw new Error('Gist not found');
       }
       throw new Error('HTTP ' + res.status);
     }
-    const data = await res.json();
+    data = await res.json();
     const file = data.files && data.files[userFile(SESSION.user)];
-    if(!file || !file.content){ if(manual) toast('云端暂无你的数据，请先推送一次'); return; }
+    if(!file || !file.content){
+      if(manual) toast('云端暂无你的数据，请先推送一次');
+      throw new Error('No file');
+    }
     let nd;
-    try{ nd = await decryptWithKey(SKEY, file.content); }catch(err){ if(manual) toast('解密失败，密码可能不正确'); return; }
+    try{ nd = await decryptWithKey(SKEY, file.content); }catch(err){ if(manual) toast('解密失败，密码可能不正确'); throw err; }
     nd = migrateData(nd);
-    if(manual && totalCount() > 0){
+    const cloudCount = totalCount(nd);
+    if(cloudCount === 0){
+      if(manual) toast('云端数据为空，未覆盖本地');
+      throw new Error('Empty cloud data');
+    }
+    nd._updatedAt = Math.max(nd._updatedAt || 0, new Date(data.updated_at).getTime());
+    if(manual && !opts.noConfirm && totalCount() > 0){
       confirmBoxCustom('从云端拉取？', '会用云端记录覆盖本机当前数据，<b>未同步的改动会丢失</b>。建议先点「导出备份」留底。', '确认拉取覆盖', ()=>applyPull(nd));
     } else {
       applyPull(nd);
     }
   }catch(e){
     if(manual) toast('拉取失败：' + e.message);
+    throw e;
   }
 }
 
@@ -3272,8 +3333,11 @@ function applyPull(nd){
   db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; });
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
   db.seeded = true;
+  db._updatedAt = Math.max(db._updatedAt || 0, Date.now());
+  // 直接落盘，不触发 schedulePush，避免拉取后又立刻推送造成循环
+  try{ localStorage.setItem(scopeKey(), JSON.stringify(db)); }catch(e){ toast('存储空间不足，建议导出备份'); }
   meta.sync.lastSync = Date.now(); saveMeta();
-  save(); closeProject(); render();
+  render();
   toast('已从云端拉取最新数据');
 }
 
@@ -3281,7 +3345,7 @@ let _pushTimer = null;
 function schedulePush(){
   if(!SESSION.user || !SKEY || !meta.sync || !meta.sync.auto || !meta.sync.token || !meta.sync.gistId) return;
   clearTimeout(_pushTimer);
-  _pushTimer = setTimeout(()=>{ pushCloud(false); }, 900);
+  _pushTimer = setTimeout(()=>{ pushCloud(false); }, 180);
 }
 
 /* ---------- 登录 / 游客 / 账号 ---------- */
@@ -3323,16 +3387,19 @@ async function doLogin(){
           const file = data.files && data.files[userFile(user)];
           if(file && file.content){
             const nd = await decryptWithKey(key, file.content);
-            db = Object.assign(blankDB(), migrateData(nd));
-            normalizeDB();
-            save(); render(); closeModal(); paintAccount();
-            toast('已登录：'+user);
-            return;
+            const mnd = migrateData(nd);
+            if(totalCount(mnd) > 0){
+              applyPull(mnd);
+              closeModal();
+              paintAccount();
+              toast('已登录：'+user+'（已同步云端最新数据）');
+              return;
+            }
           }
         }
-      }catch(e){ /* 云端拉取失败，按首次使用处理 */ }
+      }catch(e){ /* 云端拉取失败，按本地数据继续，避免 seedDB 覆盖用户数据 */ }
     }
-    /* 首次使用 / 未配置云端：以当前本地数据作为该账号初始数据 */
+    /* 首次使用 / 未配置云端 / 云端无数据：保留当前本地数据 */
     save(); render(); closeModal(); paintAccount();
     toast('已登录：'+user + (syncReady() ? '（首次同步中…）' : '（未配置云端，数据仅本机）'));
     if(syncReady()) pushCloud(false);
