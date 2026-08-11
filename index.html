@@ -3329,6 +3329,52 @@ function logout(){
   db = null; load(); render(); paintAccount();
   toast('已退出，当前为游客模式');
 }
+function openChangePass(){
+  if(!SESSION.user || !SKEY){ openLogin(); return; }
+  const b = '<div class="login-wrap">'
+    + '<div class="login-title">'+ico('lock',18)+' 修改密码</div>'
+    + '<div class="login-sub">修改后，云端数据会用<b>新密码</b>重新加密，<b>旧密码立即失效</b>。请牢记新密码。</div>'
+    + '<label class="login-field"><input id="cpOld" type="password" placeholder="当前密码" autocomplete="current-password"></label>'
+    + '<label class="login-field"><input id="cpNew" type="password" placeholder="新密码（至少 4 位）" autocomplete="new-password"></label>'
+    + '<label class="login-field"><input id="cpNew2" type="password" placeholder="再次输入新密码" autocomplete="new-password" onkeydown="if(event.key===\'Enter\')doChangePass()"></label>'
+    + '<div class="login-actions">'
+    +   '<button class="btn primary" onclick="doChangePass()">确认修改</button>'
+    +   '<button class="btn" onclick="closeModal();openAccount()">取消</button>'
+    + '</div></div>';
+  openModal('修改密码', b, [{ t:'关闭', cls:'btn', fn:closeModal }]);
+  setTimeout(()=>{ const el=$('cpOld'); if(el) el.focus(); }, 60);
+}
+async function doChangePass(){
+  const oldP = (($('cpOld')||{}).value||'').trim();
+  const newP = (($('cpNew')||{}).value||'').trim();
+  const newP2 = (($('cpNew2')||{}).value||'').trim();
+  if(!oldP || !newP || !newP2){ toast('请填写完整'); return; }
+  if(newP.length < 4){ toast('新密码至少 4 位'); return; }
+  if(newP !== newP2){ toast('两次新密码不一致'); return; }
+  try{
+    const oldKey = await deriveKey(SESSION.user, oldP);
+    let verified = false;
+    if(syncReady()){
+      try{
+        const res = await fetch(GIST_API+'/'+meta.sync.gistId, { headers:ghHeaders() });
+        if(res.ok){
+          const d = await res.json();
+          const f = d.files && d.files[userFile(SESSION.user)];
+          if(f && f.content){ await decryptWithKey(oldKey, f.content); verified = true; }
+          else verified = true; /* 云端还没有本账号文件，无需校验 */
+        } else verified = true;
+      }catch(e){ verified = false; }
+    } else {
+      verified = true; /* 未配置云端，本机会话已登录即视为已授权 */
+    }
+    if(!verified){ toast('当前密码不正确'); return; }
+    const newKey = await deriveKey(SESSION.user, newP);
+    SKEY = newKey; saveMeta();
+    toast('密码已更新，正在用新密码重新加密…');
+    if(syncReady()) await pushCloud(false);
+    closeModal();
+  }catch(e){ toast('修改失败：'+e.message); }
+}
 function openAccount(){
   if(SESSION.user && SKEY){
     openModal('账号', '<div class="login-wrap">'
@@ -3336,6 +3382,7 @@ function openAccount(){
       + '<div class="login-sub">数据已加密保存在你的私有云，退出后他人只能用游客模式，看不到你的内容。</div>'
       + '<div class="login-actions">'
       +   '<button class="btn primary" onclick="closeModal();openSync()">云端同步设置</button>'
+      +   '<button class="btn" onclick="closeModal();openChangePass()">修改密码</button>'
       +   '<button class="btn danger" onclick="closeModal();logout()">退出登录</button>'
       + '</div></div>', [{ t:'关闭', cls:'btn', fn:closeModal }]);
   } else openLogin();
