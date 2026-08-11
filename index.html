@@ -3631,10 +3631,17 @@ function planZone(cat, items, full){
 function planItemHTML(p){
   const catInfo = PLAN_CATS.find(x=>x.k===p.cat) || PLAN_CATS[1];
   const isLinked = p.sourceType === 'project' || p.sourceType === 'gratitude';
+  const linkedProjName = p.sourceType === 'project' && p.sourceId
+    ? ((db.projects.find(x=>x.id===p.sourceId)||{}).name || '项目')
+    : '';
   return '<div class="plan'+(p.done?' done':'')+'" draggable="true" ondragstart="dragPlan(event,\''+p.id+'\')">'
     + '<div class="plan-check'+(p.done?' done':'')+'" onclick="togglePlan(\''+p.id+'\')">'+(p.done?ico('check',12,3):'')+'</div>'
     + '<div class="plan-t">'+esc(p.text)
-    + (p.sourceType ? '<span class="plan-src src-'+p.sourceType+'">'+(p.sourceType==='project'?'项目':p.sourceType==='gratitude'?'感恩':'')+'</span>' : '')
+    + (p.sourceType === 'project' && p.sourceId
+        ? '<span class="plan-src src-project" style="cursor:pointer" onclick="event.stopPropagation();openProject(\''+p.sourceId+'\')" title="来自项目：'+esc(linkedProjName)+'">'+ico('proj',11)+esc(linkedProjName)+'</span>'
+        : p.sourceType === 'gratitude'
+          ? '<span class="plan-src src-gratitude">感恩</span>'
+          : '')
     + (p.sourceProject ? '<span class="plan-src proj-tag">'+ico('proj',11)+esc((db.projects.find(x=>x.id===p.sourceProject)||{}).name||'项目')+'</span>' : '')
     + '</div>'
     + '<div class="plan-ops">'
