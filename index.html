@@ -459,9 +459,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .mbar-l{font-size:10.5px;color:var(--muted)}
 @media(max-width:768px){.proj-an-grid{grid-template-columns:1fr}}
 
-.task-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-top:1px solid var(--border)}
+.task-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--border)}
 .task-row:first-child{border-top:none}
-.task-check{width:20px;height:20px;border-radius:3px;border:2px solid var(--border2);flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.16s}
+.task-check{width:20px;height:20px;border-radius:3px;border:2px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.16s}
 .task-check:hover{border-color:var(--accent)}
 .task-check.readonly{cursor:default;opacity:.7}
 .task-check.readonly:hover{border-color:var(--border2)}
@@ -752,16 +752,16 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .move-opt .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .move-opt .mv-n{font-size:14.5px;font-weight:650;color:var(--text)}
 .move-opt .mv-d{margin-left:auto;font-size:12px;color:var(--muted)}
-.plan{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;background:#fff;border:1px solid rgba(120,105,90,.12);border-radius:8px;margin-bottom:10px;cursor:grab;transition:.15s}
+.plan{display:flex;gap:12px;align-items:center;padding:13px 14px;background:#fff;border:1px solid rgba(120,105,90,.12);border-radius:8px;margin-bottom:10px;cursor:grab;transition:.15s}
 .plan:hover{border-color:rgba(120,105,90,.24);box-shadow:0 2px 8px rgba(120,105,90,.06)}
 .plan.done{opacity:.55}
 .plan.done .plan-t{text-decoration:line-through}
-.plan-check{width:20px;height:20px;border-radius:3px;border:2px solid var(--border2);flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.plan-check{width:20px;height:20px;border-radius:3px;border:2px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
 .plan-check:hover{border-color:var(--accent)}
 .plan-check.done{background:var(--green);border-color:var(--green)}
 .plan-check.done svg{display:block}
 .plan-t{flex:1;min-width:0;font-size:14px;line-height:1.5;color:var(--text);word-break:normal;overflow-wrap:break-word}
-.plan-src{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:3px;vertical-align:middle}
+.plan-src{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle}
 .plan-src.src-project{background:rgba(155,135,210,.16);color:#8d72c4}
 .plan-src.src-gratitude{background:rgba(216,118,140,.16);color:#c46884}
 .plan-src.proj-tag{background:rgba(214,168,120,.16);color:var(--orange);display:inline-flex;align-items:center;gap:3px;margin-left:4px}
@@ -1057,7 +1057,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-tree-tip{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--surface3)}
 .lib-tree-tip svg{flex-shrink:0;margin-top:2px}
 
-/* 资料库批量清除（一次性临时功能，用完会移除）：仅删选中分类，保留文件 */
+/* 资料库批量清除：勾选目录后批量删除，保留文件 */
 .lib-node-row.batch{cursor:default}
 .lib-node-row.batch:hover{background:transparent}
 .lib-node.batch.sel>.lib-node-row{background:var(--accent-soft);color:var(--accent2);font-weight:600}
@@ -1066,6 +1066,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-node-row.batch .ln-check.on{background:var(--accent);border-color:var(--accent)}
 .ln-check svg{opacity:0;color:#fff;display:block}
 .lib-node-row.batch .ln-check.on svg{opacity:1}
+.lib-node-row.editing{background:var(--surface2)}
+.ln-edit{font:inherit;font-size:13.5px;font-weight:600;color:var(--text);width:100%;min-width:0;padding:3px 6px;border:1px solid var(--accent);border-radius:6px;outline:none;background:var(--surface)}
 .lib-batch-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--surface3);background:var(--surface2)}
 .lib-batch-bar .cnt{font-size:13px;color:var(--muted);margin-right:auto}
 .iconbtn.on{background:var(--accent-soft);color:var(--accent2)}
@@ -4626,6 +4628,46 @@ function libSetCatId(id){
   if(id && id!=='__none__'){ libAncestors(id).forEach(p=>LIB_EXP.add(p)); if(libChildren(id).length) LIB_EXP.add(id); }
   render();
 }
+function libCatClick(id){
+  const hasKid = libChildren(id).length > 0;
+  if(hasKid){
+    if(LIB_EXP.has(id)){ LIB_EXP.delete(id); }
+    else { libAncestors(id).forEach(p=>LIB_EXP.add(p)); LIB_EXP.add(id); }
+  }
+  libCatId = id;
+  render();
+}
+/* 双击分类名 -> 行内改名（回车保存 / 失焦保存 / Esc 取消） */
+let libEditCatId = null;
+let libClickTimer = null, libClickId = null;
+function libRowClick(id){
+  if(libEditCatId) return;                          // 编辑中不响应行点击
+  if(libClickTimer && libClickId === id){           // 连击视为双击 -> 进入编辑
+    clearTimeout(libClickTimer); libClickTimer = null; libClickId = null;
+    libStartEditCat(id);
+    return;
+  }
+  libClickId = id;
+  libClickTimer = setTimeout(()=>{ libClickTimer = null; libClickId = null; libCatClick(id); }, 220);
+}
+function libStartEditCat(id){
+  libEditCatId = id; render();
+  setTimeout(()=>{ const el = document.getElementById('libEditCatInput'); if(el){ el.focus(); el.select(); } }, 0);
+}
+function libEditCatKey(e,id){
+  e.stopPropagation();
+  if(e.key === 'Enter'){ e.preventDefault(); libSaveCatName(id); }
+  else if(e.key === 'Escape'){ e.preventDefault(); libEditCatId = null; render(); }
+}
+function libSaveCatName(id){
+  if(libEditCatId !== id) return;
+  const el = document.getElementById('libEditCatInput');
+  const v = (el ? el.value : '').trim();
+  libEditCatId = null;
+  const node = db.frameworks.find(x=>x.id===id);
+  if(node && v) node.name = v;
+  save(); render();
+}
 function libToggleExp(id){ LIB_EXP.has(id) ? LIB_EXP.delete(id) : LIB_EXP.add(id); render(); }
 function libExpandAll(open){
   LIB_EXP.clear();
@@ -4642,10 +4684,13 @@ function libTreeHTML(parent, depth){
     const cnt = db.library.filter(x=>set.has(x.catId||'')).length;
     const hasKid = libChildren(n.id).length > 0;
     const open = LIB_EXP.has(n.id);
-    const rowCls = 'lib-node-row'+(libBatchMode?' batch':'')+(libBatchSel.has(n.id)?' sel':'');
+    const editing = libEditCatId === n.id;
+    const rowCls = 'lib-node-row'+(libBatchMode?' batch':'')+(libBatchSel.has(n.id)?' sel':'')+(editing?' editing':'');
     const rowAttrs = libBatchMode
       ? 'onclick="libBatchToggle(\''+n.id+'\')"'
-      : 'draggable="true" ondragstart="dragFw(event,\''+n.id+'\')" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\''+n.id+'\')" onclick="libSetCatId(\''+n.id+'\')"';
+      : (editing
+          ? 'onclick="event.stopPropagation()"'
+          : 'draggable="true" ondragstart="dragFw(event,\''+n.id+'\')" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\''+n.id+'\')" onclick="libRowClick(\''+n.id+'\')"');
     const checkBox = libBatchMode
       ? '<span class="ln-check'+(libBatchSel.has(n.id)?' on':'')+'" onclick="event.stopPropagation();libBatchToggle(\''+n.id+'\')">'+ico('check',12)+'</span>'
       : '';
@@ -4655,12 +4700,14 @@ function libTreeHTML(parent, depth){
       +   (hasKid
             ? '<button class="ln-caret'+(open?' open':'')+'" title="展开 / 收起" onclick="event.stopPropagation();libToggleExp(\''+n.id+'\')">'+ico('chev',12)+'</button>'
             : '<span class="ln-caret ph"></span>')
-      +   '<span class="ln-name">'+esc(n.name)+'</span>'
+      +   (editing
+            ? '<input id="libEditCatInput" class="ln-edit" value="'+esc(n.name)+'" onkeydown="libEditCatKey(event,\''+n.id+'\')" onblur="libSaveCatName(\''+n.id+'\')" onclick="event.stopPropagation()">'
+            : '<span class="ln-name">'+esc(n.name)+'</span>')
       +   (cnt ? '<span class="ln-cnt">'+cnt+'</span>' : '')
       + '</div>'
       + '<div class="lib-node-ops">'
       +   '<button class="iconbtn sm" title="加子分类" onclick="event.stopPropagation();fwAdd(\''+n.id+'\')">'+ico('plus',13)+'</button>'
-      +   '<button class="iconbtn sm" title="改名" onclick="event.stopPropagation();fwRename(\''+n.id+'\')">'+ico('edit',13)+'</button>'
+      +   '<button class="iconbtn sm" title="改名" onclick="event.stopPropagation();libStartEditCat(\''+n.id+'\')">'+ico('edit',13)+'</button>'
       +   '<button class="iconbtn sm del" title="删除" onclick="event.stopPropagation();fwDel(\''+n.id+'\')">'+ico('del',13)+'</button>'
       + '</div>'
       + (open ? libTreeHTML(n.id, d+1) : '')
@@ -4668,21 +4715,6 @@ function libTreeHTML(parent, depth){
   });
   h += '</div>';
   return h;
-}
-/* 一键补齐《全维度个人知识体系》推荐框架：同名同层的分类保留不重复，已分类资料不受影响 */
-function fwRestoreDefaults(){
-  confirmBoxCustom('导入推荐知识框架？',
-    '会按《全维度个人知识体系》补齐 10 大领域的分类结构。已有的同名分类会自动复用，不会重复创建，你已经分好类的资料也不会受影响。',
-    '导入', ()=>{
-      const rec = defaultFrameworks(); const map = {}; let added = 0;
-      rec.forEach(n=>{
-        const pid = n.parent ? (map[n.parent] || '') : '';
-        const exist = db.frameworks.find(x=>(x.parent||'')===(pid||'') && x.name===n.name);
-        if(exist){ map[n.id] = exist.id; }
-        else { const nid = uid(); db.frameworks.push({ id:nid, name:n.name, parent:pid }); map[n.id] = nid; added++; }
-      });
-      save(); render(); toast(added ? ('已补齐 '+added+' 个分类节点') : '推荐框架已存在，无需重复导入');
-    });
 }
 function fwAdd(parent){
   openForm('新增分类', [{ k:'name', l:'分类名称', req:true, ph:'例如：工作方法论' }], {}, out=>{
@@ -4740,7 +4772,7 @@ function libMatch(x){
   return true;
 }
 let libCatSet = new Set();
-/* 资料库批量清除（一次性临时功能，用完会移除）：仅删选中分类，保留文件 */
+/* 资料库批量清除：勾选目录后批量删除，保留文件 */
 let libBatchMode = false;
 let libBatchSel = new Set();
 function libListHTML(){
@@ -4834,16 +4866,15 @@ function viewLibrary(){
   const anyOpen = LIB_EXP.size > 0;
   h += '<div class="card lib-side" style="width:'+libSideW+'px"><div class="lib-resizer" onmousedown="libStartResize(event)" ontouchstart="libStartResize(event)"></div><div class="card-h"><h3>知识框架</h3>'
     + '<div class="r"><button class="iconbtn sm" title="'+(anyOpen?'全部收起':'全部展开')+'" onclick="libExpandAll('+(anyOpen?'false':'true')+')">'+ico(anyOpen?'up':'down',14)+'</button>'
-    + '<button class="iconbtn sm" title="导入推荐框架（全维度知识体系）" onclick="fwRestoreDefaults()">'+ico('spark',14)+'</button>'
     + '<button class="iconbtn sm" title="清空全部分类目录" onclick="fwClearAll()">'+ico('trash',14)+'</button>'
-    + '<button class="iconbtn sm'+(libBatchMode?' on':'')+'" title="批量清除目录（勾选后批量删除，保留文件）" onclick="libToggleBatch()">'+ico('check',14)+'</button>'
+    + '<button class="iconbtn sm'+(libBatchMode?' on':'')+'" title="批量删除目录（勾选后批量删除，保留文件）" onclick="libToggleBatch()">'+ico('del',14)+'</button>'
     + '<button class="btn sm" onclick="fwAdd(\'\')">'+ico('plus',14)+'顶层分类</button></div></div>'
     + '<div class="lib-tree">'
     +   '<div class="lib-node root d0'+(libCatId===''?' on':'')+'"><div class="lib-node-row" onclick="libSetCatId(\'\')">'
     +     '<span class="ln-caret ph"></span><span class="ln-name">全部资料</span><span class="ln-cnt">'+all.length+'</span></div></div>'
     +   '<div class="lib-node root d0'+(libCatId==='__none__'?' on':'')+'"><div class="lib-node-row" ondragover="libFwDragOver(event,this)" ondragleave="libFwDragLeave(event,this)" ondrop="libFwDrop(event,\'\')" onclick="libSetCatId(\'__none__\')">'
     +     '<span class="ln-caret ph"></span><span class="ln-name">未分类</span><span class="ln-cnt">'+noCat+'</span></div></div>'
-    +   (db.frameworks.length ? libTreeHTML('', 0) : '<div class="lib-tree-empty">还没有分类，点右上角'+ico('spark',12)+'一键导入《全维度个人知识体系》推荐框架</div>')
+    +   (db.frameworks.length ? libTreeHTML('', 0) : '<div class="lib-tree-empty">还没有分类，点击右上角「顶层分类」新建</div>')
     + '</div>'
     + '<div class="lib-tree-tip">'+ico('spark',13)+'拖动分类可调整顺序；把资料的拖拽手柄拖到分类上即可归类</div>'
     + (libBatchMode
@@ -5108,14 +5139,14 @@ function libStartResize(e){
 }
 function fwClearAll(){
   confirmBoxCustom('清空全部分类目录？',
-    '会移除所有知识分类节点（共 '+db.frameworks.length+' 个），资料本身不会删除，只是变回「未分类」。你可以随时点'+ico('spark',12)+'重新导入推荐框架，或手动新建分类。',
+    '会移除所有知识分类节点（共 '+db.frameworks.length+' 个），资料本身不会删除，只是变回「未分类」。之后可以手动新建分类。',
     '清空', ()=>{
       db.frameworks = [];
       if(libCatId && libCatId !== '' && libCatId !== '__none__') libCatId = '';
       save(); render(); toast('已清空分类目录');
     });
 }
-/* 资料库批量清除（一次性临时功能，用完会移除）：仅删除选中的分类目录，保留所有资料文件 */
+/* 资料库批量清除：勾选目录后批量删除，保留所有资料文件 */
 function libToggleBatch(){
   libBatchMode = !libBatchMode;
   libBatchSel = new Set();
