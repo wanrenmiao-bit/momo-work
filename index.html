@@ -5979,6 +5979,9 @@ function dailySubNav(){
 function render(){
   renderNav();
   renderNotice();
+  // 资料库侧边栏滚动位置记忆，避免 render 后跳回顶部
+  const libTree = route.tab === 'library' ? document.querySelector('.lib-tree') : null;
+  const libTreeScroll = libTree ? { top: libTree.scrollTop, left: libTree.scrollLeft } : null;
   const v = $('view');
   const isDaily = DAILY_TABS.some(t=>t.k===route.tab);
   const pre = isDaily ? dailySubNav() : '';
@@ -5994,6 +5997,10 @@ function render(){
   else if(route.tab === 'library') v.innerHTML = viewLibrary();
   else if(route.tab === 'accounts') v.innerHTML = viewAccounts();
   else v.innerHTML = viewProjects();
+  if(libTreeScroll){
+    const newLibTree = document.querySelector('.lib-tree');
+    if(newLibTree){ newLibTree.scrollTop = libTreeScroll.top; newLibTree.scrollLeft = libTreeScroll.left; }
+  }
   paintPomoMini();
   paintAccount();
 }
