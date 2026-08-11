@@ -914,6 +914,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .grat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;padding-bottom:13px;border-bottom:1px solid var(--border)}
 .grat-head .gt-title{font-size:16px;font-weight:800;color:var(--text)}
 .done-pill{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent2);font-size:11.5px;font-weight:700}
+.hearts-badge{display:inline-flex;align-items:center;gap:4px;margin-left:10px;padding:3px 10px;border-radius:999px;background:linear-gradient(135deg,#fde9d2,#f7dbe8);color:#a85c6c;font-size:12px;font-weight:700;border:1px solid rgba(207,155,148,.35);box-shadow:0 2px 8px rgba(207,155,148,.18)}
+.hearts-badge svg{stroke:currentColor}
 .grat-reward{display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:8px;margin-bottom:16px;background:linear-gradient(135deg,#fde9d2,#f7dbe8 55%,#e8e0f4);border:1px solid rgba(207,155,148,.42);box-shadow:0 6px 20px rgba(207,155,148,.22);animation:rewardPop .5s ease, rewardGlow 2.6s ease-in-out infinite}
 .grat-reward .gr-ico{width:46px;height:46px;border-radius:8px;background:#fff;color:var(--accent2);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.08)}
 .grat-reward .gr-txt{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
@@ -1303,7 +1305,7 @@ function moodIcon(k, size){
 let db = null;
 let meta = { lastBackupCount: 0, noticeDismissAt: 0, session:null, sync: { token:'', gistId:'', auto:false, lastSync:0 }, wanrenPassHash:'7046afc5' };
 
-function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, seeded:false, v:5, _updatedAt:0 }; }
+function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, gratitudeHearts:0, seeded:false, v:5, _updatedAt:0 }; }
 
 function seedDB(){
   const SUB = (t, done, at) => ({ id:uid(), title:t, done:!!done, doneAt:done?(at||off(-6)):'' });
@@ -1334,7 +1336,7 @@ function seedDB(){
     ]}
   ]};
   return {
-    v:3, seeded:true,
+    v:3, seeded:true, gratitudeHearts:1,
     goals:[g0,g1,g2],
     ideas:[
       { id:uid(), text:'做一个把长视频自动切成短视频的小工具，先手动跑通流程再考虑自动化', tag:'产品', created:off(-2), done:false },
@@ -1424,7 +1426,7 @@ function seedDB(){
       { id:uid(), name:'某视频会员', group:'life', url:'https://v.example.com', user:'138****6688', pass:'Video666', note:'12 月到期', created:off(-15) }
     ],
     gratitude:{
-      [TODAY]:{ mood:'兴奋',
+      [TODAY]:{ mood:'兴奋', rewarded:true,
         grateful:['今天同事顺风车载我，我们一路吐槽公司，情绪很好','早上的太阳很好，出门就被晒得暖暖的','楼下阿姨多给了我一个小笼包','工作台改版终于跑通了，很有成就感','家里的猫今天特别黏我'],
         great:['今天没有被同事的负面情绪影响，反而开导了她','和一位久未说话的朋友聊了几句，他说和我说话很正能量','做了体态训练，自律的每一天','今天没吃米饭','喝了巴西莓粉和杏仁粉'],
         want:['我已经拥有了健康自在的身体','我已经做出了让自己骄傲的作品','我已经和喜欢的人过上了想要的生活'],
@@ -1656,7 +1658,7 @@ function migrateData(d){
     if(!Array.isArray(g.milestones)) g.milestones=[];
     g.milestones.forEach(m=>{ if(!Array.isArray(m.subs)) m.subs=[]; });
   });
-  // 心情归一化到预置心情表
+  // 心情归一化到预置心情表；小心心总数迁移/初始化
   if(d.gratitude && !Array.isArray(d.gratitude)) Object.keys(d.gratitude).forEach(k=>{
     const g = d.gratitude[k]; if(!g) return;
     if(g.mood && !MOODS.some(m=>m.k===g.mood)) g.mood = MOOD_ALIAS[g.mood] || '平静';
@@ -1669,7 +1671,36 @@ function migrateData(d){
     }
   });
   if(!d.gratitude || Array.isArray(d.gratitude)) d.gratitude = {};
+  if(typeof d.gratitudeHearts !== 'number'){
+    // 老数据：按已完成日记数一次性初始化小心心总数
+    d.gratitudeHearts = 0;
+    Object.keys(d.gratitude).forEach(k => {
+      const g = d.gratitude[k]; if(!g) return;
+      if(g.rewarded) { d.gratitudeHearts++; return; }
+      if(gratCompleteForData(d.gratitude, k)){ g.rewarded = true; d.gratitudeHearts++; }
+    });
+  }
   return d;
+}
+
+// 用于迁移/重算时判断某天感恩日记是否完成（不依赖全局 db）
+function gratCompleteForData(gmap, d){
+  const g = gmap && gmap[d]; if(!g) return false;
+  const n = a => (a||[]).length;
+  return !!(g.mood && g.mood.trim())
+    && n(g.grateful)>=5 && n(g.great)>=5 && n(g.tomorrow)>=5
+    && n(g.want)>=1 && n(g.want)<=3;
+}
+
+// 重新计算感恩日记小心心总数（清空示例后调用）
+function recalcGratitudeHearts(){
+  db.gratitudeHearts = 0;
+  if(!db.gratitude || Array.isArray(db.gratitude)) return;
+  Object.keys(db.gratitude).forEach(k => {
+    const g = db.gratitude[k]; if(!g) return;
+    if(g.rewarded) { db.gratitudeHearts++; return; }
+    if(gratComplete(k)){ g.rewarded = true; db.gratitudeHearts++; }
+  });
 }
 function priToCat(pri){
   switch(pri){
@@ -3364,6 +3395,7 @@ function clearSample(){
     db.library = db.library.filter(x=>!lb.has(x.name+'|'+x.type));
     removedLib.forEach(x=>{ if(x.type!=='link') delFile(x.id); });
     gk.forEach(k=>{ delete db.gratitude[k]; });
+    recalcGratitudeHearts();
     save(); closeProject(); render(); toast('示例数据已清空');
   });
 }
@@ -4134,11 +4166,12 @@ function gratComplete(d){
 }
 function gratRewardHTML(d){
   if(!gratComplete(d)) return '';
+  const total = (typeof db.gratitudeHearts === 'number') ? db.gratitudeHearts : 0;
   return '<div class="grat-reward">'
     + '<span class="gr-ico">'+ico('trophy',22)+'</span>'
     + '<div class="gr-txt"><b>今天的感恩日记已完成</b>'
     + '<span>你温柔地接住了自己，奖励一颗 <i class="hr">'+ico('heart',13)+'</i> 给努力生活的沫沫</span></div>'
-    + '<span class="gr-pill">+1 心</span></div>';
+    + '<span class="gr-pill">+1 心 · 已累计 '+total+' 心</span></div>';
 }
 
 function gratMonthNav(delta){
@@ -4238,8 +4271,10 @@ function viewGratitude(){
 
   h += '<div class="grat-editor">';
   h += gratRewardHTML(d);
+  const heartsTotal = (typeof db.gratitudeHearts === 'number') ? db.gratitudeHearts : 0;
   h += '<div class="grat-head"><div class="gt-title">沫沫的感恩日记</div>'
-    + '<div class="ed-date">'+fmtMD(d)+(gratComplete(d)?' <span class="done-pill">已完成</span>':'')+'</div></div>';
+    + '<div class="ed-date">'+fmtMD(d)+(gratComplete(d)?' <span class="done-pill">已完成</span>':'')
+    + '<span class="hearts-badge" title="已累计获得的小心心">'+ico('heart',13)+' '+heartsTotal+'</span></div></div>';
   h += '<div class="mood-pick"><label>今日心情</label><div class="mood-faces">';
   MOODS.forEach(m => {
     h += '<button class="mface'+(g.mood===m.k?' on':'')+'" data-k="'+m.k+'" title="'+m.k+'" style="--mc:'+m.c+'" onclick="gratSetMood(\''+m.k+'\')">'+moodIcon(m.k,26)+'</button>';
@@ -4433,11 +4468,20 @@ function resumeGratTask(idx){
 }
 function gratSaveDay(){
   if(!db.gratitude[gratView.sel]) db.gratitude[gratView.sel] = { mood:'', grateful:[], great:[], want:[], tomorrow:[] };
+  const g = db.gratitude[gratView.sel];
+  const justRewarded = gratComplete(gratView.sel) && !g.rewarded;
+  if(justRewarded){ g.rewarded = true; db.gratitudeHearts++; }
   save();
-  toast('已保存 '+fmtMD(gratView.sel)+' 的感恩日记');
+  if(justRewarded) toast('已保存 '+fmtMD(gratView.sel)+' 的感恩日记 · 奖励 +1 心，已累计 '+db.gratitudeHearts+' 心');
+  else toast('已保存 '+fmtMD(gratView.sel)+' 的感恩日记');
   render();
 }
-function gratDelDay(){ delete db.gratitude[gratView.sel]; save(); render(); toast('已删除当天日记'); }
+function gratDelDay(){
+  const wasRewarded = !!(db.gratitude[gratView.sel] && db.gratitude[gratView.sel].rewarded);
+  delete db.gratitude[gratView.sel];
+  if(wasRewarded && db.gratitudeHearts > 0) db.gratitudeHearts--;
+  save(); render(); toast('已删除当天日记');
+}
 
 /* ============================================================
    模块 8：番茄钟
