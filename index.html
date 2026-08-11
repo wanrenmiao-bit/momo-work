@@ -425,6 +425,13 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .project-card .desc{font-size:12.5px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
 .project-card .meta{display:flex;gap:12px;font-size:11.8px;color:var(--muted);flex-wrap:wrap}
 .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.project-card.dragover{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 26px rgba(224,163,184,.2)}
+.proj-grip{position:absolute;top:12px;right:44px;color:var(--muted);cursor:grab;z-index:3}
+.proj-grip:hover{color:var(--accent)}
+.proj-move-btns{display:none;gap:4px;margin-top:4px;justify-content:flex-end}
+.proj-drop-last{margin-top:16px;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.proj-drop-last.dragover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2)}
+@media(max-width:768px){.proj-grip{display:none}.proj-move-btns{display:inline-flex}.proj-move-up{order:-1}}
 
 /* 项目数据分析 */
 .proj-an-grid{display:grid;grid-template-columns:1.1fr 1.4fr 1.2fr;gap:18px}
@@ -2080,6 +2087,42 @@ function moveGoal(id, dir){
   db.goals.splice(j, 0, m);
   save(); render();
 }
+/* 项目拖拽排序（与人生目标同思路） */
+function dragProj(e, id){ e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; }
+function allowProjDrop(e){ e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+function projDragLeave(e){ e.currentTarget.classList.remove('dragover'); }
+function dropProj(e, targetId){
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const id = e.dataTransfer.getData('text/plain');
+  if(!id || id === targetId) return;
+  const from = db.projects.findIndex(x=>x.id===id);
+  if(from < 0) return;
+  const [moved] = db.projects.splice(from, 1);
+  let to = db.projects.findIndex(x=>x.id===targetId);
+  if(to < 0) to = db.projects.length;
+  db.projects.splice(to, 0, moved);
+  save(); render(); toast('已调整项目顺序');
+}
+function dropProjLast(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const id = e.dataTransfer.getData('text/plain');
+  const from = db.projects.findIndex(x=>x.id===id);
+  if(from < 0 || from === db.projects.length - 1) return;
+  const [moved] = db.projects.splice(from, 1);
+  db.projects.push(moved);
+  save(); render(); toast('已放到最后');
+}
+function moveProj(id, dir){
+  const i = db.projects.findIndex(x=>x.id===id);
+  if(i < 0) return;
+  const j = i + dir;
+  if(j < 0 || j >= db.projects.length) return;
+  const [m] = db.projects.splice(i, 1);
+  db.projects.splice(j, 0, m);
+  save(); render();
+}
 function toggleGoal(id){ if(EXPANDED.has(id)) EXPANDED.delete(id); else EXPANDED.add(id); render(); }
 function setGoalNewCat(c){ goalNewCat = c; render(); }
 /* 目标达成后的奖励横幅：强调「这是一次值得庆祝的达成」，而不是勾掉一条任务 */
@@ -2450,8 +2493,9 @@ function viewProjects(){
   ps.forEach((p) => {
     const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
     const pct = t ? Math.round(d/t*100) : 0;
-    h += '<div class="project-card clk" onclick="openProject(\''+p.id+'\')">'
+    h += '<div class="project-card clk" draggable="true" ondragstart="dragProj(event,\''+p.id+'\')" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProj(event,\''+p.id+'\')" onclick="openProject(\''+p.id+'\')">'
       + '<span class="tag '+(p.status==='进行中'?'green':p.status==='已完成'?'purple':'amber')+'">'+esc(p.status)+'</span>'
+      + '<button class="iconbtn proj-grip" title="拖动调整顺序" onclick="event.stopPropagation()">'+ico('move',15)+'</button>'
       + '<div class="name">'+esc(p.name)+'</div>'
       + (p.desc ? '<div class="desc">'+esc(p.desc)+'</div>' : '<div style="height:6px"></div>')
       + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
@@ -2461,9 +2505,15 @@ function viewProjects(){
       +   '<span>任务 '+d+'/'+t+'</span>'
       +   '<span>资料 '+p.assets.length+'</span>'
       +   '<span>产出 '+p.outputs.length+'</span>'
-      + '</div></div>';
+      + '</div>'
+      + '<div class="proj-move-btns">'
+      +   '<button class="iconbtn proj-move-up" title="上移" onclick="event.stopPropagation();moveProj(\''+p.id+'\',-1)">'+ico('up',14)+'</button>'
+      +   '<button class="iconbtn proj-move-down" title="下移" onclick="event.stopPropagation();moveProj(\''+p.id+'\',1)">'+ico('down',14)+'</button>'
+      + '</div>'
+      + '</div>';
   });
   h += '</div>';
+  h += '<div class="proj-drop-last" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProjLast(event)">'+ico('down',13)+'拖动项目到这里，放到最后</div>';
   return h;
 }
 function viewProjectDetail(){
