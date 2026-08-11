@@ -3203,8 +3203,12 @@ function saveSyncCfg(){
   meta.sync.auto = $('syncAuto').checked;
   saveMeta();
   closeModal();
-  toast((meta.sync.token && meta.sync.gistId) ? '同步设置已保存' : '已保存（未填令牌/Gist，暂不能同步）');
-  if(meta.sync.token && meta.sync.gistId) pushCloud(false);
+  if(meta.sync.token){
+    toast('同步设置已保存，正在尝试连接云端…');
+    pushCloud(false);
+  } else {
+    toast('已保存（未填令牌，暂不能同步）');
+  }
 }
 
 async function pushCloud(manual){
@@ -3213,15 +3217,19 @@ async function pushCloud(manual){
   try{
     const b64 = await encryptWithKey(SKEY, db);
     const fname = userFile(SESSION.user);
-    let url = GIST_API, method = 'POST';
+    let url = GIST_API, method = 'POST', recreate = false;
     const body = { files:{ [fname]:{ content:b64 } }, description:'沫沫人生工作台 用户数据同步' };
     if(meta.sync.gistId){ url = GIST_API + '/' + meta.sync.gistId; method = 'PATCH'; }
-    const res = await fetch(url, { method, headers: ghHeaders(), body: JSON.stringify(body) });
+    let res = await fetch(url, { method, headers: ghHeaders(), body: JSON.stringify(body) });
+    if(!res.ok && res.status === 404 && meta.sync.gistId){
+      recreate = true;
+      res = await fetch(GIST_API, { method:'POST', headers: ghHeaders(), body: JSON.stringify(body) });
+    }
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if(!meta.sync.gistId && data.id){ meta.sync.gistId = data.id; }
+    if(data.id){ meta.sync.gistId = data.id; }
     meta.sync.lastSync = Date.now(); saveMeta();
-    if(manual) toast('已同步到云端');
+    if(manual) toast(recreate ? '云端 Gist 不存在，已重新创建并同步' : '已同步到云端');
   }catch(e){
     if(manual) toast('同步失败：' + e.message + '（检查令牌/网络，GitHub API 需联网）');
     else console.warn('auto push failed:', e.message);
@@ -3230,10 +3238,17 @@ async function pushCloud(manual){
 
 async function pullCloud(manual){
   if(!SESSION.user || !SKEY){ if(manual) toast('请先登录账号'); openLogin(); return; }
-  if(!syncReady()){ if(manual) toast('请先在「云端同步」填写令牌'); openSync(); return; }
+  if(!meta.sync || !meta.sync.token){ if(manual) toast('请先在「云端同步」填写令牌'); openSync(); return; }
+  if(!meta.sync.gistId){ if(manual) toast('还没有云端 Gist，请先点「推送本机数据到云端」创建'); return; }
   try{
     const res = await fetch(GIST_API + '/' + meta.sync.gistId, { headers: ghHeaders() });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
+    if(!res.ok){
+      if(res.status === 404){
+        if(manual) toast('云端 Gist 不存在，可能是 ID 填错或被删除，请重新推送创建');
+        return;
+      }
+      throw new Error('HTTP ' + res.status);
+    }
     const data = await res.json();
     const file = data.files && data.files[userFile(SESSION.user)];
     if(!file || !file.content){ if(manual) toast('云端暂无你的数据，请先推送一次'); return; }
