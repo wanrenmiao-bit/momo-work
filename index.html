@@ -421,7 +421,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .project-card:hover{transform:translateY(-4px) scale(1.015);border-color:var(--border2);box-shadow:0 14px 32px rgba(120,105,90,.16)}
 .project-card:active{transform:translateY(-1px) scale(.995)}
 .project-card .tag{position:absolute;top:12px;right:12px}
-.project-card .name{font-size:15px;font-weight:700;margin:4px 56px 6px 26px;line-height:1.35;color:var(--text)}
+.project-card .name{font-size:15px;font-weight:700;margin:4px 56px 6px 0;line-height:1.35;color:var(--text)}
 .project-card.done{opacity:.85}
 .project-card.done .tag{background:rgba(155,135,210,.16);color:#8d72c4}
 .project-card.done .pbar i{background:var(--green)!important}
@@ -429,7 +429,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .project-card .meta{display:flex;gap:12px;font-size:11.8px;color:var(--muted);flex-wrap:wrap}
 .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .project-card.dragover{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 26px rgba(224,163,184,.2)}
-.proj-grip{position:absolute;top:12px;left:10px;color:var(--muted);cursor:grab;z-index:3}
+.proj-grip{position:absolute;right:12px;bottom:12px;top:auto;left:auto;color:var(--muted);cursor:grab;z-index:3}
 .proj-grip:hover{color:var(--accent)}
 .proj-move-btns{display:none;gap:4px;margin-top:4px;justify-content:flex-end}
 .proj-drop-last{margin-top:16px;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
@@ -1220,7 +1220,7 @@ async function deriveKey(user, pass, salt){
   const bk = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey(
     { name:'PBKDF2', salt: salt || enc.encode('momo-'+user), iterations:120000, hash:'SHA-256' },
-    bk, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+    bk, { name:'AES-GCM', length:256 }, true, ['encrypt','decrypt']
   );
 }
 async function encryptWithKey(key, obj){
@@ -1695,8 +1695,7 @@ function normalizeDB(){
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
 }
 function load(){
-  /* 先恢复会话（游客 / 已登录） */
-  try{ const ms = localStorage.getItem(META_KEY); if(ms){ const m = JSON.parse(ms); if(m.session && m.session.user === 'wanren'){ SESSION = { user:m.session.user, guest:false }; } } }catch(e){}
+  /* 会话（游客 / 已登录）由 restoreSession() 在 load() 之前处理 */
   let fresh = false;
   const sk = scopeKey();
   try{
@@ -1714,6 +1713,35 @@ function load(){
   meta.sync = Object.assign({ token:'', gistId:'', auto:false, lastSync:0 }, meta.sync||{});
   if(!meta.wanrenPassHash) meta.wanrenPassHash = '7046afc5';
   if(fresh){ meta.lastBackupCount = totalCount(); saveMeta(); save(); }
+}
+/* 把当前 AES 密钥 + 登录时间戳写入本地，实现 24h 免重复登录（仅本地，不上云） */
+async function saveSessionRecord(key, user){
+  try{
+    const raw = new Uint8Array(await crypto.subtle.exportKey('raw', key));
+    let bs = ''; for(let i=0;i<raw.length;i++) bs += String.fromCharCode(raw[i]);
+    localStorage.setItem('wb_momo_session_v3', JSON.stringify({ user, loginAt: Date.now(), keyB64: btoa(bs) }));
+  }catch(e){ /* 密钥持久化失败不影响登录 */ }
+}
+/* 启动 / 刷新时尝试静默恢复登录态：24h 内直接还原密钥，否则回到需输入密码 */
+async function restoreSession(){
+  let restoredUser = null;
+  try{ const ms = localStorage.getItem(META_KEY); if(ms){ const m = JSON.parse(ms); if(m.session && m.session.user === 'wanren') restoredUser = m.session.user; } }catch(e){}
+  if(!restoredUser){ SESSION = { user:null, guest:true }; return; }
+  SESSION = { user:restoredUser, guest:false };
+  try{
+    const sr = localStorage.getItem('wb_momo_session_v3');
+    if(!sr) return;                                   // 无密钥记录：保留用户态，交由 openLogin 走“解锁”流程
+    const s = JSON.parse(sr);
+    const expired = (Date.now() - (s.loginAt||0)) >= 24*3600*1000;
+    if(!s.user || s.user !== restoredUser || expired || !s.keyB64){
+      localStorage.removeItem('wb_momo_session_v3');  // 过期 / 非法：清除旧密钥，仍保留用户态以便重新登录
+      return;
+    }
+    const bin = atob(s.keyB64);
+    const raw = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) raw[i] = bin.charCodeAt(i);
+    SKEY = await crypto.subtle.importKey('raw', raw, { name:'AES-GCM' }, false, ['encrypt','decrypt']);
+  }catch(e){ SKEY = null; }
 }
 function save(){
   db._updatedAt = Date.now();
@@ -3531,6 +3559,7 @@ async function doLogin(){
     const key = await deriveKey(user, pass);
     SKEY = key; SESSION = { user, guest:false };
     meta.session = { user }; saveMeta();
+    await saveSessionRecord(key, user);
 
     if(cloudData && totalCount(cloudData) > 0){
       applyPull(cloudData);
@@ -3548,6 +3577,7 @@ function logout(){
   stopSyncInterval();
   SESSION = { user:null, guest:true }; SKEY=null;
   meta.session = null; saveMeta();
+  try{ localStorage.removeItem('wb_momo_session_v3'); }catch(e){}
   db = null; load(); render(); paintAccount();
   toast('已退出，当前为游客模式');
 }
@@ -3594,6 +3624,7 @@ async function doChangePass(){
     SKEY = newKey;
     meta.wanrenPassHash = hashStr(newP); // 更新本地密码哈希
     saveMeta();
+    await saveSessionRecord(newKey, SESSION.user);
     toast('密码已更新，正在用新密码重新加密…');
     if(syncReady()) await pushCloud(false);
     closeModal();
@@ -5777,22 +5808,25 @@ window.addEventListener('beforeunload', e => {
   if(pomo.running){ e.preventDefault(); e.returnValue = ''; return ''; }
 });
 
-load();
-if(meta.pomoCfg){
-  pomoCfg.minutes = meta.pomoCfg.minutes || 25;
-  pomoCfg.sound = meta.pomoCfg.sound !== false;
-  pomo.total = pomo.remain = pomoCfg.minutes * 60;
-}
-/* 灵感库：跨断点时切换瀑布流 / 时间轴布局 */
-(function(){
-  let _m = window.innerWidth <= 768;
-  window.addEventListener('resize', () => {
-    const m = window.innerWidth <= 768;
-    if(_m !== m){ _m = m; if(route.tab === 'ideas') render(); }
-  });
+(async function(){
+  await restoreSession();
+  load();
+  if(meta.pomoCfg){
+    pomoCfg.minutes = meta.pomoCfg.minutes || 25;
+    pomoCfg.sound = meta.pomoCfg.sound !== false;
+    pomo.total = pomo.remain = pomoCfg.minutes * 60;
+  }
+  /* 灵感库：跨断点时切换瀑布流 / 时间轴布局 */
+  (function(){
+    let _m = window.innerWidth <= 768;
+    window.addEventListener('resize', () => {
+      const m = window.innerWidth <= 768;
+      if(_m !== m){ _m = m; if(route.tab === 'ideas') render(); }
+    });
+  })();
+  render();
+  if(SESSION.user && !SKEY) openLogin();
 })();
-render();
-if(SESSION.user && !SKEY) openLogin();
 </script>
 </body>
 </html>
