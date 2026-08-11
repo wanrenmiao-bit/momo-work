@@ -1073,6 +1073,19 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .acct-v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
 .acct-v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.5px}
 .acct-note{font-size:12.5px;color:var(--muted);line-height:1.5;background:var(--surface2);border-radius:5px;padding:7px 9px;word-break:break-word}
+
+/* 登录 / 游客 / 账号 */
+.login-wrap{display:flex;flex-direction:column;gap:14px;padding:4px 0}
+.login-title{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;color:var(--text)}
+.login-title svg{color:var(--accent);flex-shrink:0}
+.login-sub{font-size:13px;color:var(--muted);line-height:1.65;margin-top:-4px}
+.login-sub b{color:var(--text)}
+.login-field input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:7px;font-size:15px;outline:none;background:var(--surface2);color:var(--text)}
+.login-field input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+.login-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acct-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:13.5px;color:var(--text);cursor:pointer;transition:.15s}
+.acct-chip:hover{border-color:var(--accent);background:var(--accent-soft)}
+.acct-chip svg{flex-shrink:0;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -1116,6 +1129,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
           <span class="dsk">导入</span>
         </button>
+        <button class="btn sm" id="acctBtn" onclick="openAccount()"><span id="acctLabel">登录</span></button>
         <button class="btn sm" onclick="pullCloud(true)" title="从云端拉取最新">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 12v9"/><path d="M8 16l4 4 4-4"/></svg>
           <span class="dsk">同步</span>
@@ -1161,6 +1175,39 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 const KEY = 'wb_momo_v3';
 const META_KEY = 'wb_momo_meta_v3';
 
+/* ---------- 账号 / 会话 / 加密（前端 AES-GCM，零后端）---------- */
+let SESSION = { user:null, guest:true };   // 当前登录用户（null = 游客）
+let SKEY = null;                           // 当前用户的 AES 密钥，仅存内存，不落盘
+function hashStr(s){ let h=5381; s=String(s); for(let i=0;i<s.length;i++){ h=((h<<5)+h + s.charCodeAt(i))>>>0; } return h.toString(16); }
+function scopeKey(){ return SESSION.user ? 'wb_momo_user_'+hashStr(SESSION.user) : 'wb_momo_guest_v3'; }
+function userFile(u){ return 'momo-u-'+hashStr(u)+'.json'; }
+async function deriveKey(user, pass, salt){
+  const enc = new TextEncoder();
+  const bk = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt: salt || enc.encode('momo-'+user), iterations:120000, hash:'SHA-256' },
+    bk, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+  );
+}
+async function encryptWithKey(key, obj){
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj)));
+  const out = new Uint8Array(16+12+ct.byteLength);
+  out.set(salt,0); out.set(iv,16); out.set(new Uint8Array(ct),28);
+  let s=''; for(let i=0;i<out.length;i++) s+=String.fromCharCode(out[i]);
+  return btoa(s);
+}
+async function decryptWithKey(key, b64){
+  const buf = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
+  const salt=buf.slice(0,16), iv=buf.slice(16,28), ct=buf.slice(28);
+  const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ct);
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function encryptDB(user, pass, obj){ return encryptWithKey(await deriveKey(user,pass), obj); }
+async function decryptDB(user, pass, b64){ return decryptWithKey(await deriveKey(user,pass), b64); }
+
 /* ---------- 工具 ---------- */
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1197,7 +1244,7 @@ function moodIcon(k, size){
 
 /* ---------- 数据 ---------- */
 let db = null;
-let meta = { lastBackupCount: 0, noticeDismissAt: 0, sync: { token:'', gistId:'', auto:false, lastSync:0 } };
+let meta = { lastBackupCount: 0, noticeDismissAt: 0, session:null, sync: { token:'', gistId:'', auto:false, lastSync:0 } };
 
 function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, seeded:false, v:5 }; }
 
@@ -1616,24 +1663,34 @@ function setPriChip(name, val){
   const inp = document.getElementById(name); if(inp) inp.value = val;
 }
 
-function load(){
-  let fresh = false;
-  try{
-    const raw = localStorage.getItem(KEY);
-    if(raw){ db = migrateData(JSON.parse(raw)); }
-    else { db = seedDB(); fresh = true; }
-  }catch(e){ db = seedDB(); fresh = true; }
+function normalizeDB(){
   ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks','accounts'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
   if(typeof db.gratitude !== 'object' || db.gratitude === null || Array.isArray(db.gratitude)) db.gratitude = {};
   db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; g.milestones.forEach(m=>{ if(!Array.isArray(m.subs)) m.subs=[]; }); });
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
+}
+function load(){
+  /* 先恢复会话（游客 / 已登录） */
+  try{ const ms = localStorage.getItem(META_KEY); if(ms){ const m = JSON.parse(ms); if(m.session && m.session.user){ SESSION = { user:m.session.user, guest:false }; } } }catch(e){}
+  let fresh = false;
+  const sk = scopeKey();
+  try{
+    const raw = localStorage.getItem(sk);
+    if(raw){ db = migrateData(JSON.parse(raw)); }
+    else {
+      /* 升级兼容：首次从旧版全局 KEY 取回原有数据，避免升级后“丢失” */
+      const old = localStorage.getItem('wb_momo_v3');
+      if(old){ db = migrateData(JSON.parse(old)); fresh = true; }
+      else { db = seedDB(); fresh = true; }
+    }
+  }catch(e){ db = seedDB(); fresh = true; }
+  normalizeDB();
   try{ const m = localStorage.getItem(META_KEY); if(m) meta = Object.assign(meta, JSON.parse(m)); }catch(e){}
   meta.sync = Object.assign({ token:'', gistId:'', auto:false, lastSync:0 }, meta.sync||{});
-  if(fresh){ meta.lastBackupCount = totalCount(); saveMeta(); }
-  save();
+  if(fresh){ meta.lastBackupCount = totalCount(); saveMeta(); save(); }
 }
 function save(){
-  try{ localStorage.setItem(KEY, JSON.stringify(db)); }
+  try{ localStorage.setItem(scopeKey(), JSON.stringify(db)); }
   catch(e){ toast('存储空间不足，建议先导出备份再清理旧数据'); }
   schedulePush();
 }
@@ -3035,7 +3092,7 @@ $('fileIn').addEventListener('change', function(e){
       db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; });
       db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
       db.seeded = true;
-      save(); closeProject(); render(); toast('导入成功，共恢复 '+totalCount()+' 条数据');
+      save(); if(SESSION.user && SKEY) pushCloud(false); closeProject(); render(); toast('导入成功，共恢复 '+totalCount()+' 条数据');
     });
   };
   r.readAsText(f);
@@ -3122,6 +3179,7 @@ function openSync(){
     + '<div style="font-size:13.6px;line-height:1.85;color:var(--text2);margin-bottom:14px">'
     + '通过 GitHub <b>私有 Gist</b> 中转数据，实现多设备同步。只需三样：① 一个 GitHub 账号；② 一个<b>仅勾选 gist 权限</b>的私人访问令牌（PAT）；③ 一个 Gist（首次同步自动创建，可留空）。'
     + '<br>令牌只存在本机浏览器，仅用于读写你自己的 Gist，不上传我的服务器。'
+    + '<br><b style="color:var(--red)">注意：需先登录账号</b>，数据会按账号加密后同步；游客模式不会联网同步。'
     + '</div>'
     + '<label class="fld"><span>GitHub 访问令牌 (PAT)</span>'
     + '<input id="syncToken" type="password" placeholder="ghp_xxx 或 github_pat_xxx" value="'+esc(s.token)+'" autocomplete="off"></label>'
@@ -3150,41 +3208,45 @@ function saveSyncCfg(){
 }
 
 async function pushCloud(manual){
-  if(!meta.sync || !meta.sync.token){ if(manual) toast('请先在「云端同步」里填写令牌'); return; }
+  if(!SESSION.user || !SKEY){ if(manual) toast('请先登录账号再同步'); return; }
+  if(!meta.sync || !meta.sync.token){ if(manual) toast('请先在「云端同步」填写令牌'); openSync(); return; }
   try{
-    const content = JSON.stringify(db);
+    const b64 = await encryptWithKey(SKEY, db);
+    const fname = userFile(SESSION.user);
     let url = GIST_API, method = 'POST';
-    const body = { files:{ [SYNC_FILE]:{ content } }, description:'沫沫的人生工作台 云端同步' };
+    const body = { files:{ [fname]:{ content:b64 } }, description:'沫沫人生工作台 用户数据同步' };
     if(meta.sync.gistId){ url = GIST_API + '/' + meta.sync.gistId; method = 'PATCH'; }
     const res = await fetch(url, { method, headers: ghHeaders(), body: JSON.stringify(body) });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if(!meta.sync.gistId && data.id){ meta.sync.gistId = data.id; }
     meta.sync.lastSync = Date.now(); saveMeta();
-    if(manual) toast('已推送到云端');
+    if(manual) toast('已同步到云端');
   }catch(e){
-    if(manual) toast('推送失败：' + e.message + '（检查令牌/Gist ID/网络，GitHub API 需联网）');
+    if(manual) toast('同步失败：' + e.message + '（检查令牌/网络，GitHub API 需联网）');
     else console.warn('auto push failed:', e.message);
   }
 }
 
 async function pullCloud(manual){
-  if(!syncReady()){ if(manual) toast('请先在「云端同步」里完成配置'); return; }
+  if(!SESSION.user || !SKEY){ if(manual) toast('请先登录账号'); openLogin(); return; }
+  if(!syncReady()){ if(manual) toast('请先在「云端同步」填写令牌'); openSync(); return; }
   try{
     const res = await fetch(GIST_API + '/' + meta.sync.gistId, { headers: ghHeaders() });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const file = data.files && data.files[SYNC_FILE];
-    if(!file || !file.content){ if(manual) toast('云端暂无数据，请先推送一次'); return; }
+    const file = data.files && data.files[userFile(SESSION.user)];
+    if(!file || !file.content){ if(manual) toast('云端暂无你的数据，请先推送一次'); return; }
     let nd;
-    try{ nd = migrateData(JSON.parse(file.content)); }catch(err){ if(manual) toast('云端数据解析失败'); return; }
+    try{ nd = await decryptWithKey(SKEY, file.content); }catch(err){ if(manual) toast('解密失败，密码可能不正确'); return; }
+    nd = migrateData(nd);
     if(manual && totalCount() > 0){
-      confirmBoxCustom('从云端拉取？', '会用云端记录覆盖本机当前数据，<b>本机未同步的改动会丢失</b>。建议先点「导出备份」留底。', '确认拉取覆盖', ()=>applyPull(nd));
+      confirmBoxCustom('从云端拉取？', '会用云端记录覆盖本机当前数据，<b>未同步的改动会丢失</b>。建议先点「导出备份」留底。', '确认拉取覆盖', ()=>applyPull(nd));
     } else {
       applyPull(nd);
     }
   }catch(e){
-    if(manual) toast('拉取失败：' + e.message + '（检查令牌/Gist ID/网络）');
+    if(manual) toast('拉取失败：' + e.message);
   }
 }
 
@@ -3202,9 +3264,81 @@ function applyPull(nd){
 
 let _pushTimer = null;
 function schedulePush(){
-  if(!meta.sync || !meta.sync.auto || !meta.sync.token || !meta.sync.gistId) return;
+  if(!SESSION.user || !SKEY || !meta.sync || !meta.sync.auto || !meta.sync.token || !meta.sync.gistId) return;
   clearTimeout(_pushTimer);
   _pushTimer = setTimeout(()=>{ pushCloud(false); }, 900);
+}
+
+/* ---------- 登录 / 游客 / 账号 ---------- */
+function paintAccount(){
+  const el = $('acctBtn'); if(!el) return;
+  if(SESSION.user && SKEY) el.innerHTML = ico('user',14)+'<span id="acctLabel">'+esc(SESSION.user)+'</span>';
+  else el.innerHTML = ico('user',14)+'<span id="acctLabel">登录</span>';
+}
+function openLogin(){
+  const isUnlock = SESSION.user && !SKEY;
+  const b = '<div class="login-wrap">'
+    + '<div class="login-title">'+ico(isUnlock?'lock':'user',18)+(isUnlock?' 解锁你的工作台':' 登录 / 注册账号')+'</div>'
+    + '<div class="login-sub">'+(isUnlock
+        ? '欢迎回来，<b>'+esc(SESSION.user)+'</b>。输入密码解锁并同步你的数据。'
+        : '用账号 + 密码登录，数据加密后同步到你的私有云。没有账号？输入任意账号密码即自动注册。')+'</div>'
+    + (isUnlock ? '' : '<label class="login-field"><input id="lgUser" placeholder="账号（用户名）" autocomplete="username"></label>')
+    + '<label class="login-field"><input id="lgPass" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')doLogin()"></label>'
+    + '<div class="login-actions">'
+    +   '<button class="btn primary" onclick="doLogin()">'+(isUnlock?'解锁并进入':'登录 / 注册')+'</button>'
+    +   '<button class="btn" onclick="closeModal();if(!SESSION.user)toast(\'当前为游客模式\')">游客模式</button>'
+    + '</div></div>';
+  openModal('账号', b, [{ t:'关闭', cls:'btn', fn:closeModal }]);
+  setTimeout(()=>{ const el=$('lgPass'); if(el) el.focus(); }, 60);
+}
+async function doLogin(){
+  const pass = (($('lgPass')||{}).value||'').trim();
+  if(!pass){ toast('请输入密码'); return; }
+  const user = (SESSION.user && !SKEY) ? SESSION.user : (($('lgUser')||{}).value||'').trim();
+  if(!user){ toast('请输入账号'); return; }
+  try{
+    const key = await deriveKey(user, pass);
+    SKEY = key; SESSION = { user, guest:false };
+    meta.session = { user }; saveMeta();
+    if(syncReady()){
+      try{
+        const res = await fetch(GIST_API+'/'+meta.sync.gistId, { headers:ghHeaders() });
+        if(res.ok){
+          const data = await res.json();
+          const file = data.files && data.files[userFile(user)];
+          if(file && file.content){
+            const nd = await decryptWithKey(key, file.content);
+            db = Object.assign(blankDB(), migrateData(nd));
+            normalizeDB();
+            save(); render(); closeModal(); paintAccount();
+            toast('已登录：'+user);
+            return;
+          }
+        }
+      }catch(e){ /* 云端拉取失败，按首次使用处理 */ }
+    }
+    /* 首次使用 / 未配置云端：以当前本地数据作为该账号初始数据 */
+    save(); render(); closeModal(); paintAccount();
+    toast('已登录：'+user + (syncReady() ? '（首次同步中…）' : '（未配置云端，数据仅本机）'));
+    if(syncReady()) pushCloud(false);
+  }catch(e){ SKEY=null; toast('登录失败：'+e.message); }
+}
+function logout(){
+  SESSION = { user:null, guest:true }; SKEY=null;
+  meta.session = null; saveMeta();
+  db = null; load(); render(); paintAccount();
+  toast('已退出，当前为游客模式');
+}
+function openAccount(){
+  if(SESSION.user && SKEY){
+    openModal('账号', '<div class="login-wrap">'
+      + '<div class="login-title">'+ico('user',18)+'已登录：'+esc(SESSION.user)+'</div>'
+      + '<div class="login-sub">数据已加密保存在你的私有云，退出后他人只能用游客模式，看不到你的内容。</div>'
+      + '<div class="login-actions">'
+      +   '<button class="btn primary" onclick="closeModal();openSync()">云端同步设置</button>'
+      +   '<button class="btn danger" onclick="closeModal();logout()">退出登录</button>'
+      + '</div></div>', [{ t:'关闭', cls:'btn', fn:closeModal }]);
+  } else openLogin();
 }
 
 function stat(k,v,unit){
@@ -5264,6 +5398,7 @@ function render(){
   else if(route.tab === 'accounts') v.innerHTML = viewAccounts();
   else v.innerHTML = viewProjects();
   paintPomoMini();
+  paintAccount();
 }
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 window.addEventListener('beforeunload', e => {
@@ -5285,6 +5420,7 @@ if(meta.pomoCfg){
   });
 })();
 render();
+if(SESSION.user && !SKEY) openLogin();
 </script>
 </body>
 </html>
