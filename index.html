@@ -1065,8 +1065,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .acct-name{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct-name svg{color:var(--accent);flex-shrink:0}
 .acct-ops{display:flex;gap:2px;flex-shrink:0}
-.acct-url{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--blue);text-decoration:none;word-break:break-all;background:var(--surface2);border-radius:5px;padding:6px 9px}
-.acct-url:hover{text-decoration:underline}
+.acct-url{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--blue);text-decoration:none;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 11px;cursor:pointer;transition:.15s;width:max-content}
+.acct-url:hover{background:var(--accent-soft);border-color:rgba(224,163,184,.45);color:var(--accent2)}
+.acct-url svg{flex-shrink:0}
 .acct-row{display:flex;align-items:center;gap:8px;font-size:13.5px}
 .acct-k{width:34px;flex-shrink:0;color:var(--muted);font-size:12.5px}
 .acct-v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
@@ -5169,7 +5170,7 @@ function acctCard(a){
     + '<button class="iconbtn del" title="删除" onclick="delAcct(\''+a.id+'\')">'+ico('del',14)+'</button>'
     + '</div></div>';
   if(a.url){
-    h += '<a class="acct-url" href="'+esc(a.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+ico('link',13)+esc(a.url)+'</a>';
+    h += '<button class="acct-url" type="button" title="点击复制链接" onclick="copyAcct(\''+a.id+'\',\'url\',\'链接已复制\');event.stopPropagation()">'+ico('link',13)+'<span>链接</span>'+ico('copy',12)+'</button>';
   }
   h += '<div class="acct-row"><span class="acct-k">账号</span>'
     + '<span class="acct-v">'+esc(a.user||'—')+'</span>'
@@ -5199,7 +5200,11 @@ function viewAccounts(){
 function acctToggle(id){ if(ACCT_SHOWN.has(id)) ACCT_SHOWN.delete(id); else ACCT_SHOWN.add(id); render(); }
 function copyAcct(id, field, msg){
   const a = db.accounts.find(x=>x.id===id); if(!a) return;
-  copyText(field==='user'?(a.user||''):(a.pass||''), msg);
+  let v = '';
+  if(field==='user') v = a.user||'';
+  else if(field==='pass') v = a.pass||'';
+  else if(field==='url') v = a.url||'';
+  copyText(v, msg);
 }
 function acctFields(v){
   return [
