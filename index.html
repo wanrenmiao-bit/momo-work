@@ -139,6 +139,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .stat .k{font-size:12.5px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .stat .v{font-size:24px;font-weight:700;letter-spacing:.3px;line-height:1.2;color:var(--text)}
 .stat .v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:3px}
+.stat.warn{background:#f6e7e8;border-color:#e7bcbf}
+.stat.warn .k{color:#b0565f}
+.stat.warn .v{color:#a83c47}
 
 .field{margin-bottom:15px}
 .field label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:600}
@@ -475,6 +478,11 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .task-pri.P2{background:var(--green-soft);color:var(--green)}
 .task-pri.P3{background:var(--surface3);color:var(--muted)}
 .task-row.abandoned{opacity:.75}
+.proj-task-tools{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+.arch-block{margin-top:14px;border-top:1px dashed var(--border);padding-top:10px}
+.arch-h{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.arch-h .n{font-size:12px;background:var(--surface3);color:var(--text2);border-radius:10px;padding:1px 8px}
+.task-row.archived-row{opacity:.85}
 .task-quick-add{display:flex;gap:8px;align-items:center}
 .task-quick-add input{flex:1;min-width:0}
 .pri-chips{display:flex;gap:5px;align-items:center;flex-shrink:0}
@@ -1597,6 +1605,9 @@ function migrateData(d){
       if(t.pri == null) t.pri = 'P2';
       if(t.today == null) t.today = false;
       if(t.abandoned == null) t.abandoned = false;
+      if(t.archived == null) t.archived = false;
+      if(t.archived) t.done = false;            // 归档任务不参与完成统计
+      if(t.done && !t.doneAt) t.doneAt = TODAY; // 旧已完成任务补 doneAt，避免永久隐藏
     });
     if(p.imp == null) p.imp = false;
     if(p.urg == null) p.urg = false;
@@ -1850,7 +1861,8 @@ const ICO = {
   target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/>',
   stopwatch:'<circle cx="12" cy="13" r="9"/><path d="M12 8v5l3 3"/><path d="M12 2v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M19.78 4.22l-1.42 1.42"/>',
-  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.2-.8-3-2-5-1.2 2-2 3.8-2 5a2.5 2.5 0 0 0 1.5 2.5"/><path d="M12 16.5a3.5 3.5 0 0 1 3.5-3.5c0-2-1.5-5-3.5-8-2 3-3.5 6-3.5 8a3.5 3.5 0 0 1 3.5 3.5"/>'
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.2-.8-3-2-5-1.2 2-2 3.8-2 5a2.5 2.5 0 0 0 1.5 2.5"/><path d="M12 16.5a3.5 3.5 0 0 1 3.5-3.5c0-2-1.5-5-3.5-8-2 3-3.5 6-3.5 8a3.5 3.5 0 0 1 3.5 3.5"/>',
+  archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><line x1="10" y1="12" x2="14" y2="12"/>'
 };
 function ico(name, size, sw){
   return '<svg width="'+(size||16)+'" height="'+(size||16)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(sw||2)+'" stroke-linecap="round" stroke-linejoin="round">'+ICO[name]+'</svg>';
@@ -2548,7 +2560,7 @@ function projectAnalysisHTML(){
 
 function projectCardHTML(p, opts){
   opts = opts || {};
-  const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
+  const t = p.tasks.filter(x=>!x.archived).length, d = p.tasks.filter(x=>x.done && !x.archived).length;
   const pct = t ? Math.round(d/t*100) : 0;
   const dragAttr = opts.draggable
     ? ' draggable="true" ondragstart="dragProj(event,\''+p.id+'\')" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProj(event,\''+p.id+'\')"'
@@ -2604,7 +2616,7 @@ function viewProjects(){
 function viewProjectDetail(){
   const p = db.projects.find(x=>x.id===route.detail);
   if(!p){ closeProject(); return ''; }
-  const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
+  const t = p.tasks.filter(x=>!x.archived).length, d = p.tasks.filter(x=>x.done && !x.archived).length;
   const pct = t ? Math.round(d/t*100) : 0;
   const isDone = p.status === '已完成';
   let h = '<div class="backbar">'
@@ -2633,7 +2645,7 @@ function viewProjectDetail(){
 
   h += '<div class="project-dashboard">';
   h += '<div class="project-col'+(route.projCol==='tasks'?' on':'')+'">'
-    + '<div class="project-col-h" onclick="selectCol(\'tasks\')">'+ico('check',15)+'任务清单<span class="ex">'+(route.projCol==='tasks'?'收起':'展开')+'</span><span class="n">'+p.tasks.filter(x=>!x.done && !x.abandoned).length+' / '+t+'</span></div>';
+    + '<div class="project-col-h" onclick="selectCol(\'tasks\')">'+ico('check',15)+'任务清单<span class="ex">'+(route.projCol==='tasks'?'收起':'展开')+'</span><span class="n">'+p.tasks.filter(x=>!x.done && !x.abandoned && !x.archived).length+' / '+t+'</span></div>';
   if(!isDone){
     h += '<div class="addline task-quick-add" style="margin-bottom:10px">'
       + priChips('pri_'+p.id, 'P2')
@@ -2641,8 +2653,21 @@ function viewProjectDetail(){
       + '<input placeholder="快速添加任务，回车" onkeydown="if(event.key===\'Enter\')quickTask(\''+p.id+'\',this)">'
       + '</div>';
   }
+  // 显示已完成开关：默认隐藏「往日已完成」任务
+  const doneHidden = p.tasks.filter(x=>x.done && x.doneAt && x.doneAt < TODAY).length;
+  h += '<div class="proj-task-tools">'
+    + '<button class="btn sm '+(projShowDone?'':'ghost')+'" onclick="projToggleDone()">'+ico(projShowDone?'eyeOff':'eye',14)+(projShowDone?'隐藏已完成':'显示已完成')+'</button>'
+    + (doneHidden ? '<span style="font-size:12px;color:var(--muted)">'+doneHidden+' 条往日已完成已隐藏</span>' : '')
+    + '</div>';
+
   if(!t) h += '<div class="empty" style="padding:20px 0">'+ico('check',28,1.5)+'<div>还没有任务</div></div>';
-  p.tasks.slice().sort((a,b)=> (a.done||a.abandoned?1:0)-(b.done||b.abandoned?1:0)).forEach(x => {
+  p.tasks.slice().sort((a,b)=> (a.done||a.abandoned?1:0)-(b.done||b.abandoned?1:0))
+    .filter(x=>{
+      if(x.archived) return false;                                            // 已归档彻底不显示
+      if(x.done && x.doneAt && x.doneAt < TODAY && !projShowDone) return false; // 默认隐藏往日已完成
+      return true;
+    })
+    .forEach(x => {
     const inPlan = db.plans.some(pl => pl.sourceType==='project' && pl.sourceId===p.id && pl.sourceSub===x.id);
     h += '<div class="task-row'+(x.abandoned?' abandoned':'')+'">'
       + '<div class="task-check'+(x.done?' done':'')+(isDone?' readonly':'')+'" '+(isDone?'':'onclick="toggleTask(\''+p.id+'\',\''+x.id+'\')"')+'>'+(x.done?ico('check',12,3):'')+'</div>'
@@ -2657,10 +2682,25 @@ function viewProjectDetail(){
         +   (x.abandoned
              ? '<button class="iconbtn" title="重新启用" onclick="resumeTask(\''+p.id+'\',\''+x.id+'\')">'+ico('refresh',14)+'</button>'
              : '<button class="iconbtn" title="放弃" onclick="abandonTask(\''+p.id+'\',\''+x.id+'\')">'+ico('ban',14)+'</button>')
+        +   '<button class="iconbtn" title="归档（彻底移出任务列表）" onclick="archiveTask(\''+p.id+'\',\''+x.id+'\')">'+ico('archive',14)+'</button>'
         + '</div>';
     }
     h += '</div>';
   });
+  // 已归档任务列表（任务管理下面的归档区，可随时恢复）
+  const arch = p.tasks.filter(x=>x.archived);
+  if(arch.length && !isDone){
+    h += '<div class="arch-block"><div class="arch-h">'+ico('archive',15)+'已归档任务 <span class="n">'+arch.length+'</span></div>';
+    arch.forEach(x=>{
+      h += '<div class="task-row archived-row"><div class="task-title">'+esc(x.title)
+        + '<span class="task-pri '+(x.pri||'P2')+'">'+(x.pri||'P2')+'</span></div>'
+        + '<div class="ops">'
+        + '<button class="iconbtn" title="恢复任务" onclick="unarchiveTask(\''+p.id+'\',\''+x.id+'\')">'+ico('refresh',14)+'</button>'
+        + '<button class="iconbtn del" title="彻底删除" onclick="deleteTask(\''+p.id+'\',\''+x.id+'\')">'+ico('del',14)+'</button>'
+        + '</div></div>';
+    });
+    h += '</div>';
+  }
   h += '</div>';
 
   h += '<div class="project-col'+(route.projCol==='assets'?' on':'')+'">'
@@ -2738,7 +2778,8 @@ function delProject(id){
 function toggleTask(pid,tid){
   const t=db.projects.find(x=>x.id===pid).tasks.find(x=>x.id===tid);
   t.done=!t.done;
-  if(t.done){ t.today=false; t.abandoned=false; }
+  if(t.done){ t.today=false; t.abandoned=false; t.doneAt=TODAY; }
+  else { t.doneAt=null; }
   save();
   syncProjectTaskToPlan(pid,tid);
   render();
@@ -2801,6 +2842,21 @@ function deleteTask(pid,tid){
     save(); render(); toast('已删除');
   });
 }
+let projShowDone = false;
+function projToggleDone(){ projShowDone = !projShowDone; render(); }
+function archiveTask(pid,tid){
+  const t = db.projects.find(x=>x.id===pid).tasks.find(x=>x.id===tid); if(!t) return;
+  confirmBox('归档这条任务？','归档后它将从任务列表彻底移出（不再计入进度），可在下方「已归档任务」里随时恢复。',()=>{
+    t.archived = true; t.done = false; t.today = false; t.doneAt = null;
+    db.plans = db.plans.filter(pl => !(pl.sourceType==='project' && pl.sourceId===pid && pl.sourceSub===tid));
+    save(); render(); toast('已归档');
+  });
+}
+function unarchiveTask(pid,tid){
+  const t = db.projects.find(x=>x.id===pid).tasks.find(x=>x.id===tid); if(!t) return;
+  t.archived = false;
+  save(); render(); toast('已恢复到任务列表');
+}
 function quickTask(pid,el){
   const v = el.value.trim(); if(!v) return;
   const priWrap = el.parentElement;
@@ -2808,7 +2864,7 @@ function quickTask(pid,el){
   const pri = priEl ? priEl.value : 'P2';
   const sun = priWrap.querySelector('.task-sun-btn');
   const today = sun ? sun.classList.contains('on') : false;
-  const t = { id:uid(), title:v, pri, done:false, today, abandoned:false };
+  const t = { id:uid(), title:v, pri, done:false, today, abandoned:false, archived:false, doneAt:null };
   db.projects.find(x=>x.id===pid).tasks.push(t);
   el.value=''; if(sun) sun.classList.remove('on');
   save();
@@ -2826,7 +2882,7 @@ function editTask(pid,tid){
   ], t || { pri:'P2', today:false }, v => {
     const wasToday = t ? t.today : false;
     if(t) Object.assign(t,v);
-    else p.tasks.push({ id:uid(), title:v.title, pri:v.pri, done:false, today:!!v.today, abandoned:false });
+    else p.tasks.push({ id:uid(), title:v.title, pri:v.pri, done:false, today:!!v.today, abandoned:false, archived:false, doneAt:null });
     if(t){ t.today = !!v.today; if(t.today) t.abandoned = false; }
     save(); render(); toast('已保存');
     // 同步到计划看板：如果设为今日必做，创建/更新 must 计划；如果取消今日必做，移除 must 计划但保留原象限
@@ -3656,8 +3712,8 @@ function openAccount(){
   } else openLogin();
 }
 
-function stat(k,v,unit){
-  return '<div class="stat"><div class="k">'+esc(k)+'</div><div class="v">'+v+(unit?'<small>'+unit+'</small>':'')+'</div></div>';
+function stat(k,v,unit,cls){
+  return '<div class="stat'+(cls?' '+cls:'')+'"><div class="k">'+esc(k)+'</div><div class="v">'+v+(unit?'<small>'+unit+'</small>':'')+'</div></div>';
 }
 function emptyBox(txt){
   return '<div class="card empty">'+ico('box2',34,1.5)+'<div>'+esc(txt)+'</div></div>';
@@ -3681,10 +3737,11 @@ function viewPlan(){
   const doneToday = doneAll.filter(p=>p.doneAt === TODAY).length;
   const overdue = open.filter(p=>p.date && p.date < TODAY).length;
   const rate = all.length ? Math.round(overdue/all.length*100) : 0;
+  const rateWarn = rate > 10;
 
   let h = '<div class="grid g4 stats" style="margin-bottom:18px">'
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
-    + stat('累计完成', doneAll.length, '条') + stat('逾期率', rate, '%') + '</div>';
+    + stat('累计完成', doneAll.length, '条') + stat('逾期率', rate, '%', rateWarn?'warn':'') + '</div>';
 
   // 新布局：左侧今日必须完成（大列） + 右侧 2×2 四象限
   h += '<div class="plan-layout">';
