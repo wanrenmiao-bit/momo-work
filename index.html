@@ -709,15 +709,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .plan-sun{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:.15s}
 .plan-sun:hover{color:var(--red);background:var(--red-soft)}
 .plan-sun.on{color:var(--red);background:rgba(207,155,148,.16)}
-.plan-zone.must{background:#fff;border:2px solid rgba(199,120,110,.55);box-shadow:0 10px 32px rgba(199,120,110,.16),inset 0 0 0 1px rgba(255,255,255,.6);position:relative;overflow:hidden}
+.plan-zone.must{background:var(--surface);border:2px solid rgba(199,120,110,.55);box-shadow:0 10px 32px rgba(199,120,110,.16);position:relative;overflow:hidden}
 .plan-zone.must::before{content:'';position:absolute;left:0;top:0;right:0;height:5px;background:linear-gradient(90deg,var(--red),#e09a90,#d98c82)}
 .plan-zone.must::after{content:'';position:absolute;right:-20px;top:-20px;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle,rgba(207,155,148,.14) 0%,rgba(207,155,148,0) 70%);pointer-events:none}
 .plan-zone.must .plan-zone-h{color:var(--red);font-size:16px;letter-spacing:.3px;padding-top:4px;position:relative;z-index:1}
 .plan-zone.must .plan-zone-h .cnt{margin-left:auto;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--red),#d98c82);padding:2px 9px;border-radius:999px;box-shadow:0 2px 6px rgba(199,120,110,.3)}
 .plan-zone.must .plan-zone-h .dot{width:10px;height:10px}
-.plan-zone.must .plan{position:relative;padding-left:16px;background:#fff8f7;border-color:rgba(199,120,110,.18);box-shadow:0 2px 8px rgba(199,120,110,.08)}
+.plan-zone.must .plan{position:relative;padding-left:16px;background:#fff;border-color:rgba(199,120,110,.2);box-shadow:0 2px 8px rgba(199,120,110,.08)}
 .plan-zone.must .plan::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--red),#d98c82);border-radius:6px 0 0 6px}
-.plan-zone.must .plan:hover{border-color:rgba(199,120,110,.32);box-shadow:0 4px 14px rgba(199,120,110,.12)}
+.plan-zone.must .plan:hover{border-color:rgba(199,120,110,.35);box-shadow:0 4px 14px rgba(199,120,110,.12)}
 .must-flag{flex-shrink:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--red),#d98c82);box-shadow:0 3px 8px rgba(199,120,110,.35);animation:flagpulse 2.4s ease-in-out infinite}
 @keyframes flagpulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.18);opacity:1}}
 .mini-btn{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--surface3);color:var(--text2);cursor:pointer;transition:.15s;white-space:nowrap}
