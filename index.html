@@ -678,10 +678,10 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   border:1px solid var(--border);font-size:13.5px;color:var(--text2);min-height:40px;white-space:nowrap}
 .daily-sub button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
 
-.plan-layout{display:grid;grid-template-columns:minmax(280px,1fr) minmax(420px,1.8fr);gap:16px;align-items:stretch;margin-bottom:18px;min-height:0}
-.plan-must-col{display:flex;flex-direction:column;min-height:0}
-.plan-must-col .plan-zone{flex:1;display:flex;flex-direction:column;min-height:0;margin-bottom:0}
-.plan-quadrant-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;min-height:0}
+.plan-layout{display:grid;grid-template-columns:minmax(280px,1fr) minmax(420px,1.8fr);gap:16px;align-items:stretch;margin-bottom:18px;height:460px;min-height:460px}
+.plan-must-col{display:flex;flex-direction:column;height:100%;min-height:0}
+.plan-must-col .plan-zone{flex:1;display:flex;flex-direction:column;height:100%;min-height:0;margin-bottom:0}
+.plan-quadrant-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:100%;min-height:0}
 .plan-quadrant-grid .plan-zone{display:flex;flex-direction:column;min-height:0;margin-bottom:0}
 .plan-zone{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;transition:.16s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(120,105,90,.04)}
 .plan-zone::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--zc,var(--border2))}
@@ -700,9 +700,13 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .plan-sun{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:.15s}
 .plan-sun:hover{color:var(--red);background:var(--red-soft)}
 .plan-sun.on{color:var(--red);background:rgba(207,155,148,.16)}
-.plan-zone.must{background:linear-gradient(135deg,rgba(207,155,148,.16),rgba(207,155,148,.05));border:1.5px solid rgba(199,120,110,.45);box-shadow:0 6px 20px rgba(199,120,110,.12);position:relative;overflow:hidden}
-.plan-zone.must::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--red),#d98c82)}
-.plan-zone.must .plan-zone-h{color:var(--red);font-size:14.5px}
+.plan-zone.must{background:linear-gradient(135deg,rgba(207,155,148,.18),rgba(207,155,148,.06));border:2px solid rgba(199,120,110,.55);box-shadow:0 8px 26px rgba(199,120,110,.14),inset 0 0 0 1px rgba(255,255,255,.4);position:relative;overflow:hidden}
+.plan-zone.must::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(var(--red),#d98c82)}
+.plan-zone.must .plan-zone-h{color:var(--red);font-size:15px;letter-spacing:.3px}
+.plan-zone.must .plan-zone-h .dot{width:10px;height:10px}
+.plan-zone.must .plan{position:relative;padding-left:16px;background:#fff;border-color:rgba(199,120,110,.25);box-shadow:0 2px 8px rgba(199,120,110,.08)}
+.plan-zone.must .plan::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--red),#d98c82);border-radius:6px 0 0 6px}
+.plan-zone.must .plan:hover{border-color:rgba(199,120,110,.45);box-shadow:0 4px 14px rgba(199,120,110,.14)}
 .must-flag{flex-shrink:0;color:var(--red);display:inline-flex;animation:flagpulse 2.4s ease-in-out infinite}
 @keyframes flagpulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.18);opacity:1}}
 .mini-btn{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--surface3);color:var(--text2);cursor:pointer;transition:.15s;white-space:nowrap}
@@ -899,7 +903,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .hamburger svg{display:block}
 .nav-overlay{display:none;position:fixed;inset:0;background:rgba(60,40,50,.38);z-index:75;opacity:0;transition:opacity .2s}
 .nav-overlay.open{display:block;opacity:1}
-@media(max-width:1024px){.plan-grid{grid-template-columns:1fr}.plan-layout{grid-template-columns:1fr}.plan-must-col{min-height:auto}.plan-zone-body{max-height:360px}}
+@media(max-width:1024px){.plan-grid{grid-template-columns:1fr}.plan-layout{grid-template-columns:1fr;height:auto;min-height:auto}.plan-must-col{min-height:auto;height:auto}.plan-must-col .plan-zone{height:auto;max-height:360px}.plan-quadrant-grid{height:auto}.plan-zone-body{max-height:360px}}
 @media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
 @media(max-width:768px){
   .sidebar{display:none}
@@ -3189,7 +3193,7 @@ function planZone(cat, items, full){
   const c = isMust ? { k:'must', n:'今日必须完成的', color:'var(--red)', desc:'今天无论如何都要做完' } : PLAN_CATS.find(x=>x.k===cat);
   let h = '<div class="plan-zone'+(isMust?' must':'')+'" style="--zc:'+c.color+'" data-cat="'+cat+'" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropPlan(event,\''+cat+'\')">';
   h += '<div class="plan-zone-h">';
-  if(isMust) h += '<span class="must-flag">'+ico('flag',13)+'</span>';
+  if(isMust) h += '<span class="must-flag">'+ico('flag',15)+'</span>';
   h += '<span class="dot" style="background:'+c.color+'"></span>'+c.n+'<span class="cnt">'+items.length+'</span></div>';
 
   // 四象限直接在头部添加任务
