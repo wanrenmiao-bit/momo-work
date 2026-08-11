@@ -439,6 +439,32 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .proj-drop-last.dragover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2)}
 @media(max-width:768px){.proj-grip{display:none}.proj-move-btns{display:inline-flex}.proj-move-up{order:-1}}
 
+/* 项目关联目标 */
+.proj-goals{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.goal-chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;line-height:1;padding:5px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent2);cursor:pointer;border:1px solid rgba(224,163,184,.28);transition:.15s;max-width:100%}
+.goal-chip svg{flex-shrink:0;opacity:.85}
+.goal-chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.goal-chip:hover svg{opacity:1}
+.goal-chip span{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj-detail-goals{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:13px;border-top:1px dashed var(--border)}
+.pdg-label{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:3px}
+/* 目标关联项目（在目标卡内展示） */
+.goal-rel-proj{margin-top:14px;padding-top:13px;border-top:1px dashed var(--border)}
+.grp-title{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:9px}
+.grp-title .n{font-size:11px;background:var(--surface3);color:var(--text2);border-radius:10px;padding:1px 8px}
+.grp-list{display:flex;flex-wrap:wrap;gap:8px}
+.rel-proj-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;transition:.15s}
+.rel-proj-chip:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent2)}
+.rp-status{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--surface3);color:var(--muted)}
+.rp-status.done{background:var(--green-soft);color:var(--green)}
+/* 编辑项目里的目标多选 */
+.goal-multi{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;padding:4px;border:1px solid var(--border);border-radius:8px;background:var(--surface2)}
+.goal-multi-opt{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:13px;transition:.12s}
+.goal-multi-opt:hover{background:var(--surface3)}
+.goal-multi-opt.on{background:var(--accent-soft)}
+.goal-multi-opt input{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.goal-multi-opt .gm-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* 项目数据分析 */
 .proj-an-grid{display:grid;grid-template-columns:1.1fr 1.4fr 1.2fr;gap:18px}
 .pa-block{background:var(--surface2);border-radius:8px;padding:14px 15px}
@@ -1316,7 +1342,8 @@ function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], income
 
 function seedDB(){
   const SUB = (t, done, at) => ({ id:uid(), title:t, done:!!done, doneAt:done?(at||off(-6)):'' });
-  const g0 = { id:uid(), title:'三年内成为能养活自己的独立开发者', cat:'事业', note:'目标不是辞职，而是有随时可以辞职的底气。', created:off(-60), milestones:[
+  const GID0 = uid(), GID1 = uid(), GID2 = uid();
+  const g0 = { id:GID0, title:'三年内成为能养活自己的独立开发者', cat:'事业', note:'目标不是辞职，而是有随时可以辞职的底气。', created:off(-60), milestones:[
     { id:uid(), title:'上线第一个完整产品', done:true, doneAt:off(-12), subs:[
       SUB('确定产品定位与核心功能', true, off(-30)), SUB('完成 MVP 开发', true, off(-18)), SUB('正式发布并收集反馈', true, off(-12))
     ]},
@@ -1325,7 +1352,7 @@ function seedDB(){
     ]},
     { id:uid(), title:'月被动收入稳定过 5000', done:false, subs:[] }
   ]};
-  const g1 = { id:uid(), title:'身体状态回到 25 岁', cat:'健康', note:'', created:off(-40), milestones:[
+  const g1 = { id:GID1, title:'身体状态回到 25 岁', cat:'健康', note:'', created:off(-40), milestones:[
     { id:uid(), title:'体脂率降到 18%', done:false, subs:[
       SUB('连续两周控制饮食', true, off(-4)), SUB('体脂降到 22%', false), SUB('体脂降到 18%', false)
     ]},
@@ -1336,7 +1363,7 @@ function seedDB(){
   const FWL = defaultFrameworks();
   const fwId = n => { const f = FWL.find(x=>x.name===n); return f ? f.id : ''; };
   const fProj = fwId('配图配色'), fTime = fwId('时间管理');
-  const g2 = { id:uid(), title:'今年读完 30 本书', cat:'成长', note:'重质不重量，每本要写读书笔记。', created:off(-30), milestones:[
+  const g2 = { id:GID2, title:'今年读完 30 本书', cat:'成长', note:'重质不重量，每本要写读书笔记。', created:off(-30), milestones:[
     { id:uid(), title:'上半年读完 15 本', done:true, doneAt:off(-5), subs:[] },
     { id:uid(), title:'下半年读完 15 本', done:false, subs:[
       SUB('7-8 月读完 5 本', false), SUB('9-10 月读完 5 本', false), SUB('11-12 月读完 5 本', false)
@@ -1358,7 +1385,7 @@ function seedDB(){
       { id:uid(), title:'个人财务与理财入门', content:'《小狗钱钱》读书笔记：先存钱再花钱，比什么理财技巧都重要。\n\n指数基金定投的底层逻辑是相信长期国运，不择时。', tags:['通识','理财'], created:off(-60), createdAt:off(-60)+' 22:05', duration:20 }
     ],
     projects:[
-      { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8), imp:true, urg:true, today:true,
+      { id:PID0, name:'个人工作台 v1', status:'进行中', desc:'把目标、灵感、学习、项目、收入五件事收进一个页面，手机电脑都能用。', created:off(-8), imp:true, urg:true, today:true, goalIds:[GID0],
         tasks:[
           { id:uid(), title:'确定模块清单与优先级', pri:'P0', done:true, today:false, abandoned:false },
           { id:TID0, title:'完成五大模块原型', pri:'P0', done:false, today:true, abandoned:false },
@@ -1373,7 +1400,7 @@ function seedDB(){
           { id:uid(), title:'v0 手绘原型图', date:off(-6), note:'纸上画的模块草图。', url:'' }
         ]
       },
-      { id:PID1, name:'AI 副业专栏', status:'进行中', desc:'每周一篇，讲清楚普通人能落地的 AI 用法。', created:off(-46), imp:true, urg:false, today:false,
+      { id:PID1, name:'AI 副业专栏', status:'进行中', desc:'每周一篇，讲清楚普通人能落地的 AI 用法。', created:off(-46), imp:true, urg:false, today:false, goalIds:[GID0,GID2],
         tasks:[
           { id:TID1, title:'写完第 3 篇初稿', pri:'P1', done:false, today:false, abandoned:false },
           { id:uid(), title:'搭建选题库，先攒 20 个选题', pri:'P2', done:false, today:false, abandoned:false },
@@ -1623,6 +1650,9 @@ function migrateData(d){
     if(p.imp == null) p.imp = false;
     if(p.urg == null) p.urg = false;
     if(p.today == null) p.today = false;
+    if(Array.isArray(p.assets)) p.assets.forEach(a=>{ if(a.catId==null) a.catId=''; });
+    if(Array.isArray(p.outputs)) p.outputs.forEach(o=>{ if(o.catId==null) o.catId=''; });
+    if(!Array.isArray(p.goalIds)) p.goalIds = [];
   });
   if(!d.plans) d.plans = [];
   if(Array.isArray(d.plans)) d.plans.forEach(p=>{
@@ -2088,7 +2118,7 @@ function viewGoals(){
     const allDone = msTotal && msDone === msTotal;
     const expanded = EXPANDED.has(g.id);
     const lastDone = allDone ? (g.milestones.map(m=>m.doneAt).filter(Boolean).sort().pop()||'') : '';
-    h += '<div class="goal-card'+(allDone?' achieved':'')+'" draggable="true" ondragstart="dragGoal(event,\''+g.id+'\')" ondragover="allowGoalDrop(event)" ondragleave="goalDragLeave(event)" ondrop="dropGoal(event,\''+g.id+'\')">'
+    h += '<div class="goal-card'+(allDone?' achieved':'')+'" data-gid="'+g.id+'" draggable="true" ondragstart="dragGoal(event,\''+g.id+'\')" ondragover="allowGoalDrop(event)" ondragleave="goalDragLeave(event)" ondrop="dropGoal(event,\''+g.id+'\')">'
       + '<div class="goal-head">'
       +   (allDone
             ? '<div class="goal-medal">'+ico('trophy',34)+'<span class="goal-medal-spark">'+ico('spark',13)+'</span></div>'
@@ -2164,6 +2194,13 @@ function viewGoals(){
       h += '<div class="addline"><input placeholder="添加一个里程碑，回车保存" onkeydown="if(event.key===\'Enter\')quickMilestone(\''+g.id+'\',this)">'
         + '<button class="btn sm" onclick="editMilestone(\''+g.id+'\')">添加</button></div>';
       h += '</div>';
+    }
+    // 关联的项目
+    const relProjs = db.projects.filter(p => Array.isArray(p.goalIds) && p.goalIds.includes(g.id));
+    if(relProjs.length){
+      h += '<div class="goal-rel-proj"><div class="grp-title">'+ico('proj',13)+'关联项目 <span class="n">'+relProjs.length+'</span></div><div class="grp-list">'
+        + relProjs.map(p=>'<span class="rel-proj-chip" onclick="openProject(\''+p.id+'\')">'+esc(p.name)+'<span class="rp-status '+(p.status==='已完成'?'done':'')+'">'+esc(p.status)+'</span></span>').join('')
+        + '</div></div>';
     }
     h += '</div>';
   });
@@ -2243,6 +2280,10 @@ function moveProj(id, dir){
   save(); render();
 }
 function toggleGoal(id){ if(EXPANDED.has(id)) EXPANDED.delete(id); else EXPANDED.add(id); render(); }
+function openGoal(id){
+  route.tab = 'goals'; EXPANDED.add(id); window.scrollTo(0,0); closeNav(); render();
+  setTimeout(()=>{ const card = document.querySelector('.goal-card[data-gid="'+id+'"]'); if(card) card.scrollIntoView({behavior:'smooth', block:'center'}); }, 120);
+}
 function setGoalNewCat(c){ goalNewCat = c; render(); }
 /* 目标达成后的奖励横幅：强调「这是一次值得庆祝的达成」，而不是勾掉一条任务 */
 const GOAL_PRAISE = [
@@ -2600,6 +2641,15 @@ function projectAnalysisHTML(){
     + '</div></div>';
 }
 
+function projGoals(p){
+  if(!p || !Array.isArray(p.goalIds) || !p.goalIds.length) return [];
+  return db.goals.filter(g => p.goalIds.includes(g.id));
+}
+function projGoalChips(p){
+  const gs = projGoals(p);
+  if(!gs.length) return '';
+  return '<div class="proj-goals">'+gs.map(g=>'<span class="goal-chip" title="点击查看目标" onclick="event.stopPropagation();openGoal(\''+g.id+'\')">'+ico('target',12)+esc(g.title)+'</span>').join('')+'</div>';
+}
 function projectCardHTML(p, opts){
   opts = opts || {};
   const t = p.tasks.filter(x=>!x.archived).length, d = p.tasks.filter(x=>x.done && !x.archived).length;
@@ -2627,6 +2677,7 @@ function projectCardHTML(p, opts){
     +   '<span>资料 '+p.assets.length+'</span>'
     +   '<span>产出 '+p.outputs.length+'</span>'
     + '</div>'
+    + projGoalChips(p)
     + moveBtns
     + '</div>';
 }
@@ -2678,7 +2729,9 @@ function viewProjectDetail(){
     + '<div style="display:flex;align-items:center;gap:12px">'
     + '<div class="pbar'+(pct>=100?' g':'')+'" style="flex:1"><i style="width:'+pct+'%"></i></div>'
     + '<b style="font-size:15px">'+pct+'%</b></div>'
-    + '<div style="font-size:12.3px;color:var(--muted);margin-top:8px">创建于 '+esc(p.created||'—')+' · 任务 '+d+'/'+t+' · 资料 '+p.assets.length+' · 产出 '+p.outputs.length+'</div></div>';
+    + '<div style="font-size:12.3px;color:var(--muted);margin-top:8px">创建于 '+esc(p.created||'—')+' · 任务 '+d+'/'+t+' · 资料 '+p.assets.length+' · 产出 '+p.outputs.length+'</div>'
+    + (projGoals(p).length ? '<div class="proj-detail-goals"><span class="pdg-label">'+ico('target',14)+'关联目标</span>'+projGoals(p).map(g=>'<span class="goal-chip" onclick="openGoal(\''+g.id+'\')">'+esc(g.title)+'</span>').join('')+'</div>' : '')
+    + '</div>';
   if(isDone){
     h += '<div class="card" style="background:rgba(155,135,210,.08);border-color:rgba(155,135,210,.25)">'
       + '<div style="display:flex;align-items:center;gap:10px;color:#8d72c4;font-size:14px">'
@@ -2796,10 +2849,11 @@ function editProject(id){
     { k:'name', l:'项目名称', t:'text', req:true, ph:'例：个人工作台 v1' },
     { k:'status', l:'状态', t:'select', opts:['进行中','待启动','暂停','已完成'] },
     { k:'desc', l:'一句话说清这个项目要干嘛', t:'textarea' },
+    { k:'goalIds', l:'关联的人生目标（可多选）', t:'goalmulti' },
     { k:'created', l:'创建日期', t:'date' }
-  ], p || { status:'进行中', created:TODAY }, v => {
+  ], p || { status:'进行中', created:TODAY, goalIds:[] }, v => {
     if(p) Object.assign(p,v);
-    else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
+    else { const np = { id:uid(), name:v.name, status:v.status, desc:v.desc, created:v.created||TODAY, goalIds:(v.goalIds||[]), tasks:[], assets:[], outputs:[] }; db.projects.unshift(np); p = np; }
     save(); render(); toast('已保存');
   });
 }
@@ -3283,6 +3337,22 @@ function openForm(title, fields, values, onOK, onDelete){
     else if(f.t === 'select'){
       h += dd('dd_'+f.k, 'f_'+f.k, f.opts, v);
     }
+    else if(f.t === 'goalmulti'){
+      const cur = Array.isArray(values[f.k]) ? values[f.k] : [];
+      if(!db.goals.length){
+        h += '<div style="font-size:12px;color:var(--muted)">还没有目标，先去「人生目标」里建一个再来关联</div>';
+      } else {
+        h += '<div class="goal-multi" id="f_'+f.k+'">';
+        db.goals.forEach(g=>{
+          const on = cur.includes(g.id);
+          h += '<label class="goal-multi-opt'+(on?' on':'')+'">'
+            + '<input type="checkbox" value="'+g.id+'"'+(on?' checked':'')+'>'
+            + '<span class="gm-title">'+esc(g.title)+'</span>'
+            + '<span class="tag purple" style="font-size:11px">'+esc(g.cat||'未分类')+'</span></label>';
+        });
+        h += '</div>';
+      }
+    }
     else if(f.t === 'check'){
       h += '<label class="chk"><input type="checkbox" id="f_'+f.k+'"'+(v?' checked':'')+'> <span>'+esc(f.cl||'')+'</span></label>';
     }
@@ -3298,6 +3368,11 @@ function openForm(title, fields, values, onOK, onDelete){
     for(const f of fields){
       const el = $('f_'+f.k);
       if(f.t === 'check'){ out[f.k] = !!(el && el.checked); continue; }
+      if(f.t === 'goalmulti'){
+        const cont = $('f_'+f.k);
+        out[f.k] = cont ? Array.from(cont.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.value) : [];
+        continue;
+      }
       const val = el ? el.value.trim() : '';
       if(f.req && !val){ toast('「'+f.l.replace(/（.*/,'')+'」不能为空'); el && el.focus(); return; }
       out[f.k] = val;
