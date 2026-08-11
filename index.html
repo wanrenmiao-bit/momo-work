@@ -421,12 +421,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .project-card:hover{transform:translateY(-4px) scale(1.015);border-color:var(--border2);box-shadow:0 14px 32px rgba(120,105,90,.16)}
 .project-card:active{transform:translateY(-1px) scale(.995)}
 .project-card .tag{position:absolute;top:12px;right:12px}
-.project-card .name{font-size:15px;font-weight:700;margin:4px 56px 6px 0;line-height:1.35;color:var(--text)}
+.project-card .name{font-size:15px;font-weight:700;margin:4px 56px 6px 26px;line-height:1.35;color:var(--text)}
+.project-card.done{opacity:.85}
+.project-card.done .tag{background:rgba(155,135,210,.16);color:#8d72c4}
+.project-card.done .pbar i{background:var(--green)!important}
 .project-card .desc{font-size:12.5px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
 .project-card .meta{display:flex;gap:12px;font-size:11.8px;color:var(--muted);flex-wrap:wrap}
 .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .project-card.dragover{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 26px rgba(224,163,184,.2)}
-.proj-grip{position:absolute;top:12px;right:44px;color:var(--muted);cursor:grab;z-index:3}
+.proj-grip{position:absolute;top:12px;left:10px;color:var(--muted);cursor:grab;z-index:3}
 .proj-grip:hover{color:var(--accent)}
 .proj-move-btns{display:none;gap:4px;margin-top:4px;justify-content:flex-end}
 .proj-drop-last{margin-top:16px;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
@@ -457,6 +460,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .task-row:first-child{border-top:none}
 .task-check{width:20px;height:20px;border-radius:3px;border:2px solid var(--border2);flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.16s}
 .task-check:hover{border-color:var(--accent)}
+.task-check.readonly{cursor:default;opacity:.7}
+.task-check.readonly:hover{border-color:var(--border2)}
 .task-check.done{background:var(--accent);border-color:var(--accent)}
 .task-check.done svg{display:block}
 .task-title{flex:1;font-size:14px;line-height:1.5;color:var(--text)}
@@ -1859,7 +1864,7 @@ function renderNav(){
   h += '<button class="nav-item'+(isProjectRoot?' on':'')+'" onclick="go(\'projects\')">'
     + ico('proj',17) + '<span>全部项目</span>'
     + '<span class="n">'+db.projects.length+'</span></button>';
-  db.projects.forEach(p => {
+  db.projects.filter(p => p.status !== '已完成').forEach(p => {
     const key = 'project_'+p.id;
     const on = route.tab === key;
     h += '<button class="nav-item nav-project'+(on?' on':'')+'" onclick="openProject(\''+p.id+'\')">'
@@ -2481,39 +2486,59 @@ function projectAnalysisHTML(){
     + '</div></div>';
 }
 
+function projectCardHTML(p, opts){
+  opts = opts || {};
+  const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
+  const pct = t ? Math.round(d/t*100) : 0;
+  const dragAttr = opts.draggable
+    ? ' draggable="true" ondragstart="dragProj(event,\''+p.id+'\')" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProj(event,\''+p.id+'\')"'
+    : '';
+  const grip = opts.draggable ? '<button class="iconbtn proj-grip" title="拖动调整顺序" onclick="event.stopPropagation()">'+ico('move',15)+'</button>' : '';
+  const moveBtns = opts.draggable
+    ? '<div class="proj-move-btns">'
+    +   '<button class="iconbtn proj-move-up" title="上移" onclick="event.stopPropagation();moveProj(\''+p.id+'\',-1)">'+ico('up',14)+'</button>'
+    +   '<button class="iconbtn proj-move-down" title="下移" onclick="event.stopPropagation();moveProj(\''+p.id+'\',1)">'+ico('down',14)+'</button>'
+    + '</div>'
+    : '';
+  return '<div class="project-card clk'+(p.status==='已完成'?' done':'')+'"'+dragAttr+' onclick="openProject(\''+p.id+'\')">'
+    + '<span class="tag '+(p.status==='进行中'?'green':p.status==='已完成'?'purple':'amber')+'">'+esc(p.status)+'</span>'
+    + grip
+    + '<div class="name">'+esc(p.name)+'</div>'
+    + (p.desc ? '<div class="desc">'+esc(p.desc)+'</div>' : '<div style="height:6px"></div>')
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+    +   '<div class="pbar" style="flex:1"><i style="width:'+pct+'%;background:'+(p.status==='已完成'?'var(--green)':'var(--accent)')+'"></i></div>'
+    +   '<span style="font-size:12px;color:var(--muted);font-weight:700">'+pct+'%</span></div>'
+    + '<div class="meta">'
+    +   '<span>任务 '+d+'/'+t+'</span>'
+    +   '<span>资料 '+p.assets.length+'</span>'
+    +   '<span>产出 '+p.outputs.length+'</span>'
+    + '</div>'
+    + moveBtns
+    + '</div>';
+}
+
 function viewProjects(){
   if(route.tab.startsWith('project_')) return viewProjectDetail();
 
   const ps = db.projects;
+  const active = ps.filter(p => p.status !== '已完成');
+  const done = ps.filter(p => p.status === '已完成');
   let h = projectAnalysisHTML();
   h += '<div class="card-h" style="margin:6px 0 14px"><h3>我的项目</h3><div class="r">'
     + '<button class="btn primary sm" onclick="editProject()">'+ico('plus',15)+'新建项目</button></div></div>';
   if(!ps.length) return h + emptyBox('还没有项目，把正在做的事建成项目更好管');
+
   h += '<div class="proj-grid">';
-  ps.forEach((p) => {
-    const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
-    const pct = t ? Math.round(d/t*100) : 0;
-    h += '<div class="project-card clk" draggable="true" ondragstart="dragProj(event,\''+p.id+'\')" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProj(event,\''+p.id+'\')" onclick="openProject(\''+p.id+'\')">'
-      + '<span class="tag '+(p.status==='进行中'?'green':p.status==='已完成'?'purple':'amber')+'">'+esc(p.status)+'</span>'
-      + '<button class="iconbtn proj-grip" title="拖动调整顺序" onclick="event.stopPropagation()">'+ico('move',15)+'</button>'
-      + '<div class="name">'+esc(p.name)+'</div>'
-      + (p.desc ? '<div class="desc">'+esc(p.desc)+'</div>' : '<div style="height:6px"></div>')
-      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
-      +   '<div class="pbar" style="flex:1"><i style="width:'+pct+'%;background:'+(p.status==='已完成'?'var(--green)':'var(--accent)')+'"></i></div>'
-      +   '<span style="font-size:12px;color:var(--muted);font-weight:700">'+pct+'%</span></div>'
-      + '<div class="meta">'
-      +   '<span>任务 '+d+'/'+t+'</span>'
-      +   '<span>资料 '+p.assets.length+'</span>'
-      +   '<span>产出 '+p.outputs.length+'</span>'
-      + '</div>'
-      + '<div class="proj-move-btns">'
-      +   '<button class="iconbtn proj-move-up" title="上移" onclick="event.stopPropagation();moveProj(\''+p.id+'\',-1)">'+ico('up',14)+'</button>'
-      +   '<button class="iconbtn proj-move-down" title="下移" onclick="event.stopPropagation();moveProj(\''+p.id+'\',1)">'+ico('down',14)+'</button>'
-      + '</div>'
-      + '</div>';
-  });
+  active.forEach(p => h += projectCardHTML(p, { draggable:true }));
   h += '</div>';
-  h += '<div class="proj-drop-last" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProjLast(event)">'+ico('down',13)+'拖动项目到这里，放到最后</div>';
+  if(active.length) h += '<div class="proj-drop-last" ondragover="allowProjDrop(event)" ondragleave="projDragLeave(event)" ondrop="dropProjLast(event)">'+ico('down',13)+'拖动项目到这里，放到最后</div>';
+
+  if(done.length){
+    h += '<div class="card-h" style="margin:28px 0 14px"><h3>已完成项目</h3><span class="tag purple" style="margin-left:8px">'+done.length+'</span></div>';
+    h += '<div class="proj-grid">';
+    done.forEach(p => h += projectCardHTML(p, { draggable:false }));
+    h += '</div>';
+  }
   return h;
 }
 function viewProjectDetail(){
@@ -2521,49 +2546,66 @@ function viewProjectDetail(){
   if(!p){ closeProject(); return ''; }
   const t = p.tasks.length, d = p.tasks.filter(x=>x.done).length;
   const pct = t ? Math.round(d/t*100) : 0;
+  const isDone = p.status === '已完成';
   let h = '<div class="backbar">'
     + '<button class="btn sm" onclick="closeProject()">'+ico('back',15)+'返回项目</button>'
     + '<h2>'+esc(p.name)+'</h2>'
-    + '<span class="tag amber">'+esc(p.status)+'</span>'
-    + '<div class="r"><button class="btn sm" onclick="editProject(\''+p.id+'\')">'+ico('edit',14)+'编辑</button>'
-    + '<button class="btn sm danger" onclick="delProject(\''+p.id+'\')">'+ico('del',14)+'</button></div></div>';
+    + '<span class="tag '+(isDone?'purple':'amber')+'">'+esc(p.status)+'</span>'
+    + '<div class="r">';
+  if(isDone){
+    h += '<button class="btn sm" onclick="reactivateProject(\''+p.id+'\')">'+ico('refresh',14)+'重新激活项目</button>';
+  } else {
+    h += '<button class="btn sm" onclick="editProject(\''+p.id+'\')">'+ico('edit',14)+'编辑</button>'
+      + '<button class="btn sm danger" onclick="delProject(\''+p.id+'\')">'+ico('del',14)+'</button>';
+  }
+  h += '</div></div>';
   h += '<div class="card">'
     + (p.desc ? '<div style="font-size:14px;color:var(--text2);margin-bottom:12px;line-height:1.6">'+esc(p.desc)+'</div>' : '')
     + '<div style="display:flex;align-items:center;gap:12px">'
     + '<div class="pbar'+(pct>=100?' g':'')+'" style="flex:1"><i style="width:'+pct+'%"></i></div>'
     + '<b style="font-size:15px">'+pct+'%</b></div>'
     + '<div style="font-size:12.3px;color:var(--muted);margin-top:8px">创建于 '+esc(p.created||'—')+' · 任务 '+d+'/'+t+' · 资料 '+p.assets.length+' · 产出 '+p.outputs.length+'</div></div>';
+  if(isDone){
+    h += '<div class="card" style="background:rgba(155,135,210,.08);border-color:rgba(155,135,210,.25)">'
+      + '<div style="display:flex;align-items:center;gap:10px;color:#8d72c4;font-size:14px">'
+      + ico('lock',16)+'<span>该项目已标记为完成，内容处于只读状态。如需修改，请先点击「重新激活项目」。</span></div></div>';
+  }
 
   h += '<div class="project-dashboard">';
   h += '<div class="project-col'+(route.projCol==='tasks'?' on':'')+'">'
-    + '<div class="project-col-h" onclick="selectCol(\'tasks\')">'+ico('check',15)+'任务清单<span class="ex">'+(route.projCol==='tasks'?'收起':'展开')+'</span><span class="n">'+p.tasks.filter(x=>!x.done && !x.abandoned).length+' / '+t+'</span></div>'
-    + '<div class="addline task-quick-add" style="margin-bottom:10px">'
-    +   priChips('pri_'+p.id, 'P2')
-    +   '<button class="task-sun-btn" title="今日必须完成" onclick="this.classList.toggle(\'on\')">'+ico('sun',16)+'</button>'
-    +   '<input placeholder="快速添加任务，回车" onkeydown="if(event.key===\'Enter\')quickTask(\''+p.id+'\',this)">'
-    + '</div>';
+    + '<div class="project-col-h" onclick="selectCol(\'tasks\')">'+ico('check',15)+'任务清单<span class="ex">'+(route.projCol==='tasks'?'收起':'展开')+'</span><span class="n">'+p.tasks.filter(x=>!x.done && !x.abandoned).length+' / '+t+'</span></div>';
+  if(!isDone){
+    h += '<div class="addline task-quick-add" style="margin-bottom:10px">'
+      + priChips('pri_'+p.id, 'P2')
+      + '<button class="task-sun-btn" title="今日必须完成" onclick="this.classList.toggle(\'on\')">'+ico('sun',16)+'</button>'
+      + '<input placeholder="快速添加任务，回车" onkeydown="if(event.key===\'Enter\')quickTask(\''+p.id+'\',this)">'
+      + '</div>';
+  }
   if(!t) h += '<div class="empty" style="padding:20px 0">'+ico('check',28,1.5)+'<div>还没有任务</div></div>';
   p.tasks.slice().sort((a,b)=> (a.done||a.abandoned?1:0)-(b.done||b.abandoned?1:0)).forEach(x => {
     const inPlan = db.plans.some(pl => pl.sourceType==='project' && pl.sourceId===p.id && pl.sourceSub===x.id);
     h += '<div class="task-row'+(x.abandoned?' abandoned':'')+'">'
-      + '<div class="task-check'+(x.done?' done':'')+'" onclick="toggleTask(\''+p.id+'\',\''+x.id+'\')">'+(x.done?ico('check',12,3):'')+'</div>'
+      + '<div class="task-check'+(x.done?' done':'')+(isDone?' readonly':'')+'" '+(isDone?'':'onclick="toggleTask(\''+p.id+'\',\''+x.id+'\')"')+'>'+(x.done?ico('check',12,3):'')+'</div>'
       + '<div class="task-title'+(x.done?' done':(x.abandoned?' abandoned':''))+'">'+esc(x.title)
-      +   '<span class="task-pri '+esc(x.pri||'P2')+'">'+(x.pri||'P2')+'</span></div>'
-      + '<div class="ops">'
-      +   '<button class="iconbtn task-sun'+(x.today?' on':'')+'" title="'+(x.today?'今日必须完成':'设为今日必须完成')+'" onclick="toggleTaskToday(\''+p.id+'\',\''+x.id+'\')">'+ico('sun',14)+'</button>'
-      +   '<button class="iconbtn'+(inPlan?' on':'')+'" title="'+(inPlan?'已在计划看板':'加入计划看板')+'" onclick="taskToPlan(\''+p.id+'\',\''+x.id+'\')">'+ico('todo',14)+'</button>'
-      +   '<button class="iconbtn" onclick="editTask(\''+p.id+'\',\''+x.id+'\')">'+ico('edit',14)+'</button>'
-      +   '<button class="iconbtn del" title="删除" onclick="deleteTask(\''+p.id+'\',\''+x.id+'\')">'+ico('del',14)+'</button>'
-      +   (x.abandoned
-           ? '<button class="iconbtn" title="重新启用" onclick="resumeTask(\''+p.id+'\',\''+x.id+'\')">'+ico('refresh',14)+'</button>'
-           : '<button class="iconbtn" title="放弃" onclick="abandonTask(\''+p.id+'\',\''+x.id+'\')">'+ico('ban',14)+'</button>')
-      + '</div></div>';
+      +   '<span class="task-pri '+esc(x.pri||'P2')+'">'+(x.pri||'P2')+'</span></div>';
+    if(!isDone){
+      h += '<div class="ops">'
+        +   '<button class="iconbtn task-sun'+(x.today?' on':'')+'" title="'+(x.today?'今日必须完成':'设为今日必须完成')+'" onclick="toggleTaskToday(\''+p.id+'\',\''+x.id+'\')">'+ico('sun',14)+'</button>'
+        +   '<button class="iconbtn'+(inPlan?' on':'')+'" title="'+(inPlan?'已在计划看板':'加入计划看板')+'" onclick="taskToPlan(\''+p.id+'\',\''+x.id+'\')">'+ico('todo',14)+'</button>'
+        +   '<button class="iconbtn" onclick="editTask(\''+p.id+'\',\''+x.id+'\')">'+ico('edit',14)+'</button>'
+        +   '<button class="iconbtn del" title="删除" onclick="deleteTask(\''+p.id+'\',\''+x.id+'\')">'+ico('del',14)+'</button>'
+        +   (x.abandoned
+             ? '<button class="iconbtn" title="重新启用" onclick="resumeTask(\''+p.id+'\',\''+x.id+'\')">'+ico('refresh',14)+'</button>'
+             : '<button class="iconbtn" title="放弃" onclick="abandonTask(\''+p.id+'\',\''+x.id+'\')">'+ico('ban',14)+'</button>')
+        + '</div>';
+    }
+    h += '</div>';
   });
   h += '</div>';
 
   h += '<div class="project-col'+(route.projCol==='assets'?' on':'')+'">'
     + '<div class="project-col-h" onclick="selectCol(\'assets\')">'+ico('file',15)+'资料<span class="ex">'+(route.projCol==='assets'?'收起':'展开')+'</span><span class="n">'+p.assets.length+'</span></div>'
-    + projAddBox(p.id, 'assets');
+    + (isDone ? '' : projAddBox(p.id, 'assets'));
   if(!p.assets.length) h += '<div class="empty" style="padding:20px 0">'+ico('file',28,1.5)+'<div>文件、参考链接、调研笔记都能直接放这儿</div></div>';
   p.assets.forEach(a => {
     h += '<div class="li"><span style="color:var(--blue);margin-top:3px">'+ico(a.fileId?'file':(a.url?'link':'file'),16)+'</span>'
@@ -2573,14 +2615,15 @@ function viewProjectDetail(){
       + (a.note ? '<div style="font-size:12.5px;color:var(--text2);margin-top:4px;line-height:1.55;white-space:pre-wrap">'+esc(a.note)+'</div>' : '')
       + '</div><div class="ops">'
       + projFileOps(p.id,'assets',a)
-      + '<button class="iconbtn" title="编辑" onclick="editAsset(\''+p.id+'\',\''+a.id+'\')">'+ico('edit',14)+'</button>'
-      + '<button class="iconbtn del" title="删除" onclick="delProjItem(\''+p.id+'\',\'assets\',\''+a.id+'\')">'+ico('del',14)+'</button></div></div>';
+      + (isDone ? '' : '<button class="iconbtn" title="编辑" onclick="editAsset(\''+p.id+'\',\''+a.id+'\')">'+ico('edit',14)+'</button>'
+                      + '<button class="iconbtn del" title="删除" onclick="delProjItem(\''+p.id+'\',\'assets\',\''+a.id+'\')">'+ico('del',14)+'</button>')
+      + '</div></div>';
   });
   h += '</div>';
 
   h += '<div class="project-col'+(route.projCol==='outputs'?' on':'')+'">'
     + '<div class="project-col-h" onclick="selectCol(\'outputs\')">'+ico('box',15)+'产出<span class="ex">'+(route.projCol==='outputs'?'收起':'展开')+'</span><span class="n">'+p.outputs.length+'</span></div>'
-    + projAddBox(p.id, 'outputs');
+    + (isDone ? '' : projAddBox(p.id, 'outputs'));
   if(!p.outputs.length) h += '<div class="empty" style="padding:20px 0">'+ico('box',28,1.5)+'<div>做出来的东西记一笔，成品文件也能直接传上来</div></div>';
   p.outputs.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(o => {
     h += '<div class="li"><span style="color:var(--green);margin-top:3px">'+ico('box',16)+'</span>'
@@ -2591,12 +2634,19 @@ function viewProjectDetail(){
       + (o.url ? '<div style="font-size:12px;margin-top:4px"><a href="'+esc(o.url)+'" target="_blank" rel="noopener">'+esc(o.url)+'</a></div>' : '')
       + '</div><div class="ops">'
       + projFileOps(p.id,'outputs',o)
-      + '<button class="iconbtn" title="编辑" onclick="editOutput(\''+p.id+'\',\''+o.id+'\')">'+ico('edit',14)+'</button>'
-      + '<button class="iconbtn del" title="删除" onclick="delProjItem(\''+p.id+'\',\'outputs\',\''+o.id+'\')">'+ico('del',14)+'</button></div></div>';
+      + (isDone ? '' : '<button class="iconbtn" title="编辑" onclick="editOutput(\''+p.id+'\',\''+o.id+'\')">'+ico('edit',14)+'</button>'
+                      + '<button class="iconbtn del" title="删除" onclick="delProjItem(\''+p.id+'\',\'outputs\',\''+o.id+'\')">'+ico('del',14)+'</button>')
+      + '</div></div>';
   });
   h += '</div>';
   h += '</div>';
   return h;
+}
+function reactivateProject(id){
+  confirmBox('重新激活项目？','项目状态将恢复为「进行中」，之后可以继续编辑任务、资料和产出。',()=>{
+    const p = db.projects.find(x=>x.id===id);
+    if(p){ p.status = '进行中'; save(); render(); toast('项目已重新激活'); }
+  });
 }
 function editProject(id){
   const p = id ? db.projects.find(x=>x.id===id) : null;
