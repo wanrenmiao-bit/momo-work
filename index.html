@@ -3015,7 +3015,7 @@ function editTask(pid,tid){
     if(t){ t.today = !!v.today; if(t.today) t.abandoned = false; }
     save(); render(); toast('已保存');
     // 同步到计划看板：如果设为今日必做，创建/更新 must 计划；如果取消今日必做，移除 must 计划但保留原象限
-    if(t) syncProjectTaskToPlan(pid,t);
+    if(t) syncProjectTaskToPlan(pid,t.id);
     else if(v.today) taskToPlan(pid, p.tasks[p.tasks.length-1].id);
   });
 }
