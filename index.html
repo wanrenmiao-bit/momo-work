@@ -749,11 +749,12 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   border:1px solid var(--border);font-size:13.5px;color:var(--text2);min-height:40px;white-space:nowrap}
 .daily-sub button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
 
-.plan-layout{display:grid;grid-template-columns:minmax(280px,1fr) minmax(420px,1.8fr);gap:16px;align-items:stretch;margin-bottom:18px;height:460px;min-height:460px}
-.plan-must-col{display:flex;flex-direction:column;height:100%;min-height:0}
-.plan-must-col .plan-zone{flex:1;display:flex;flex-direction:column;height:100%;min-height:0;margin-bottom:0}
-.plan-quadrant-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:100%;min-height:0}
-.plan-quadrant-grid .plan-zone{display:flex;flex-direction:column;min-height:0;margin-bottom:0}
+.plan-scroll{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;padding-bottom:10px;margin-bottom:18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.plan-scroll .plan-zone{flex:0 0 320px;display:flex;flex-direction:column;height:460px;min-height:460px;margin-bottom:0;scroll-snap-align:start}
+.plan-scroll::-webkit-scrollbar{height:8px}
+.plan-scroll::-webkit-scrollbar-track{background:transparent}
+.plan-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.plan-scroll::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 .plan-zone{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;transition:.16s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(120,105,90,.04)}
 .plan-zone::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--zc,var(--border2))}
 .plan-zone.dragover{border-color:var(--accent);background:var(--accent-soft)}
@@ -981,7 +982,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .hide{display:none !important}
 .pc-only{display:inline-flex}
 .mob-only{display:none}
-@media(max-width:1024px){.plan-grid{grid-template-columns:1fr}.plan-layout{grid-template-columns:1fr;height:auto;min-height:auto}.plan-must-col{min-height:auto;height:auto}.plan-must-col .plan-zone{height:auto;max-height:360px}.plan-quadrant-grid{height:auto}.plan-zone-body{max-height:360px}}
+@media(max-width:1024px){.plan-grid{grid-template-columns:1fr}.plan-scroll{height:auto;min-height:auto;padding-bottom:8px}.plan-scroll .plan-zone{height:auto;max-height:360px}.plan-zone-body{max-height:360px}}
 @media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
 @media(max-width:768px){
   .topbar{padding:12px 14px;gap:8px}
@@ -992,8 +993,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .card{padding:15px}
   .grat-layout,.pomo-layout{grid-template-columns:1fr}
   .plan-grid{grid-template-columns:1fr}
-  .plan-quadrant-grid{grid-template-columns:1fr;grid-template-rows:auto;gap:12px}
-  .plan-layout{grid-template-columns:1fr}
+  .plan-scroll .plan-zone{flex:0 0 280px;min-height:360px;height:auto;max-height:420px}
   .grat-layout{flex-direction:column;align-items:stretch}
   .grat-calendar-wrap{width:100%;position:static;box-sizing:border-box}
   .pomo-grid{grid-template-columns:1fr}
@@ -3895,12 +3895,11 @@ function viewPlan(){
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
     + stat('累计完成', doneAll.length, '条') + stat('逾期率', rate, '%', rateWarn?'warn':'') + '</div>';
 
-  // 新布局：左侧今日必须完成（大列） + 右侧 2×2 四象限
-  h += '<div class="plan-layout">';
-  h += '<div class="plan-must-col">' + planZone('must', active.filter(p=>p.must), true) + '</div>';
-  h += '<div class="plan-quadrant-grid">';
+  // 新布局：5 个模块横向并列，可左右滑动
+  h += '<div class="plan-scroll" id="planScroll">';
+  h += planZone('must', active.filter(p=>p.must), true);
   ['q1','q2','q3','q4'].forEach(k=>{ h += planZone(k, active.filter(p=>p.cat===k), false); });
-  h += '</div></div>';
+  h += '</div>';
 
   // 每日完成记录
   h += '<div class="card"><div class="card-h"><h3>每日完成记录</h3></div><div class="pr-hist">';
@@ -4006,7 +4005,7 @@ function planZone(cat, items, full){
   }
 
   h += '<div class="plan-zone-body">';
-  if(!items.length) h += '<div class="plan-zone-empty">'+(isMust?'从右侧点亮小太阳，把任务提升过来':c.desc)+'</div>';
+  if(!items.length) h += '<div class="plan-zone-empty">'+(isMust?'点亮小太阳，把任务提升到这里':c.desc)+'</div>';
   items.forEach(p=>{ h += planItemHTML(p); });
   h += '</div>';
   h += '</div>';
