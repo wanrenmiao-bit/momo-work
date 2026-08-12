@@ -1011,8 +1011,14 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .lib-item{padding:11px 12px;gap:10px}
   .lib-ops .iconbtn{width:40px;height:40px}
   .lib-layout{flex-direction:column;align-items:stretch}
-  .lib-side{width:100% !important;position:static;max-height:none;box-sizing:border-box}
+  .lib-side{position:fixed;top:0;left:0;bottom:0;width:84vw !important;max-width:320px !important;z-index:80;transform:translateX(-100%);transition:transform .26s ease;box-shadow:0 0 50px rgba(0,0,0,.2);max-height:none;overflow-y:auto;box-sizing:border-box;padding-top:calc(18px + env(safe-area-inset-top))}
+  .lib-side.open{transform:translateX(0)}
+  .lib-side-r{display:none}
   .lib-main-col{width:100%;max-width:100%;box-sizing:border-box}
+  .lib-drawer-overlay{display:block;opacity:0;transition:opacity .2s;pointer-events:none}
+  .lib-drawer-overlay.open{opacity:1;pointer-events:auto}
+  .lib-side-close{display:flex;position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text);align-items:center;justify-content:center;z-index:6}
+  .lib-add-mob{display:flex}
   .lib-resizer{display:none}
   .lib-node-row{padding:11px 10px;font-size:15px}
   .lib-node-ops{display:flex;position:static;justify-content:flex-end;margin:-4px 4px 4px 0;border:none;background:none;padding:0}
@@ -1020,7 +1026,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
   .pomo-mini .mlab{display:none}
   .pomo-link-row .dd{min-width:0;width:100%;flex:1 1 100%}
   .cal{grid-column:1/-1}
-  .project-col{min-width:84vw}
+  .project-dashboard{flex-direction:column;overflow-x:visible;align-items:stretch}
+  .project-col{flex:1 1 auto !important;min-width:auto !important;width:100% !important}
   .grat-task-add{flex-wrap:wrap;gap:6px}
   .grat-task-add .pri-chips{flex-shrink:1}
   .grat-task-add .pri-chip{width:28px;height:28px;font-size:11px}
@@ -1122,6 +1129,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .lib-side-r .lib-side-icons .iconbtn.sm{width:30px;height:30px}
 .lib-tree-tip{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--surface3)}
 .lib-tree-tip svg{flex-shrink:0;margin-top:2px}
+.lib-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(60,40,50,.38);z-index:78}
+.lib-side-close{display:none}
+.lib-add-mob{display:none}
 
 /* 资料库批量清除：勾选目录后批量删除，保留文件 */
 .lib-node-row.batch{cursor:default}
@@ -1999,7 +2009,9 @@ let libEditId = '', libAddingLink = false;
 let libSideW = +(localStorage.getItem('wb_momo_libside_w')) || 288;
 
 function toggleNav(){ const s=document.querySelector('.sidebar'); const o=document.getElementById('navOverlay'); if(s)s.classList.toggle('open'); if(o)o.classList.toggle('open'); }
-function closeNav(){ const s=document.querySelector('.sidebar'); const o=document.getElementById('navOverlay'); if(s)s.classList.remove('open'); if(o)o.classList.remove('open'); }
+function closeNav(){ const s=document.querySelector('.sidebar'); const o=document.getElementById('navOverlay'); if(s)s.classList.remove('open'); if(o)o.classList.remove('open'); closeLibDrawer(); }
+function toggleLibDrawer(){ const s=document.querySelector('.lib-side'); const o=document.getElementById('libDrawerOverlay'); if(s)s.classList.toggle('open'); if(o)o.classList.toggle('open'); }
+function closeLibDrawer(){ const s=document.querySelector('.lib-side'); const o=document.getElementById('libDrawerOverlay'); if(s)s.classList.remove('open'); if(o)o.classList.remove('open'); }
 function go(tab){ route.tab = tab; route.detail = null; route.filter = 'all'; route.showDone = true; route.projCol = null; route.selIdea = null; window.scrollTo(0,0); closeNav(); render(); }
 function openProject(id){ route.tab = 'project_'+id; route.detail = id; route.projCol = null; route.selIdea = null; window.scrollTo(0,0); closeNav(); render(); }
 function selectCol(key){ route.projCol = route.projCol === key ? null : key; render(); }
@@ -5086,7 +5098,7 @@ function viewLibrary(){
 
   /* 左侧：知识框架树 */
   const anyOpen = LIB_EXP.size > 0;
-  h += '<div class="card lib-side" style="width:'+libSideW+'px"><div class="lib-resizer" onmousedown="libStartResize(event)" ontouchstart="libStartResize(event)"></div><div class="card-h"><h3>知识框架</h3>'
+  h += '<div class="card lib-side" style="width:'+libSideW+'px"><div class="lib-resizer" onmousedown="libStartResize(event)" ontouchstart="libStartResize(event)"></div><div class="card-h"><h3>知识框架</h3><button class="lib-side-close mob-only" onclick="closeLibDrawer()" title="收起目录">'+ico('close',16)+'</button>'
     + '<div class="r lib-side-r"><span class="lib-side-icons">'
     + '<button class="iconbtn sm" title="'+(anyOpen?'全部收起':'全部展开')+'" onclick="libExpandAll('+(anyOpen?'false':'true')+')">'+ico(anyOpen?'up':'down',14)+'</button>'
     + '<button class="iconbtn sm" title="清空全部分类目录" onclick="fwClearAll()">'+ico('trash',14)+'</button>'
@@ -5100,6 +5112,7 @@ function viewLibrary(){
     +   (db.frameworks.length ? libTreeHTML('', 0) : '<div class="lib-tree-empty">还没有分类，点击右上角「顶层分类」新建</div>')
     + '</div>'
     + '<div class="lib-tree-tip">'+ico('spark',13)+'拖动分类可调整顺序；把资料的拖拽手柄拖到分类上即可归类</div>'
+    + '<button class="btn sm mob-only lib-add-mob" onclick="fwAdd(\'\')" style="margin-top:12px;width:100%;justify-content:center">'+ico('plus',14)+'新建分类</button>'
     + (libBatchMode
         ? '<div class="lib-batch-bar"><span class="cnt">已选 '+libBatchSel.size+' 个</span>'
           + '<button class="btn sm" onclick="libBatchAll()">全选</button>'
@@ -5111,7 +5124,8 @@ function viewLibrary(){
   /* 右侧：资料列表 */
   const curName = libCatId==='' ? '全部资料' : (libCatId==='__none__' ? '未分类' : libCatLabel(libCatId));
   h += '<div class="card lib-main-col"><div class="card-h"><h3>'+esc(curName||'资料')+'</h3>'
-    + '<div class="r"><button class="btn primary sm" onclick="libStartAddLink()">'+ico('link',15)+'加链接</button>'
+    + '<div class="r"><button class="btn sm lib-dir-btn mob-only" onclick="toggleLibDrawer()">'+ico('folder',14)+'目录</button>'
+    + '<button class="btn primary sm" onclick="libStartAddLink()">'+ico('link',15)+'加链接</button>'
     + '<label class="btn sm" style="cursor:pointer">'+ico('upload',15)+'上传文件'
     + '<input type="file" id="libFile" multiple style="display:none" onchange="libUpload(this)"></label></div></div>';
   h += '<div class="lib-tools">'
@@ -5124,6 +5138,7 @@ function viewLibrary(){
     +   '<button class="chip'+(libCat==='none'?' on':'')+'" onclick="libSetCat(\'none\')">通用</button>'
     + '</div></div>';
   h += '<div id="libListWrap">'+libListHTML()+'</div>';
+  h += '<div class="lib-drawer-overlay" id="libDrawerOverlay" onclick="closeLibDrawer()"></div>';
   h += '</div></div>';
   return h;
 }
