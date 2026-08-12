@@ -2877,7 +2877,7 @@ function reactivateProject(id){
   });
 }
 function editProject(id){
-  const p = id ? db.projects.find(x=>x.id===id) : null;
+  let p = id ? db.projects.find(x=>x.id===id) : null;
   openForm(p?'编辑项目':'新建项目', [
     { k:'name', l:'项目名称', t:'text', req:true, ph:'例：个人工作台 v1' },
     { k:'status', l:'状态', t:'select', opts:['进行中','待启动','暂停','已完成'] },
