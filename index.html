@@ -317,7 +317,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .milestone-list{padding:14px 0 4px}
 .milestone{border-radius:6px;border:1px solid var(--border);margin-bottom:10px;background:var(--surface2);transition:.16s;overflow:hidden}
 .milestone:hover{border-color:var(--border2)}
-.milestone.done{background:linear-gradient(135deg,rgba(224,163,184,.16),rgba(224,163,184,.05));border-color:rgba(224,163,184,.4);box-shadow:0 2px 14px rgba(224,163,184,.12)}
+.milestone.done{background:linear-gradient(135deg,rgba(224,163,184,.16),rgba(224,163,184,.05));border-color:rgba(224,163,184,.4);box-shadow:0 2px 14px rgba(224,163,184,.12);position:relative;overflow:hidden}
+.milestone.done::before{content:'';position:absolute;right:-26px;top:-26px;width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,rgba(224,163,184,.18) 0%,rgba(224,163,184,0) 70%);pointer-events:none}
+.milestone.done::after{content:'';position:absolute;left:0;right:0;top:0;height:2.5px;background:linear-gradient(90deg,#e0a3b8,#d6a878,#e0a3b8);background-size:200% 100%;animation:rewardflow 4s linear infinite}
 /* 标题行整体垂直居中 */
 .milestone-row{display:flex;align-items:center;gap:12px;padding:12px}
 .milestone-num{width:28px;height:28px;border-radius:50%;background:var(--surface3);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
@@ -330,26 +332,38 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .ms-mini{flex-shrink:0;display:flex;align-items:center}
 .ms-mini text{font-size:13px}
 .milestone-actions{flex-shrink:0;display:flex;gap:4px;align-items:center}
+.milestone-reward{display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff2f6,#f0a8c0);color:#a85d72;box-shadow:0 3px 10px rgba(224,163,184,.4);position:relative;flex-shrink:0;margin-right:4px;animation:medalpop .55s cubic-bezier(.34,1.56,.64,1)}
+.milestone.done .milestone-reward{display:flex}
+.milestone-reward::before{content:'';position:absolute;inset:-7px;border-radius:50%;border:1.5px dashed rgba(224,163,184,.45);animation:spin 14s linear infinite}
+.milestone-reward svg{position:relative;z-index:2}
+@keyframes medalpop{0%{transform:scale(0) rotate(-18deg)}70%{transform:scale(1.18) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .btn-achieve{padding:6px 12px;border-radius:5px;background:var(--accent-soft);color:var(--accent2);border:1px solid rgba(224,163,184,.3);font-size:12px;font-weight:600;transition:.16s;white-space:nowrap}
 .btn-achieve:hover{background:rgba(224,163,184,.26)}
-.btn-achieve.completed{background:rgba(224,163,184,.18);color:#a85d72;border-color:rgba(224,163,184,.4);cursor:default}
+.btn-achieve.completed{background:linear-gradient(135deg,#f3b6c8,#e0a3b8);color:#fff;border-color:transparent;cursor:default;box-shadow:0 3px 10px rgba(224,163,184,.35)}
 .btn-achieve.view{background:var(--surface);color:var(--text2);border-color:var(--border2)}
 .btn-achieve.view:hover{background:var(--surface3);color:var(--text)}
 .goal-completed-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:11px;background:var(--green-soft);color:#5f7d5a;border:1px solid rgba(148,176,142,.3);font-size:12px;font-weight:700}
 
-/* 第三层：里程表 */
+/* 第三层：里程表（小里程碑也要有奖励感） */
 .sub-list{padding:2px 12px 12px 52px;border-top:1px dashed var(--border);margin-top:2px}
 .sub-empty{font-size:12.5px;color:var(--muted);padding:10px 0 6px}
-.submile{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:5px;background:var(--surface);border:1px solid var(--border);margin-top:8px;transition:.14s}
+.submile{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);margin-top:8px;transition:.16s;position:relative;overflow:hidden}
 .submile:hover{border-color:var(--border2)}
-.submile.done{background:rgba(148,176,142,.09);border-color:rgba(148,176,142,.3)}
-.sub-check{width:20px;height:20px;border-radius:3px;border:1.8px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.14s}
+.submile.done{background:linear-gradient(135deg,rgba(224,163,184,.14),rgba(224,163,184,.04));border-color:rgba(224,163,184,.38);box-shadow:0 2px 10px rgba(224,163,184,.12)}
+.submile.done::before{content:'';position:absolute;right:-18px;top:-18px;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,rgba(224,163,184,.16) 0%,rgba(224,163,184,0) 70%);pointer-events:none}
+.submile.done::after{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#e0a3b8,#d6a878,#e0a3b8);background-size:200% 100%;animation:rewardflow 4s linear infinite}
+.sub-check{width:22px;height:22px;border-radius:50%;border:1.8px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.14s}
 .sub-check:hover{border-color:var(--accent)}
-.sub-check.on{background:var(--green);border-color:var(--green)}
+.sub-check.on{background:linear-gradient(140deg,#e0a3b8,#d08aa0);border-color:transparent;box-shadow:0 3px 8px rgba(224,163,184,.4);animation:medalpop .45s cubic-bezier(.34,1.56,.64,1)}
 .sub-idx{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0}
 .sub-title{flex:1;min-width:0;font-size:13.5px;color:var(--text);line-height:1.45}
-.submile.done .sub-title{color:var(--text2);text-decoration:line-through;text-decoration-color:rgba(148,176,142,.6)}
-.sub-at{font-size:11px;color:#5f7d5a;flex-shrink:0}
+.submile.done .sub-title{color:#a85d72;text-decoration:line-through;text-decoration-color:rgba(168,93,114,.45)}
+.sub-at{font-size:11px;color:#a85d72;flex-shrink:0}
+.sub-reward{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff2f6,#f0a8c0);color:#a85d72;box-shadow:0 2px 7px rgba(224,163,184,.35);position:relative;flex-shrink:0;margin-left:2px;margin-right:2px;animation:medalpop .5s cubic-bezier(.34,1.56,.64,1)}
+.submile.done .sub-reward{display:flex}
+.sub-reward::before{content:'';position:absolute;inset:-5px;border-radius:50%;border:1.2px dashed rgba(224,163,184,.4);animation:spin 12s linear infinite}
+.sub-reward svg{position:relative;z-index:2}
 .sub-ops{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:.14s}
 .submile:hover .sub-ops{opacity:1}
 .sub-ops .iconbtn{width:26px;height:26px}
@@ -495,10 +509,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .task-check.readonly:hover{border-color:var(--border2)}
 .task-check.done{background:var(--accent);border-color:var(--accent)}
 .task-check.done svg{display:block}
-.task-title{flex:1;font-size:14px;line-height:1.5;color:var(--text)}
+.task-title{flex:1;min-width:0;font-size:14px;line-height:1.5;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;overflow-wrap:anywhere}
+.task-title.expanded{-webkit-line-clamp:unset;display:block}
 .task-title.done{text-decoration:line-through;color:var(--muted)}
 .task-title.abandoned{text-decoration:line-through;color:var(--muted);opacity:.7}
-.task-pri{font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;margin-left:6px}
+.task-title a.task-link{color:var(--blue);text-decoration:underline;text-underline-offset:2px}
+.task-title a.task-link:hover{color:var(--accent2)}
+.task-pri{font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;margin-left:6px;flex-shrink:0}
+.task-more{margin-left:6px;color:var(--accent2);font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;background:none;border:none;padding:0;font-family:inherit}
+.task-more:hover{color:var(--accent)}
 .gt-proj{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--orange);background:rgba(214,168,120,.16);padding:2px 7px;border-radius:3px;margin-left:6px;vertical-align:middle;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gt-proj svg{opacity:.85;flex:none}
 .task-pri.P0{background:var(--red-soft);color:var(--red)}
@@ -2211,6 +2230,7 @@ function viewGoals(){
           +     '</div>'
           +   '</div>'
           +   (subs.length ? '<div class="ms-mini">'+goalRing(p.pct, 40)+'</div>' : '')
+          +   (done ? '<div class="milestone-reward" title="里程碑达成">'+ico('star',15,2)+'</div>' : '')
           +   '<div class="milestone-actions">'
           +     (subs.length
                   ? '<button class="btn-achieve view" onclick="toggleGoal(\''+m.id+'\')">'+(mOpen?'收起里程表':'里程表 '+p.done+'/'+p.total)+'</button>'
@@ -2228,7 +2248,7 @@ function viewGoals(){
               + '<button class="sub-check'+(s.done?' on':'')+'" onclick="toggleSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="'+(s.done?'取消完成':'标记完成')+'">'+(s.done?ico('check',12,3.2):'')+'</button>'
               + '<span class="sub-idx">'+(idx+1)+'.'+(si+1)+'</span>'
               + '<span class="sub-title">'+esc(s.title)+'</span>'
-              + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span>' : '')
+              + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span><div class="sub-reward" title="小里程碑达成">'+ico('star',11,2)+'</div>' : '')
               + '<span class="sub-ops">'
               +   '<button class="iconbtn" title="编辑" onclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('edit',13)+'</button>'
               +   '<button class="iconbtn del" title="删除" onclick="delSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('del',13)+'</button>'
@@ -2412,6 +2432,8 @@ function toggleSub(gid,mid,sid){
   if(!before && m.done){
     const allDone = g.milestones.every(msIsDone);
     toast(allDone ? '目标达成！' : '里程碑「'+m.title+'」达成');
+  } else if(s.done){
+    toast('小里程碑达成');
   }
   save(); render();
 }
@@ -2815,8 +2837,7 @@ function viewProjectDetail(){
     const inPlan = db.plans.some(pl => pl.sourceType==='project' && pl.sourceId===p.id && pl.sourceSub===x.id);
     h += '<div class="task-row'+(x.abandoned?' abandoned':'')+'">'
       + '<div class="task-check'+(x.done?' done':'')+(isDone?' readonly':'')+'" '+(isDone?'':'onclick="toggleTask(\''+p.id+'\',\''+x.id+'\')"')+'>'+(x.done?ico('check',12,3):'')+'</div>'
-      + '<div class="task-title'+(x.done?' done':(x.abandoned?' abandoned':''))+'">'+esc(x.title)
-      +   '<span class="task-pri '+esc(x.pri||'P2')+'">'+(x.pri||'P2')+'</span></div>';
+      + taskTitleHTML(x.title, x.done, x.abandoned, x.pri, x.id);
     if(!isDone){
       h += '<div class="ops">'
         +   '<button class="iconbtn task-sun'+(x.today?' on':'')+'" title="'+(x.today?'今日必须完成':'设为今日必须完成')+'" onclick="toggleTaskToday(\''+p.id+'\',\''+x.id+'\')">'+ico('sun',14)+'</button>'
@@ -2974,7 +2995,30 @@ function deleteTask(pid,tid){
   });
 }
 let projShowDone = false;
+let taskExpanded = new Set();
 function projToggleDone(){ projShowDone = !projShowDone; render(); }
+function toggleTaskExpand(tid){ if(taskExpanded.has(tid)) taskExpanded.delete(tid); else taskExpanded.add(tid); render(); }
+function taskTitleHTML(title, done, abandoned, pri, tid){
+  const expanded = taskExpanded.has(tid);
+  const fullEsc = esc(title);
+  const urlRe = /https?:\/\/[^\s]+/gi;
+  let body = '', hasUrl = false, m, last = 0;
+  while((m = urlRe.exec(title)) !== null){
+    hasUrl = true;
+    body += esc(title.slice(last, m.index));
+    const url = m[0];
+    const short = url.length > 36 ? url.slice(0,32)+'…' : url;
+    const label = url.length > 36 ? '链接' : esc(short);
+    body += '<a href="'+esc(url)+'" target="_blank" rel="noopener" class="task-link" title="'+esc(url)+'">'+label+'</a>';
+    last = m.index + url.length;
+  }
+  body += hasUrl ? esc(title.slice(last)) : fullEsc;
+  const needsToggle = title.length > 60 || hasUrl;
+  let h = '<div class="task-title'+(expanded?' expanded':'')+(done?' done':(abandoned?' abandoned':''))+'" title="'+fullEsc+'">'+body+'</div>';
+  if(needsToggle) h += '<button class="task-more" onclick="toggleTaskExpand(\''+tid+'\')" title="'+(expanded?'收起':'展开')+'">'+(expanded?'收起':'展开')+'</button>';
+  h += '<span class="task-pri '+esc(pri||'P2')+'">'+(pri||'P2')+'</span>';
+  return h;
+}
 function archiveTask(pid,tid){
   const t = db.projects.find(x=>x.id===pid).tasks.find(x=>x.id===tid); if(!t) return;
   t.archived = true; t.done = false; t.today = false; t.doneAt = null;
