@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沫沫工作台 · 数据恢复检查工具</title>
+<style>
+  :root{ --bg:#f7f3ef; --card:#fff; --text:#4a4440; --muted:#9e9690; --accent:#d8a9a9; --accent2:#b8c5b8; --warn:#e0a8a8; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; padding:24px 16px; background:var(--bg); color:var(--text); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif; }
+  h1{ margin:0 0 6px; font-size:22px; }
+  .sub{ color:var(--muted); margin-bottom:20px; font-size:13px; }
+  .card{ background:var(--card); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+  .row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f0eae5; }
+  .row:last-child{ border-bottom:none; }
+  .key{ font-family:Menlo,Consolas,monospace; font-size:12px; color:#7a6f6a; word-break:break-all; }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; background:#f0eae5; color:var(--muted); margin-left:6px; }
+  .badge.warn{ background:#fbeaea; color:#b85c5c; }
+  .badge.ok{ background:#e8f1e8; color:#5b7c5b; }
+  .size{ font-size:12px; color:var(--muted); white-space:nowrap; margin-left:12px; }
+  .actions{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+  button{ border:none; border-radius:10px; padding:8px 12px; font-size:13px; cursor:pointer; background:var(--accent); color:#fff; }
+  button.secondary{ background:#e8e0db; color:var(--text); }
+  button.danger{ background:var(--warn); color:#fff; }
+  button:disabled{ opacity:.5; cursor:not-allowed; }
+  textarea{ width:100%; height:120px; margin-top:10px; border:1px solid #e8e0db; border-radius:10px; padding:10px; font-size:12px; font-family:Menlo,Consolas,monospace; }
+  .hint{ color:var(--muted); font-size:12px; margin-top:6px; }
+  .empty{ text-align:center; color:var(--muted); padding:30px 0; }
+  #status{ position:fixed; top:12px; left:50%; transform:translateX(-50%); background:#4a4440; color:#fff; padding:8px 16px; border-radius:20px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:100; }
+  #status.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div id="status"></div>
+<h1>沫沫工作台 · 数据恢复检查</h1>
+<div class="sub">在同一浏览器、同一窗口打开本页，才能读取到刚才网页里的数据。</div>
+
+<div class="card">
+  <div id="list"></div>
+</div>
+
+<div class="card">
+  <strong>当前网址 origin</strong>
+  <div class="key" id="origin"></div>
+  <div class="hint">工作台的 localStorage 只认这个 origin。如果之前是在别的网址/浏览器/设备上用的，这里看不到。</div>
+</div>
+
+<div class="card">
+  <strong>手动导入恢复</strong>
+  <div class="hint">如果你之前导出过 .json 备份，把内容粘贴到这里，点「恢复到当前浏览器」：</div>
+  <textarea id="importJson" placeholder="粘贴 JSON 备份内容..."></textarea>
+  <div class="actions">
+    <button onclick="doImport()">恢复到当前浏览器</button>
+    <button class="secondary" onclick="document.getElementById('importJson').value=''">清空</button>
+  </div>
+</div>
+
+<script>
+function fmtSize(n){
+  if(n<1024) return n+' B';
+  if(n<1024*1024) return (n/1024).toFixed(1)+' KB';
+  return (n/(1024*1024)).toFixed(2)+' MB';
+}
+function countEstimate(obj){
+  if(!obj) return 0;
+  let n=0;
+  try{
+    ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks','accounts','checks'].forEach(k=>{
+      const v = obj[k];
+      if(Array.isArray(v)) n += v.length;
+    });
+  }catch(e){}
+  return n;
+}
+function show(msg){ const s=document.getElementById('status'); s.textContent=msg; s.classList.add('show'); setTimeout(()=>s.classList.remove('show'),2200); }
+function exportKey(k){
+  const v = localStorage.getItem(k);
+  if(!v){ show('没有数据'); return; }
+  const blob = new Blob([v], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = k + '_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  show('已导出 '+k);
+}
+function copyToCurrent(k){
+  const v = localStorage.getItem(k);
+  if(!v){ show('源 key 没有数据'); return; }
+  if(!confirm('确定把「'+k+'」复制到当前游客 key（wb_momo_guest_v3）吗？这会覆盖当前游客数据。')) return;
+  localStorage.setItem('wb_momo_guest_v3', v);
+  show('已复制，刷新工作台即可看到');
+  render();
+}
+function deleteKey(k){
+  if(!confirm('确定删除 '+k+' 吗？不可恢复！')) return;
+  localStorage.removeItem(k);
+  show('已删除 '+k);
+  render();
+}
+function doImport(){
+  const raw = document.getElementById('importJson').value.trim();
+  if(!raw){ show('请先粘贴 JSON'); return; }
+  try{
+    JSON.parse(raw);
+    if(!confirm('这会把粘贴的备份写入当前游客 key（wb_momo_guest_v3），覆盖现有游客数据。确定吗？')) return;
+    localStorage.setItem('wb_momo_guest_v3', raw);
+    show('导入成功，刷新工作台即可看到');
+    render();
+  }catch(e){ alert('JSON 格式不对：'+e.message); }
+}
+function render(){
+  const list = document.getElementById('list');
+  const keys = [];
+  for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+  const momoKeys = keys.filter(k => k.includes('momo') || k.includes('wb_momo')).sort();
+  const otherKeys = keys.filter(k => !momoKeys.includes(k)).sort();
+  document.getElementById('origin').textContent = location.origin;
+
+  if(momoKeys.length===0 && otherKeys.length===0){ list.innerHTML='<div class="empty">这个浏览器窗口没有任何 localStorage 数据。<br>可能用了无痕模式，或清理过缓存。</div>'; return; }
+
+  let html = '';
+  momoKeys.forEach(k=>{
+    const raw = localStorage.getItem(k);
+    const size = raw ? new Blob([raw]).size : 0;
+    let parsed = null, err='';
+    try{ parsed = JSON.parse(raw); }catch(e){ err='JSON损坏'; }
+    const cnt = parsed ? countEstimate(parsed) : 0;
+    const isCurrent = k === 'wb_momo_guest_v3';
+    const isUser = k.startsWith('wb_momo_user_');
+    let badge = '';
+    if(isCurrent) badge = '<span class="badge ok">当前游客</span>';
+    else if(isUser) badge = '<span class="badge ok">登录用户</span>';
+    if(err) badge += '<span class="badge warn">'+err+'</span>';
+
+    html += '<div class="row">'
+      + '<div style="flex:1;min-width:0"><div class="key">'+k+badge+'</div><div class="hint">约 '+cnt+' 条记录</div></div>'
+      + '<div class="size">'+fmtSize(size)+'</div>'
+      + '</div>'
+      + '<div class="actions">'
+      + '<button onclick="exportKey(\''+k+'\')">导出备份</button>'
+      + (isCurrent ? '' : '<button class="secondary" onclick="copyToCurrent(\''+k+'\')">复制到当前游客</button>')
+      + '<button class="danger" onclick="deleteKey(\''+k+'\')">删除</button>'
+      + '</div>';
+  });
+
+  if(otherKeys.length>0){
+    html += '<div style="margin-top:14px;padding-top:10px;border-top:1px dashed #e0d8d2"><strong>其他 key（非 momo）</strong></div>';
+    otherKeys.forEach(k=>{
+      const raw = localStorage.getItem(k);
+      const size = raw ? new Blob([raw]).size : 0;
+      html += '<div class="row"><div class="key">'+k+'</div><div class="size">'+fmtSize(size)+'</div></div>';
+    });
+  }
+  list.innerHTML = html;
+}
+render();
+</script>
+</body>
+</html>
