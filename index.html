@@ -1233,6 +1233,40 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .acct-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:13.5px;color:var(--text);cursor:pointer;transition:.15s}
 .acct-chip:hover{border-color:var(--accent);background:var(--accent-soft)}
 .acct-chip svg{flex-shrink:0;color:var(--accent)}
+
+/* ---- 模块：打卡（习惯养成）---- */
+.checkin-stats{margin-bottom:14px}
+.checkin-stats .stat.good .v{color:var(--green)}
+.checkin-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.checkin-tip{font-size:12.5px;color:var(--muted)}
+.checkin-card{padding:14px 16px;margin-bottom:12px}
+.checkin-card-top{display:flex;align-items:center;gap:9px}
+.checkin-title{flex:1;min-width:0;font-size:15px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.checkin-freq{font-size:12px;color:var(--muted);white-space:nowrap}
+.checkin-ops{display:flex;gap:2px;flex-shrink:0}
+.checkin-card-mid{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+.ck-dots{display:flex;gap:5px}
+.ck-dot{width:18px;height:18px;border-radius:5px;background:var(--surface3);border:1px solid var(--border)}
+.ck-dot.on{background:linear-gradient(135deg,#e0a3b8,#d08aa0);border-color:transparent}
+.ck-dot.today{box-shadow:0 0 0 2px rgba(224,163,184,.4)}
+.ck-dot.on.today{box-shadow:0 0 0 2px rgba(207,155,148,.6)}
+.checkin-nums{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--text2)}
+.ck-num b{color:var(--accent2);font-size:14px}
+.checkin-heat{margin-top:12px;border-top:1px dashed var(--border);padding-top:12px}
+.ck-legend{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.ck-legend-r{display:inline-flex;align-items:center;gap:4px}
+.ck-legend-r .hm-cell{position:relative;top:2px}
+.hm-cell{display:inline-block;width:13px;height:13px;border-radius:3px;background:var(--surface3);border:1px solid var(--border);margin:1px}
+.hm-cell.on{background:linear-gradient(135deg,#e0a3b8,#d08aa0);border-color:transparent}
+.hm-cell.today{box-shadow:0 0 0 2px rgba(207,155,148,.6)}
+.checkin-heat .hm-cell{margin:1px}
+@media(max-width:768px){
+  .grid.g4{display:grid;grid-template-columns:1fr 1fr}
+  .checkin-card-top{flex-wrap:wrap}
+  .checkin-freq{order:3;width:100%}
+  .checkin-card-mid{gap:10px}
+  .ck-dots .ck-dot{width:15px;height:15px}
+}
 </style>
 </head>
 <body>
@@ -1403,7 +1437,7 @@ function moodIcon(k, size){
 let db = null;
 let meta = { lastBackupCount: 0, noticeDismissAt: 0, session:null, sync: { token:'', gistId:'', auto:false, lastSync:0 }, wanrenPassHash:'7046afc5' };
 
-function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], gratitude:{}, gratitudeHearts:0, seeded:false, v:5, _updatedAt:0 }; }
+function blankDB(){ return { goals:[], ideas:[], studies:[], projects:[], incomes:[], plans:[], reviews:[], pomos:[], library:[], frameworks:[], accounts:[], checks:[], gratitude:{}, gratitudeHearts:0, seeded:false, v:5, _updatedAt:0 }; }
 
 function seedDB(){
   const SUB = (t, done, at) => ({ id:uid(), title:t, done:!!done, doneAt:done?(at||off(-6)):'' });
@@ -1850,7 +1884,8 @@ function setPriChip(name, val){
 }
 
 function normalizeDB(){
-  ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks','accounts'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
+  ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks','accounts','checks'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
+  db.checks.forEach(c => { if(!c.records || typeof c.records !== 'object' || Array.isArray(c.records)) c.records = {}; });
   if(typeof db.gratitude !== 'object' || db.gratitude === null || Array.isArray(db.gratitude)) db.gratitude = {};
   db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; g.milestones.forEach(m=>{ if(!Array.isArray(m.subs)) m.subs=[]; }); });
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
@@ -2018,7 +2053,8 @@ const TABS = [
 const DAILY_TABS = [
   { k:'plan',      n:'计划',       i:'todo',      sub:'今日计划矩阵' },
   { k:'review',    n:'复盘',       i:'reflect',   sub:'日常 / 项目 / 月度 / 年度复盘' },
-  { k:'pomo',      n:'番茄钟', i:'tomato',  sub:'专注计时 + 历史记录分析' }
+  { k:'pomo',      n:'番茄钟', i:'tomato',  sub:'专注计时 + 历史记录分析' },
+  { k:'checkin',   n:'打卡',   i:'check',   sub:'习惯打卡与统计' }
 ];
 const EMOTION_TABS = [
   { k:'gratitude', n:'感恩日记',   i:'heart',  sub:'每天一件值得感恩的小事' }
@@ -5784,6 +5820,148 @@ function viewPomo(){
   return h;
 }
 
+/* ============================================================
+   模块：打卡（习惯养成）
+============================================================ */
+const CHECK_CATS = [
+  { k:'健康', color:'var(--green)' },
+  { k:'学习', color:'var(--blue)' },
+  { k:'生活', color:'var(--orange)' },
+  { k:'工作', color:'var(--red)' },
+  { k:'其他', color:'var(--accent)' }
+];
+const CHECK_FREQ = [['daily','每天'],['weekly','每周']];
+let checkinExpanded = new Set();
+function catColor(cat){ const c = CHECK_CATS.find(x=>x.k===cat); return c ? c.color : 'var(--accent)'; }
+function ckHas(c, d){ return !!(c && c.records && Object.prototype.hasOwnProperty.call(c.records, d)); }
+
+function checkTotalDays(c){ return Object.keys(c.records||{}).length; }
+function checkStreak(c){
+  let n = 0; const d = new Date();
+  if(!ckHas(c, TODAY)) d.setDate(d.getDate()-1);
+  while(ckHas(c, d2s(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function checkRate(c){
+  const created = c.created ? new Date(c.created + 'T00:00:00') : new Date();
+  const days = Math.max(1, Math.floor((Date.now() - created.getTime())/86400000) + 1);
+  return Math.round(checkTotalDays(c)/days*100);
+}
+function weeklyProgress(c){
+  const now = new Date();
+  const dow = (now.getDay()+6)%7;            // 周一为 0
+  const mon = new Date(now); mon.setDate(now.getDate()-dow);
+  let done = 0;
+  for(let i=0;i<=dow;i++){ const d = new Date(mon); d.setDate(mon.getDate()+i); if(ckHas(c, d2s(d))) done++; }
+  return { done, goal: c.freq==='weekly' ? (c.perWeek||7) : 7 };
+}
+function checkTodayDone(c){ return ckHas(c, TODAY); }
+
+function checkinLast7(c){
+  let h = '';
+  for(let i=6;i>=0;i--){ const d = off(-i); const on = ckHas(c, d);
+    h += '<span class="ck-dot'+(on?' on':'')+(d===TODAY?' today':'')+'" title="'+d+(on?' 已打卡':' 未打卡')+'"></span>'; }
+  return '<div class="ck-dots">'+h+'</div>';
+}
+function checkinHeatmap(c){
+  const N = 70; let cells = '';
+  for(let i=N-1;i>=0;i--){ const d = off(-i); const on = ckHas(c, d);
+    cells += '<span class="hm-cell'+(on?' on':'')+(d===TODAY?' today':'')+'" title="'+d+(on?' 已打卡':' 未打卡')+'"></span>'; }
+  return '<div class="checkin-heat"><div class="ck-legend"><span>近 10 周</span><span class="ck-legend-r"><i class="hm-cell"></i>未打卡 <i class="hm-cell on"></i>已打卡</span></div>'+cells+'</div>';
+}
+
+function viewCheckin(){
+  const cs = db.checks;
+  const todayDone = cs.filter(checkTodayDone).length;
+  const totalDays = cs.reduce((a,c)=>a+checkTotalDays(c),0);
+  const maxStreak = cs.reduce((a,c)=>Math.max(a,checkStreak(c)),0);
+  let h = '<div class="grid g4 checkin-stats">'
+    + stat('今日打卡', cs.length? (todayDone+'/'+cs.length) : '0', '', todayDone && todayDone===cs.length ? 'good' : '')
+    + stat('累计打卡', totalDays, '次')
+    + stat('最长连续', maxStreak, '天')
+    + stat('习惯数量', cs.length, '个') + '</div>';
+
+  h += '<div class="checkin-head"><button class="btn primary" onclick="addCheckin()">'+ico('plus',15)+'新建打卡</button>'
+    + '<span class="checkin-tip">点亮每日打卡，养成好习惯</span></div>';
+
+  if(!cs.length){ h += emptyBox('还没有打卡习惯，点「新建打卡」开始第一个吧'); return h; }
+
+  cs.forEach(c => {
+    const done = checkTodayDone(c);
+    const expanded = checkinExpanded.has(c.id);
+    const wk = weeklyProgress(c);
+    const col = catColor(c.cat);
+    h += '<div class="card checkin-card">'
+      + '<div class="checkin-card-top">'
+      +   '<span class="rchip" style="background:'+col+'22;color:'+col+';border-color:'+col+'55">'+esc(c.cat||'其他')+'</span>'
+      +   '<b class="checkin-title">'+esc(c.title)+'</b>'
+      +   '<span class="checkin-freq">'+(c.freq==='weekly' ? ('每周 '+ (c.perWeek||7) +' 次') : '每天')+'</span>'
+      +   '<span class="checkin-ops">'
+      +     '<button class="iconbtn" title="详情/热力图" onclick="toggleCheckinDetail(\''+c.id+'\')">'+ico('chart',14)+'</button>'
+      +     '<button class="iconbtn" title="编辑" onclick="editCheckin(\''+c.id+'\')">'+ico('edit',14)+'</button>'
+      +     '<button class="iconbtn" title="删除" onclick="delCheckin(\''+c.id+'\')">'+ico('trash',14)+'</button>'
+      +   '</span>'
+      + '</div>'
+      + '<div class="checkin-card-mid">'
+      +   checkinLast7(c)
+      +   '<div class="checkin-nums">'
+      +     '<span class="ck-num">连续 <b>'+checkStreak(c)+'</b> 天</span>'
+      +     '<span class="ck-num">累计 <b>'+checkTotalDays(c)+'</b> 天</span>'
+      +     '<span class="ck-num">完成率 <b>'+checkRate(c)+'%</b></span>'
+      +     (c.freq==='weekly' ? '<span class="ck-num">本周 <b>'+wk.done+'/'+wk.goal+'</b></span>' : '')
+      +   '</div>'
+      +   '<button class="btn sm '+(done?'ghost':'primary')+'" onclick="doCheckin(\''+c.id+'\')">'+(done?'今日已打卡':'今日打卡')+'</button>'
+      + '</div>'
+      + (expanded ? checkinHeatmap(c) : '')
+      + '</div>';
+  });
+  return h;
+}
+function toggleCheckinDetail(id){ if(checkinExpanded.has(id)) checkinExpanded.delete(id); else checkinExpanded.add(id); render(); }
+function doCheckin(id){
+  const c = db.checks.find(x=>x.id===id); if(!c) return;
+  if(ckHas(c, TODAY)){ toast('今天已经打卡啦'); return; }
+  if(!c.records) c.records = {};
+  c.records[TODAY] = '';
+  save(); render(); toast('打卡成功，已连续 '+checkStreak(c)+' 天');
+}
+function unCheckin(id){
+  const c = db.checks.find(x=>x.id===id); if(!c) return;
+  delete c.records[TODAY]; save(); render(); toast('已撤销今日打卡');
+}
+function addCheckin(){
+  openForm('新建打卡', [
+    { k:'title', l:'习惯名称', t:'text', req:true, ph:'例：每天读书 30 分钟' },
+    { k:'cat', l:'分类', t:'select', opts:CHECK_CATS.map(x=>[x.k,x.k]) },
+    { k:'freq', l:'频率', t:'select', opts:CHECK_FREQ },
+    { k:'perWeek', l:'每周次数（频率选「每周」时填写 1-7）', t:'number', ph:'7' }
+  ], { cat:'健康', freq:'daily', perWeek:7 }, v => {
+    db.checks.push({ id:uid(), title:v.title.trim(), cat:v.cat, freq:v.freq,
+      perWeek: v.freq==='weekly' ? Math.max(1,Math.min(7, parseInt(v.perWeek)||7)) : 7,
+      created:TODAY, records:{} });
+    save(); render(); toast('已创建打卡习惯');
+  });
+}
+function editCheckin(id){
+  const c = db.checks.find(x=>x.id===id); if(!c) return;
+  openForm('编辑打卡', [
+    { k:'title', l:'习惯名称', t:'text', req:true },
+    { k:'cat', l:'分类', t:'select', opts:CHECK_CATS.map(x=>[x.k,x.k]) },
+    { k:'freq', l:'频率', t:'select', opts:CHECK_FREQ },
+    { k:'perWeek', l:'每周次数', t:'number', ph:'7' }
+  ], c, v => {
+    Object.assign(c, { title:v.title.trim(), cat:v.cat, freq:v.freq,
+      perWeek: v.freq==='weekly' ? Math.max(1,Math.min(7, parseInt(v.perWeek)||7)) : 7 });
+    save(); render(); toast('已保存');
+  }, ()=>delCheckin(id));
+}
+function delCheckin(id){
+  confirmBox('删除这个打卡习惯？','删除后打卡记录将无法恢复。', ()=>{
+    db.checks = db.checks.filter(x=>x.id!==id);
+    save(); render(); toast('已删除');
+  });
+}
+
 function viewRecords(){
   return pomoTopStats() + pomoRecordsBody();
 }
@@ -6228,6 +6406,7 @@ function render(){
   else if(route.tab === 'plan') v.innerHTML = pre + viewPlan();
   else if(route.tab === 'review') v.innerHTML = pre + viewReview();
   else if(route.tab === 'pomo') v.innerHTML = pre + viewPomo();
+  else if(route.tab === 'checkin') v.innerHTML = pre + viewCheckin();
   else if(route.tab === 'records') v.innerHTML = pre + viewRecords();
   else if(route.tab === 'gratitude') v.innerHTML = pre + viewGratitude();
   else if(route.tab === 'library') v.innerHTML = viewLibrary();
