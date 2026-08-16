@@ -1235,6 +1235,17 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .acct-chip svg{flex-shrink:0;color:var(--accent)}
 
 /* ---- 模块：打卡（习惯养成）---- */
+.back-bar{margin-bottom:12px}
+.plan-checkin{margin-top:20px}
+.plan-checkin .card-h{display:flex;align-items:center;gap:10px}
+.plan-checkin .card-h h3{margin:0;font-size:15px;flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.plan-ck-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--surface3);color:var(--muted)}
+.plan-ck-badge.done{background:#e8f1e8;color:#5b7c5b}
+.plan-checkin-list{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.plan-checkin-item{display:flex;align-items:center;gap:10px}
+.plan-checkin-title{flex:1;min-width:0;font-size:14px;color:var(--text);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-checkin-title:hover{text-decoration:underline}
+.ck-num-sm{font-size:12px;color:var(--muted);white-space:nowrap}
 .checkin-stats{margin-bottom:14px}
 .checkin-stats .stat.good .v{color:var(--green)}
 .checkin-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
@@ -2053,8 +2064,7 @@ const TABS = [
 const DAILY_TABS = [
   { k:'plan',      n:'计划',       i:'todo',      sub:'今日计划矩阵' },
   { k:'review',    n:'复盘',       i:'reflect',   sub:'日常 / 项目 / 月度 / 年度复盘' },
-  { k:'pomo',      n:'番茄钟', i:'tomato',  sub:'专注计时 + 历史记录分析' },
-  { k:'checkin',   n:'打卡',   i:'check',   sub:'习惯打卡与统计' }
+  { k:'pomo',      n:'番茄钟', i:'tomato',  sub:'专注计时 + 历史记录分析' }
 ];
 const EMOTION_TABS = [
   { k:'gratitude', n:'感恩日记',   i:'heart',  sub:'每天一件值得感恩的小事' }
@@ -3999,6 +4009,10 @@ function viewPlan(){
     });
   }
   h += '</div></div>';
+
+  // 今日打卡概览：计划模块内统一管理打卡习惯
+  h += viewPlanCheckin();
+
   return h;
 }
 
@@ -5870,12 +5884,37 @@ function checkinHeatmap(c){
   return '<div class="checkin-heat"><div class="ck-legend"><span>近 10 周</span><span class="ck-legend-r"><i class="hm-cell"></i>未打卡 <i class="hm-cell on"></i>已打卡</span></div>'+cells+'</div>';
 }
 
+function viewPlanCheckin(){
+  const cs = db.checks;
+  if(!cs.length) return '';
+  const todayDone = cs.filter(checkTodayDone).length;
+  const allDone = cs.length && todayDone === cs.length;
+  let h = '<div class="card plan-checkin">'
+    + '<div class="card-h"><h3>'+ico('check',16)+' 今日打卡</h3>'
+    + '<span class="plan-ck-badge '+(allDone?'done':'')+'">'+todayDone+'/'+cs.length+'</span>'
+    + '<button class="btn sm ghost" onclick="go(\'checkin\')">完整统计 ›</button></div>'
+    + '<div class="plan-checkin-list">';
+  cs.forEach(c => {
+    const done = checkTodayDone(c);
+    const col = catColor(c.cat);
+    h += '<div class="plan-checkin-item">'
+      + '<span class="rchip" style="background:'+col+'22;color:'+col+';border-color:'+col+'55">'+esc(c.cat||'其他')+'</span>'
+      + '<span class="plan-checkin-title" onclick="go(\'checkin\')">'+esc(c.title)+'</span>'
+      + '<span class="ck-num-sm">连 '+checkStreak(c)+' 天</span>'
+      + '<button class="btn sm '+(done?'ghost':'primary')+'" onclick="doCheckin(\''+c.id+'\')">'+(done?'已打卡':'打卡')+'</button>'
+      + '</div>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
 function viewCheckin(){
   const cs = db.checks;
   const todayDone = cs.filter(checkTodayDone).length;
   const totalDays = cs.reduce((a,c)=>a+checkTotalDays(c),0);
   const maxStreak = cs.reduce((a,c)=>Math.max(a,checkStreak(c)),0);
-  let h = '<div class="grid g4 checkin-stats">'
+  let h = '<div class="back-bar"><button class="btn sm ghost" onclick="go(\'plan\')">'+ico('back',14)+'返回计划</button></div>';
+  h += '<div class="grid g4 checkin-stats">'
     + stat('今日打卡', cs.length? (todayDone+'/'+cs.length) : '0', '', todayDone && todayDone===cs.length ? 'good' : '')
     + stat('累计打卡', totalDays, '次')
     + stat('最长连续', maxStreak, '天')
