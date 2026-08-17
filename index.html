@@ -1236,9 +1236,9 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 
 /* ---- 模块：打卡（习惯养成）---- */
 .back-bar{margin-bottom:12px}
-.plan-checkin{margin-top:20px}
+.plan-checkin{margin:0 0 18px;border:1px solid rgba(224,163,184,.32);background:linear-gradient(135deg,#fffafc,#fdf6f9)}
 .plan-checkin .card-h{display:flex;align-items:center;gap:10px}
-.plan-checkin .card-h h3{margin:0;font-size:15px;flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.plan-checkin .card-h h3{margin:0;font-size:15px;flex:1;min-width:0;display:flex;align-items:center;gap:6px;color:#b06a82}
 .plan-ck-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--surface3);color:var(--muted)}
 .plan-ck-badge.done{background:#e8f1e8;color:#5b7c5b}
 .plan-checkin-list{display:flex;flex-direction:column;gap:9px;margin-top:12px}
@@ -1246,6 +1246,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .plan-checkin-title{flex:1;min-width:0;font-size:14px;color:var(--text);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plan-checkin-title:hover{text-decoration:underline}
 .ck-num-sm{font-size:12px;color:var(--muted);white-space:nowrap}
+.plan-checkin-empty{margin-top:10px;font-size:13px;color:var(--muted)}
 .checkin-stats{margin-bottom:14px}
 .checkin-stats .stat.good .v{color:var(--green)}
 .checkin-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
@@ -3985,6 +3986,9 @@ function viewPlan(){
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
     + stat('累计完成', doneAll.length, '条') + stat('逾期率', rate, '%', rateWarn?'warn':'') + '</div>';
 
+  // 今日打卡概览：计划模块顶部常驻，统一管理打卡习惯
+  h += viewPlanCheckin();
+
   // 新布局：5 个模块横向并列，可左右滑动
   h += '<div class="plan-scroll" id="planScroll">';
   h += planZone('must', active.filter(p=>p.must), true);
@@ -4009,9 +4013,6 @@ function viewPlan(){
     });
   }
   h += '</div></div>';
-
-  // 今日打卡概览：计划模块内统一管理打卡习惯
-  h += viewPlanCheckin();
 
   return h;
 }
@@ -5886,14 +5887,18 @@ function checkinHeatmap(c){
 
 function viewPlanCheckin(){
   const cs = db.checks;
-  if(!cs.length) return '';
   const todayDone = cs.filter(checkTodayDone).length;
   const allDone = cs.length && todayDone === cs.length;
   let h = '<div class="card plan-checkin">'
     + '<div class="card-h"><h3>'+ico('check',16)+' 今日打卡</h3>'
-    + '<span class="plan-ck-badge '+(allDone?'done':'')+'">'+todayDone+'/'+cs.length+'</span>'
-    + '<button class="btn sm ghost" onclick="go(\'checkin\')">完整统计 ›</button></div>'
-    + '<div class="plan-checkin-list">';
+    + '<span class="plan-ck-badge '+(allDone?'done':'')+'">'+(cs.length ? (todayDone+'/'+cs.length) : '0')+'</span>'
+    + '<button class="btn sm primary" onclick="addCheckin()">'+ico('plus',13)+'新建</button>'
+    + '<button class="btn sm ghost" onclick="go(\'checkin\')">完整统计 ›</button></div>';
+  if(!cs.length){
+    h += '<div class="plan-checkin-empty">还没有打卡习惯，点「新建」开始第一个吧 →</div>';
+    return h + '</div>';
+  }
+  h += '<div class="plan-checkin-list">';
   cs.forEach(c => {
     const done = checkTodayDone(c);
     const col = catColor(c.cat);
