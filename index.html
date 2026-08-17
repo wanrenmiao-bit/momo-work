@@ -1234,29 +1234,30 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .acct-chip:hover{border-color:var(--accent);background:var(--accent-soft)}
 .acct-chip svg{flex-shrink:0;color:var(--accent)}
 
-/* ---- 模块：打卡（习惯养成）---- */
+/* ---- 模块：打卡（习惯养成 · 分析 · 奖励）---- */
+@keyframes ckConfetti{
+  0%{transform:translateY(0) rotate(0);opacity:1}
+  100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+}
 .back-bar{margin-bottom:12px}
-.plan-checkin{margin:0 0 18px;border:1px solid rgba(224,163,184,.32);background:linear-gradient(135deg,#fffafc,#fdf6f9)}
-.plan-checkin .card-h{display:flex;align-items:center;gap:10px}
-.plan-checkin .card-h h3{margin:0;font-size:15px;flex:1;min-width:0;display:flex;align-items:center;gap:6px;color:#b06a82}
-.plan-ck-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--surface3);color:var(--muted)}
-.plan-ck-badge.done{background:#e8f1e8;color:#5b7c5b}
-.plan-checkin-list{display:flex;flex-direction:column;gap:9px;margin-top:12px}
-.plan-checkin-item{display:flex;align-items:center;gap:10px}
-.plan-checkin-title{flex:1;min-width:0;font-size:14px;color:var(--text);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.plan-checkin-title:hover{text-decoration:underline}
-.ck-num-sm{font-size:12px;color:var(--muted);white-space:nowrap}
-.plan-checkin-empty{margin-top:10px;font-size:13px;color:var(--muted)}
+.checkin-subtabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.checkin-subtab{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:13.5px;cursor:pointer;transition:.15s}
+.checkin-subtab:hover{background:var(--surface3)}
+.checkin-subtab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.checkin-subtab.on svg{color:#fff}
 .checkin-stats{margin-bottom:14px}
 .checkin-stats .stat.good .v{color:var(--green)}
 .checkin-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .checkin-tip{font-size:12.5px;color:var(--muted)}
-.checkin-card{padding:14px 16px;margin-bottom:12px}
+.checkin-card{padding:14px 16px;margin-bottom:12px;border-left:4px solid transparent}
+.checkin-card.done{border-left-color:var(--green);background:linear-gradient(90deg,#f6faf7,#fff)}
+.checkin-card.rest{opacity:.9}
 .checkin-card-top{display:flex;align-items:center;gap:9px}
 .checkin-title{flex:1;min-width:0;font-size:15px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .checkin-freq{font-size:12px;color:var(--muted);white-space:nowrap}
 .checkin-ops{display:flex;gap:2px;flex-shrink:0}
 .checkin-card-mid{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+.ck-rest{font-size:12px;color:var(--muted);background:var(--surface3);padding:5px 10px;border-radius:999px}
 .ck-dots{display:flex;gap:5px}
 .ck-dot{width:18px;height:18px;border-radius:5px;background:var(--surface3);border:1px solid var(--border)}
 .ck-dot.on{background:linear-gradient(135deg,#e0a3b8,#d08aa0);border-color:transparent}
@@ -1272,12 +1273,56 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .hm-cell.on{background:linear-gradient(135deg,#e0a3b8,#d08aa0);border-color:transparent}
 .hm-cell.today{box-shadow:0 0 0 2px rgba(207,155,148,.6)}
 .checkin-heat .hm-cell{margin:1px}
+/* 星期选择器 */
+.day-chips{display:flex;gap:8px;flex-wrap:wrap}
+.day-chip{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:14px;cursor:pointer;transition:.15s}
+.day-chip.on{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 3px 10px rgba(207,155,148,.35)}
+.day-chip:hover{background:var(--accent-soft)}
+.day-chip.on:hover{background:var(--accent)}
+/* 分析图表 */
+.ck-chart{padding:10px 4px}
+.ck-bars{display:flex;flex-direction:column;gap:10px}
+.ck-bar{display:flex;align-items:center;gap:10px}
+.ck-bar-l{width:46px;font-size:12px;color:var(--muted);flex-shrink:0;text-align:right}
+.ck-bar-track{flex:1;height:18px;background:var(--surface3);border-radius:9px;overflow:hidden;min-width:60px}
+.ck-bar-track i{display:block;height:100%;background:linear-gradient(90deg,#e0a3b8,#d08aa0);border-radius:9px;transition:width .4s}
+.ck-bar-v{width:24px;font-size:12px;color:var(--text2);text-align:right}
+.ck-line{width:100%;height:160px}
+.ck-line polyline{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ck-line .lc-pt{fill:var(--accent);stroke:#fff;stroke-width:2}
+.ck-ranks{display:flex;flex-direction:column;gap:11px}
+.ck-rank{display:flex;align-items:center;gap:10px}
+.ck-rank-t{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ck-rank-bar{flex:1;height:10px;background:var(--surface3);border-radius:5px;overflow:hidden;max-width:160px}
+.ck-rank-bar i{display:block;height:100%;background:linear-gradient(90deg,#a8d5ba,#8fbfa3);border-radius:5px}
+.ck-rank b{width:34px;font-size:12.5px;color:var(--text2);text-align:right}
+.ck-insight.good{background:linear-gradient(135deg,#f6faf7,#eef6f1)}
+.ck-insight.warn{background:linear-gradient(135deg,#fffbf5,#fdf4ec)}
+.ck-insight b{display:block;font-size:15px;margin-bottom:4px;color:var(--text)}
+.ck-insight p{margin:0;font-size:12.5px;color:var(--muted)}
+/* 成就 */
+.ck-reward-count{font-size:12px;color:var(--muted)}
+.ck-reward-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:12px}
+.ck-reward{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);opacity:.6}
+.ck-reward.on{opacity:1;background:linear-gradient(135deg,#fffefc,#fff8e8);border-color:rgba(214,184,120,.45);box-shadow:0 4px 14px rgba(214,184,120,.12)}
+.ck-reward.on .ck-reward-icon{color:var(--orange)}
+.ck-reward-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--surface3);color:var(--muted)}
+.ck-reward b{font-size:13px;color:var(--text);text-align:center}
+.ck-reward span{font-size:11px;color:var(--muted);text-align:center;line-height:1.35}
+.ck-mile-next{padding:8px 4px}
+.ck-mile-next b{display:block;font-size:15px;margin-bottom:4px}
+.ck-mile-next span{font-size:12.5px;color:var(--muted)}
+.ck-mile-bar{height:10px;background:var(--surface3);border-radius:5px;overflow:hidden;margin-top:10px}
+.ck-mile-bar i{display:block;height:100%;background:linear-gradient(90deg,#e0a3b8,#d08aa0);border-radius:5px}
 @media(max-width:768px){
   .grid.g4{display:grid;grid-template-columns:1fr 1fr}
   .checkin-card-top{flex-wrap:wrap}
   .checkin-freq{order:3;width:100%}
   .checkin-card-mid{gap:10px}
   .ck-dots .ck-dot{width:15px;height:15px}
+  .checkin-subtab{padding:8px 12px;font-size:12.5px}
+  .day-chip{width:38px;height:38px}
+  .ck-reward-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -1801,6 +1846,18 @@ function migrateData(d){
   if(d.frameworks === undefined) d.frameworks = defaultFrameworks();   // 仅在从未初始化时铺默认框架；用户清空后保持空，不再自动补
   if(!d.accounts) d.accounts = [];
   if(Array.isArray(d.accounts)) d.accounts.forEach(a=>{ if(!a.group) a.group='work'; });
+  // 打卡习惯迁移：旧 freq=daily/weekly + perWeek 改为 days:[1..7]
+  if(Array.isArray(d.checks)) d.checks.forEach(c=>{
+    if(!Array.isArray(c.days)){
+      if(c.freq === 'weekly'){
+        const n = Math.max(1, Math.min(7, parseInt(c.perWeek)||7));
+        c.days = [1,2,3,4,5,6,7].slice(0, n);
+      } else {
+        c.days = [1,2,3,4,5,6,7];
+      }
+    }
+    if(c.rewards && !Array.isArray(c.rewards)) c.rewards = [];
+  });
   if(Array.isArray(d.studies)) d.studies.forEach(s=>{ if(!s.createdAt) s.createdAt=(s.created||TODAY)+' 09:00'; if(s.duration==null) s.duration=0; });
   if(Array.isArray(d.library)) d.library.forEach(x=>{ if(x.catId==null) x.catId=''; });
   // 里程碑三层：补齐 subs
@@ -1897,7 +1954,11 @@ function setPriChip(name, val){
 
 function normalizeDB(){
   ['goals','ideas','studies','projects','incomes','plans','reviews','pomos','library','frameworks','accounts','checks'].forEach(k => { if(!Array.isArray(db[k])) db[k] = []; });
-  db.checks.forEach(c => { if(!c.records || typeof c.records !== 'object' || Array.isArray(c.records)) c.records = {}; });
+  db.checks.forEach(c => {
+    if(!c.records || typeof c.records !== 'object' || Array.isArray(c.records)) c.records = {};
+    if(!Array.isArray(c.days) || c.days.length === 0) c.days = [1,2,3,4,5,6,7];
+    if(!Array.isArray(c.rewards)) c.rewards = [];
+  });
   if(typeof db.gratitude !== 'object' || db.gratitude === null || Array.isArray(db.gratitude)) db.gratitude = {};
   db.goals.forEach(g=>{ if(!Array.isArray(g.milestones)) g.milestones=[]; g.milestones.forEach(m=>{ if(!Array.isArray(m.subs)) m.subs=[]; }); });
   db.projects.forEach(p=>{ ['tasks','assets','outputs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); });
@@ -2065,7 +2126,8 @@ const TABS = [
 const DAILY_TABS = [
   { k:'plan',      n:'计划',       i:'todo',      sub:'今日计划矩阵' },
   { k:'review',    n:'复盘',       i:'reflect',   sub:'日常 / 项目 / 月度 / 年度复盘' },
-  { k:'pomo',      n:'番茄钟', i:'tomato',  sub:'专注计时 + 历史记录分析' }
+  { k:'pomo',      n:'番茄钟', i:'tomato',  sub:'专注计时 + 历史记录分析' },
+  { k:'checkin',   n:'打卡',   i:'check',   sub:'习惯打卡 · 分析 · 奖励' }
 ];
 const EMOTION_TABS = [
   { k:'gratitude', n:'感恩日记',   i:'heart',  sub:'每天一件值得感恩的小事' }
@@ -3480,6 +3542,9 @@ function openForm(title, fields, values, onOK, onDelete){
     else if(f.t === 'check'){
       h += '<label class="chk"><input type="checkbox" id="f_'+f.k+'"'+(v?' checked':'')+'> <span>'+esc(f.cl||'')+'</span></label>';
     }
+    else if(f.t === 'days'){
+      h += dayChips('f_'+f.k, Array.isArray(v) ? v : (v ? [1,2,3,4,5,6,7] : []));
+    }
     else h += '<input id="f_'+f.k+'" type="'+(f.t||'text')+'"'+(f.t==='number'?' inputmode="decimal" step="0.01"':'')+' value="'+esc(v)+'" placeholder="'+esc(f.ph||'')+'">';
     if(f.hint) h += '<div class="hint">'+esc(f.hint)+'</div>';
     h += '</div>';
@@ -3495,6 +3560,11 @@ function openForm(title, fields, values, onOK, onDelete){
       if(f.t === 'goalmulti'){
         const cont = $('f_'+f.k);
         out[f.k] = cont ? Array.from(cont.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.value) : [];
+        continue;
+      }
+      if(f.t === 'days'){
+        out[f.k] = getDayChipVals('f_'+f.k);
+        if(f.req && out[f.k].length === 0){ toast('请至少选择一天'); return; }
         continue;
       }
       const val = el ? el.value.trim() : '';
@@ -3985,9 +4055,6 @@ function viewPlan(){
   let h = '<div class="grid g4 stats" style="margin-bottom:18px">'
     + stat('待办中', open.length, '条') + stat('今日完成', doneToday, '条')
     + stat('累计完成', doneAll.length, '条') + stat('逾期率', rate, '%', rateWarn?'warn':'') + '</div>';
-
-  // 今日打卡概览：计划模块顶部常驻，统一管理打卡习惯
-  h += viewPlanCheckin();
 
   // 新布局：5 个模块横向并列，可左右滑动
   h += '<div class="plan-scroll" id="planScroll">';
@@ -5845,10 +5912,25 @@ const CHECK_CATS = [
   { k:'工作', color:'var(--red)' },
   { k:'其他', color:'var(--accent)' }
 ];
-const CHECK_FREQ = [['daily','每天'],['weekly','每周']];
+const WEEK_DAYS = ['一','二','三','四','五','六','日'];
 let checkinExpanded = new Set();
+let checkinTab = 'habits'; // habits | analysis | rewards
 function catColor(cat){ const c = CHECK_CATS.find(x=>x.k===cat); return c ? c.color : 'var(--accent)'; }
 function ckHas(c, d){ return !!(c && c.records && Object.prototype.hasOwnProperty.call(c.records, d)); }
+function getDow(d){ const date = new Date(d+'T00:00:00'); return (date.getDay()+6)%7 + 1; } // 1=周一 ... 7=周日
+function isCheckDay(c, d){ const days = c.days; if(Array.isArray(days) && days.length) return days.includes(getDow(d)); return true; } // 兼容旧数据默认每天
+function expectedDays(c, fromD, toD){
+  // fromD/toD 为 'YYYY-MM-DD' 字符串；计算这段时间内应该打卡的天数
+  const days = c.days; if(!Array.isArray(days) || !days.length) return 0;
+  const from = new Date(fromD+'T00:00:00'), to = new Date(toD+'T00:00:00');
+  let n = 0; const cur = new Date(from);
+  while(cur <= to){ if(days.includes((cur.getDay()+6)%7 + 1)) n++; cur.setDate(cur.getDate()+1); }
+  return n;
+}
+function recentExpectedDays(c, N){
+  const to = new Date(); const from = new Date(); from.setDate(to.getDate()-(N-1));
+  return expectedDays(c, d2s(from), d2s(to));
+}
 
 function checkTotalDays(c){ return Object.keys(c.records||{}).length; }
 function checkStreak(c){
@@ -5857,20 +5939,74 @@ function checkStreak(c){
   while(ckHas(c, d2s(d))){ n++; d.setDate(d.getDate()-1); }
   return n;
 }
+function longestStreak(c){
+  let max = 0, cur = 0; const dates = Object.keys(c.records||{}).sort();
+  let prev = null;
+  dates.forEach(d => {
+    if(prev){ const a = new Date(prev+'T00:00:00'), b = new Date(d+'T00:00:00'); b.setDate(b.getDate()-1); cur = (a.getTime()===b.getTime()) ? cur+1 : 1; }
+    else cur = 1;
+    max = Math.max(max, cur); prev = d;
+  });
+  return max;
+}
 function checkRate(c){
   const created = c.created ? new Date(c.created + 'T00:00:00') : new Date();
-  const days = Math.max(1, Math.floor((Date.now() - created.getTime())/86400000) + 1);
+  const days = Math.max(1, expectedDays(c, d2s(created), TODAY));
   return Math.round(checkTotalDays(c)/days*100);
 }
 function weeklyProgress(c){
   const now = new Date();
   const dow = (now.getDay()+6)%7;            // 周一为 0
   const mon = new Date(now); mon.setDate(now.getDate()-dow);
-  let done = 0;
-  for(let i=0;i<=dow;i++){ const d = new Date(mon); d.setDate(mon.getDate()+i); if(ckHas(c, d2s(d))) done++; }
-  return { done, goal: c.freq==='weekly' ? (c.perWeek||7) : 7 };
+  let done = 0, total = 0;
+  for(let i=0;i<=dow;i++){ const d = new Date(mon); d.setDate(mon.getDate()+i); const ds = d2s(d); if(isCheckDay(c, ds)){ total++; if(ckHas(c, ds)) done++; } }
+  return { done, goal: total || (c.days ? c.days.length : 7) };
+}
+function isPerfectWeek(c){
+  const w = weeklyProgress(c); return w.goal > 0 && w.done >= w.goal;
+}
+function perfectWeeks(c){
+  if(!c.created) return 0;
+  const created = new Date(c.created+'T00:00:00');
+  const now = new Date(); let n = 0;
+  // 从创建那周开始逐周检查
+  const startMon = new Date(created); startMon.setDate(created.getDate() - ((created.getDay()+6)%7));
+  let mon = new Date(startMon);
+  while(mon <= now){
+    let done = 0, goal = 0;
+    for(let i=0;i<7;i++){ const d = new Date(mon); d.setDate(mon.getDate()+i); if(d > now) break; const ds = d2s(d); if(isCheckDay(c, ds)){ goal++; if(ckHas(c, ds)) done++; } }
+    if(goal > 0 && done >= goal) n++;
+    mon.setDate(mon.getDate()+7);
+  }
+  return n;
 }
 function checkTodayDone(c){ return ckHas(c, TODAY); }
+
+/* ---- 星期选择器（打卡用） ---- */
+function dayChips(name, cur){
+  cur = Array.isArray(cur) ? cur : [];
+  let h = '<input type="hidden" id="'+name+'" value="'+cur.join(',')+'">'
+    + '<div class="day-chips" data-days="'+name+'">';
+  WEEK_DAYS.forEach((l,i)=>{
+    const v = i+1; const on = cur.includes(v);
+    h += '<button type="button" class="day-chip '+(on?' on':'')+'" onclick="setDayChip(\''+name+'\','+v+')">'+l+'</button>';
+  });
+  h += '</div>';
+  return h;
+}
+function setDayChip(name, val){
+  const inp = document.getElementById(name); if(!inp) return;
+  let cur = inp.value.split(',').filter(x=>x).map(x=>parseInt(x));
+  if(cur.includes(val)) cur = cur.filter(x=>x!==val); else cur.push(val);
+  cur.sort((a,b)=>a-b);
+  inp.value = cur.join(',');
+  const wrap = document.querySelector('.day-chips[data-days="'+name+'"]');
+  if(wrap){ wrap.querySelectorAll('.day-chip').forEach((b,i)=>{ b.classList.toggle('on', cur.includes(i+1)); }); }
+}
+function getDayChipVals(name){
+  const inp = document.getElementById(name); if(!inp) return [];
+  return inp.value.split(',').filter(x=>x).map(x=>parseInt(x)).sort((a,b)=>a-b);
+}
 
 function checkinLast7(c){
   let h = '';
@@ -5885,41 +6021,102 @@ function checkinHeatmap(c){
   return '<div class="checkin-heat"><div class="ck-legend"><span>近 10 周</span><span class="ck-legend-r"><i class="hm-cell"></i>未打卡 <i class="hm-cell on"></i>已打卡</span></div>'+cells+'</div>';
 }
 
-function viewPlanCheckin(){
-  const cs = db.checks;
-  const todayDone = cs.filter(checkTodayDone).length;
-  const allDone = cs.length && todayDone === cs.length;
-  let h = '<div class="card plan-checkin">'
-    + '<div class="card-h"><h3>'+ico('check',16)+' 今日打卡</h3>'
-    + '<span class="plan-ck-badge '+(allDone?'done':'')+'">'+(cs.length ? (todayDone+'/'+cs.length) : '0')+'</span>'
-    + '<button class="btn sm primary" onclick="addCheckin()">'+ico('plus',13)+'新建</button>'
-    + '<button class="btn sm ghost" onclick="go(\'checkin\')">完整统计 ›</button></div>';
-  if(!cs.length){
-    h += '<div class="plan-checkin-empty">还没有打卡习惯，点「新建」开始第一个吧 →</div>';
-    return h + '</div>';
+/* ============================================================
+   模块 X：打卡（习惯养成 · 分析 · 奖励）
+============================================================ */
+const ACHIEVEMENTS = [
+  { id:'first',    icon:'check', title:'首次打卡',    desc:'完成人生第一次打卡' },
+  { id:'streak3',  icon:'flame', title:'初燃之火',    desc:'单个习惯连续 3 天' },
+  { id:'streak7',  icon:'flame', title:'一周不熄',    desc:'单个习惯连续 7 天' },
+  { id:'streak21', icon:'flame', title:'习惯成自然',  desc:'单个习惯连续 21 天' },
+  { id:'streak30', icon:'flame', title:'月度达人',    desc:'单个习惯连续 30 天' },
+  { id:'streak100',icon:'flame', title:'百日战神',    desc:'单个习惯连续 100 天' },
+  { id:'total10',  icon:'star',  title:'十颗星星',    desc:'单个习惯累计 10 次' },
+  { id:'total50',  icon:'star',  title:'半百坚持',    desc:'单个习惯累计 50 次' },
+  { id:'total100', icon:'star',  title:'百次里程碑',  desc:'单个习惯累计 100 次' },
+  { id:'total365', icon:'trophy',title:'全年无休',    desc:'单个习惯累计 365 次' },
+  { id:'perfect1', icon:'flag',  title:'完美一周',    desc:'单个习惯完成一整周' },
+  { id:'perfect4', icon:'flag',  title:'四周战士',    desc:'单个习惯完成 4 个完美周' },
+  { id:'catMaster',icon:'zap',   title:'分类大师',    desc:'某个分类累计 50 次' },
+  { id:'allCat',   icon:'spark', title:'全面开花',    desc:'5 个分类都打过卡' }
+];
+function computeAchievements(c){
+  const total = checkTotalDays(c);
+  const streak = checkStreak(c);
+  const longest = longestStreak(c);
+  const perfect = perfectWeeks(c);
+  const catTotal = db.checks.filter(x=>x.cat===c.cat).reduce((a,x)=>a+checkTotalDays(x),0);
+  const unlocked = [];
+  if(total >= 1)   unlocked.push('first');
+  if(longest >= 3) unlocked.push('streak3');
+  if(longest >= 7) unlocked.push('streak7');
+  if(longest >= 21)unlocked.push('streak21');
+  if(longest >= 30)unlocked.push('streak30');
+  if(longest >=100)unlocked.push('streak100');
+  if(total >= 10)  unlocked.push('total10');
+  if(total >= 50)  unlocked.push('total50');
+  if(total >= 100) unlocked.push('total100');
+  if(total >= 365) unlocked.push('total365');
+  if(perfect >= 1) unlocked.push('perfect1');
+  if(perfect >= 4) unlocked.push('perfect4');
+  if(catTotal >= 50)unlocked.push('catMaster');
+  return unlocked;
+}
+function allUnlockedAchievements(){
+  const set = new Set();
+  db.checks.forEach(c => computeAchievements(c).forEach(id => set.add(id)));
+  const cats = new Set(db.checks.map(c=>c.cat).filter(Boolean));
+  if(cats.size >= 5) set.add('allCat');
+  return Array.from(set);
+}
+function checkNewAchievements(c){
+  const before = new Set(c.rewards || []);
+  const now = new Set(computeAchievements(c));
+  const cats = new Set(db.checks.map(x=>x.cat).filter(Boolean));
+  if(cats.size >= 5) now.add('allCat');
+  const newly = [];
+  now.forEach(id => { if(!before.has(id)) newly.push(id); });
+  c.rewards = Array.from(now);
+  return newly;
+}
+function celebrateCheckin(newly){
+  // 简单彩纸效果
+  const colors = ['#e0a3b8','#f2c4a5','#a8d5ba','#9fc5e8','#d6b8e0'];
+  const wrap = document.querySelector('.app') || document.body;
+  for(let i=0;i<28;i++){
+    const el = document.createElement('span');
+    el.style.cssText = 'position:fixed;z-index:9999;width:8px;height:8px;border-radius:50%;pointer-events:none;'
+      + 'background:'+colors[Math.floor(Math.random()*colors.length)]+';'
+      + 'left:'+(Math.random()*100)+'vw;top:-10px;'
+      + 'animation:ckConfetti 1.1s ease-out forwards;';
+    wrap.appendChild(el);
+    setTimeout(()=>el.remove(), 1200);
   }
-  h += '<div class="plan-checkin-list">';
-  cs.forEach(c => {
-    const done = checkTodayDone(c);
-    const col = catColor(c.cat);
-    h += '<div class="plan-checkin-item">'
-      + '<span class="rchip" style="background:'+col+'22;color:'+col+';border-color:'+col+'55">'+esc(c.cat||'其他')+'</span>'
-      + '<span class="plan-checkin-title" onclick="go(\'checkin\')">'+esc(c.title)+'</span>'
-      + '<span class="ck-num-sm">连 '+checkStreak(c)+' 天</span>'
-      + '<button class="btn sm '+(done?'ghost':'primary')+'" onclick="doCheckin(\''+c.id+'\')">'+(done?'已打卡':'打卡')+'</button>'
-      + '</div>';
-  });
-  h += '</div></div>';
-  return h;
+  if(newly && newly.length){
+    const names = newly.map(id => (ACHIEVEMENTS.find(a=>a.id===id)||{}).title).filter(Boolean).join('、');
+    setTimeout(()=>toast('🎉 解锁成就：'+names), 300);
+  }
 }
 
 function viewCheckin(){
+  let h = '<div class="checkin-subtabs">'
+    + '<button class="checkin-subtab '+(checkinTab==='habits'?'on':'')+'" onclick="setCheckinTab(\'habits\')">'+ico('check',15)+'我的习惯</button>'
+    + '<button class="checkin-subtab '+(checkinTab==='analysis'?'on':'')+'" onclick="setCheckinTab(\'analysis\')">'+ico('chart',15)+'打卡分析</button>'
+    + '<button class="checkin-subtab '+(checkinTab==='rewards'?'on':'')+'" onclick="setCheckinTab(\'rewards\')">'+ico('trophy',15)+'成就奖励</button>'
+    + '</div>';
+  if(checkinTab === 'habits') h += viewCheckinHabits();
+  else if(checkinTab === 'analysis') h += viewCheckinAnalysis();
+  else h += viewCheckinRewards();
+  return h;
+}
+function setCheckinTab(t){ checkinTab = t; render(); }
+
+function viewCheckinHabits(){
   const cs = db.checks;
   const todayDone = cs.filter(checkTodayDone).length;
   const totalDays = cs.reduce((a,c)=>a+checkTotalDays(c),0);
   const maxStreak = cs.reduce((a,c)=>Math.max(a,checkStreak(c)),0);
-  let h = '<div class="back-bar"><button class="btn sm ghost" onclick="go(\'plan\')">'+ico('back',14)+'返回计划</button></div>';
-  h += '<div class="grid g4 checkin-stats">'
+  let h = '<div class="grid g4 checkin-stats">'
     + stat('今日打卡', cs.length? (todayDone+'/'+cs.length) : '0', '', todayDone && todayDone===cs.length ? 'good' : '')
     + stat('累计打卡', totalDays, '次')
     + stat('最长连续', maxStreak, '天')
@@ -5935,11 +6132,15 @@ function viewCheckin(){
     const expanded = checkinExpanded.has(c.id);
     const wk = weeklyProgress(c);
     const col = catColor(c.cat);
-    h += '<div class="card checkin-card">'
+    const daysText = Array.isArray(c.days) && c.days.length
+      ? (c.days.length===7 ? '每天' : '每周 '+c.days.map(d=>WEEK_DAYS[d-1]).join('、'))
+      : '每天';
+    const todayReq = isCheckDay(c, TODAY);
+    h += '<div class="card checkin-card'+(done?' done':'')+(todayReq?'':' rest')+'">'
       + '<div class="checkin-card-top">'
       +   '<span class="rchip" style="background:'+col+'22;color:'+col+';border-color:'+col+'55">'+esc(c.cat||'其他')+'</span>'
       +   '<b class="checkin-title">'+esc(c.title)+'</b>'
-      +   '<span class="checkin-freq">'+(c.freq==='weekly' ? ('每周 '+ (c.perWeek||7) +' 次') : '每天')+'</span>'
+      +   '<span class="checkin-freq">'+daysText+'</span>'
       +   '<span class="checkin-ops">'
       +     '<button class="iconbtn" title="详情/热力图" onclick="toggleCheckinDetail(\''+c.id+'\')">'+ico('chart',14)+'</button>'
       +     '<button class="iconbtn" title="编辑" onclick="editCheckin(\''+c.id+'\')">'+ico('edit',14)+'</button>'
@@ -5952,9 +6153,12 @@ function viewCheckin(){
       +     '<span class="ck-num">连续 <b>'+checkStreak(c)+'</b> 天</span>'
       +     '<span class="ck-num">累计 <b>'+checkTotalDays(c)+'</b> 天</span>'
       +     '<span class="ck-num">完成率 <b>'+checkRate(c)+'%</b></span>'
-      +     (c.freq==='weekly' ? '<span class="ck-num">本周 <b>'+wk.done+'/'+wk.goal+'</b></span>' : '')
+      +     '<span class="ck-num">本周 <b>'+wk.done+'/'+wk.goal+'</b></span>'
+      +     '<span class="ck-num">完美周 <b>'+perfectWeeks(c)+'</b></span>'
       +   '</div>'
-      +   '<button class="btn sm '+(done?'ghost':'primary')+'" onclick="doCheckin(\''+c.id+'\')">'+(done?'今日已打卡':'今日打卡')+'</button>'
+      +   (todayReq
+          ? '<button class="btn sm '+(done?'ghost':'primary')+'" onclick="doCheckin(\''+c.id+'\')">'+(done?'今日已打卡':'今日打卡')+'</button>'
+          : '<span class="ck-rest">今日休息</span>')
       + '</div>'
       + (expanded ? checkinHeatmap(c) : '')
       + '</div>';
@@ -5967,7 +6171,9 @@ function doCheckin(id){
   if(ckHas(c, TODAY)){ toast('今天已经打卡啦'); return; }
   if(!c.records) c.records = {};
   c.records[TODAY] = '';
+  const newly = checkNewAchievements(c);
   save(); render(); toast('打卡成功，已连续 '+checkStreak(c)+' 天');
+  celebrateCheckin(newly);
 }
 function unCheckin(id){
   const c = db.checks.find(x=>x.id===id); if(!c) return;
@@ -5977,12 +6183,10 @@ function addCheckin(){
   openForm('新建打卡', [
     { k:'title', l:'习惯名称', t:'text', req:true, ph:'例：每天读书 30 分钟' },
     { k:'cat', l:'分类', t:'select', opts:CHECK_CATS.map(x=>[x.k,x.k]) },
-    { k:'freq', l:'频率', t:'select', opts:CHECK_FREQ },
-    { k:'perWeek', l:'每周次数（频率选「每周」时填写 1-7）', t:'number', ph:'7' }
-  ], { cat:'健康', freq:'daily', perWeek:7 }, v => {
-    db.checks.push({ id:uid(), title:v.title.trim(), cat:v.cat, freq:v.freq,
-      perWeek: v.freq==='weekly' ? Math.max(1,Math.min(7, parseInt(v.perWeek)||7)) : 7,
-      created:TODAY, records:{} });
+    { k:'days', l:'每周哪几天打卡（点选 1-7，周一到周日）', t:'days', req:true }
+  ], { cat:'健康', days:[1,2,3,4,5,6,7] }, v => {
+    db.checks.push({ id:uid(), title:v.title.trim(), cat:v.cat, days:v.days,
+      created:TODAY, records:{}, rewards:[] });
     save(); render(); toast('已创建打卡习惯');
   });
 }
@@ -5991,11 +6195,9 @@ function editCheckin(id){
   openForm('编辑打卡', [
     { k:'title', l:'习惯名称', t:'text', req:true },
     { k:'cat', l:'分类', t:'select', opts:CHECK_CATS.map(x=>[x.k,x.k]) },
-    { k:'freq', l:'频率', t:'select', opts:CHECK_FREQ },
-    { k:'perWeek', l:'每周次数', t:'number', ph:'7' }
+    { k:'days', l:'每周哪几天打卡', t:'days', req:true }
   ], c, v => {
-    Object.assign(c, { title:v.title.trim(), cat:v.cat, freq:v.freq,
-      perWeek: v.freq==='weekly' ? Math.max(1,Math.min(7, parseInt(v.perWeek)||7)) : 7 });
+    Object.assign(c, { title:v.title.trim(), cat:v.cat, days:v.days });
     save(); render(); toast('已保存');
   }, ()=>delCheckin(id));
 }
@@ -6004,6 +6206,129 @@ function delCheckin(id){
     db.checks = db.checks.filter(x=>x.id!==id);
     save(); render(); toast('已删除');
   });
+}
+
+/* ---- 打卡分析 ---- */
+function viewCheckinAnalysis(){
+  const cs = db.checks; if(!cs.length) return emptyBox('还没有打卡数据，先去「我的习惯」建一个吧');
+  const totalAll = cs.reduce((a,c)=>a+checkTotalDays(c),0);
+  const maxStreak = cs.reduce((a,c)=>Math.max(a,longestStreak(c)),0);
+  const totalPerfect = cs.reduce((a,c)=>a+perfectWeeks(c),0);
+
+  // 近7日每日完成数
+  const last7 = []; for(let i=6;i>=0;i--){ const d=off(-i); last7.push({d, n:cs.filter(c=>ckHas(c,d)).length}); }
+  const max7 = Math.max(1, ...last7.map(x=>x.n));
+
+  // 每周完成率（近8周）
+  const weekly = [];
+  for(let w=7;w>=0;w--){
+    const sun = new Date(); sun.setDate(sun.getDate() - (sun.getDay()+6)%7 - w*7 + 6); // 该周周日
+    const mon = new Date(sun); mon.setDate(sun.getDate()-6);
+    let done=0, exp=0;
+    cs.forEach(c=>{
+      for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); const ds=d2s(d); if(ds>TODAY) continue; if(isCheckDay(c,ds)){ exp++; if(ckHas(c,ds)) done++; } }
+    });
+    weekly.push({ label:fmtMD(d2s(mon)), rate: exp? Math.round(done/exp*100):0 });
+  }
+
+  // 习惯完成率排行
+  const byRate = cs.slice().sort((a,b)=>checkRate(b)-checkRate(a));
+
+  // 星期分布
+  const dowStat = [1,2,3,4,5,6,7].map(dow=>{
+    let n=0; cs.forEach(c=>{ Object.keys(c.records||{}).forEach(d=>{ if(getDow(d)===dow) n++; }); });
+    return { dow, n };
+  });
+  const maxDow = Math.max(1, ...dowStat.map(x=>x.n));
+
+  // 最佳/需关注
+  const best = byRate[0];
+  const weak = byRate[byRate.length-1];
+
+  let h = '<div class="grid g4 checkin-stats">'
+    + stat('累计打卡', totalAll, '次')
+    + stat('最长连续', maxStreak, '天')
+    + stat('完美周数', totalPerfect, '周')
+    + stat('平均完成率', Math.round(cs.reduce((a,c)=>a+checkRate(c),0)/cs.length), '%') + '</div>';
+
+  h += '<div class="card"><div class="card-h"><h3>'+ico('chart',16)+' 近 7 日打卡趋势</h3></div>'
+    + '<div class="ck-chart">'+barChart(last7.map(x=>({label:x.d===TODAY?'今天':WEEK_DAYS[getDow(x.d)-1], v:x.n, max:max7})))+'</div></div>';
+
+  h += '<div class="card"><div class="card-h"><h3>'+ico('chart',16)+' 每周完成率</h3></div>'
+    + '<div class="ck-chart">'+lineChart(weekly)+'</div></div>';
+
+  h += '<div class="grid g2">'
+    + '<div class="card"><div class="card-h"><h3>'+ico('pie',16)+' 各习惯完成率</h3></div>'
+    + '<div class="ck-ranks">' + byRate.map(c=>{
+        const r = checkRate(c);
+        return '<div class="ck-rank"><span class="ck-rank-t">'+esc(c.title)+'</span>'
+          + '<div class="ck-rank-bar"><i style="width:'+r+'%"></i></div><b>'+r+'%</b></div>';
+      }).join('') + '</div></div>'
+    + '<div class="card"><div class="card-h"><h3>'+ico('calendar',16)+' 星期分布</h3></div>'
+    + '<div class="ck-chart">'+barChart(dowStat.map(x=>({label:'周'+WEEK_DAYS[x.dow-1], v:x.n, max:maxDow})))+'</div></div>'
+    + '</div>';
+
+  h += '<div class="grid g2">'
+    + '<div class="card ck-insight good"><div class="card-h"><h3>'+ico('star',16)+' 最佳习惯</h3></div>'
+    + '<b>'+esc(best.title)+'</b><p>完成率 '+checkRate(best)+'%，已连续 '+checkStreak(best)+' 天</p></div>'
+    + '<div class="card ck-insight warn"><div class="card-h"><h3>'+ico('info',16)+' 需关注</h3></div>'
+    + '<b>'+esc(weak.title)+'</b><p>完成率 '+checkRate(weak)+'%，本周 '+weeklyProgress(weak).done+'/'+weeklyProgress(weak).goal+'</p></div>'
+    + '</div>';
+
+  return h;
+}
+function barChart(rows){
+  return '<div class="ck-bars">'+rows.map(r=>{
+    const pct = r.max ? Math.round((r.v/r.max)*100) : 0;
+    return '<div class="ck-bar"><span class="ck-bar-l">'+esc(r.label)+'</span>'
+      + '<div class="ck-bar-track"><i style="width:'+pct+'%"></i></div><span class="ck-bar-v">'+r.v+'</span></div>';
+  }).join('')+'</div>';
+}
+function lineChart(rows){
+  const max = Math.max(100, ...rows.map(x=>x.rate));
+  const W=600, H=140, pad=32;
+  const pts = rows.map((r,i)=>{
+    const x = pad + i*(W-2*pad)/(rows.length-1);
+    const y = H - pad - (r.rate/max)*(H-2*pad);
+    return [x,y];
+  });
+  const poly = pts.map((p,i)=>p.join(',')).join(' ');
+  let circles = ''; pts.forEach((p,i)=>{ circles += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" class="lc-pt"/><text x="'+p[0]+'" y="'+(H-10)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+esc(rows[i].label)+'</text>'; });
+  return '<svg class="ck-line" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><polyline points="'+poly+'"/><g>'+circles+'</g></svg>';
+}
+
+/* ---- 成就奖励 ---- */
+function viewCheckinRewards(){
+  const unlocked = new Set(allUnlockedAchievements());
+  let h = '<div class="card"><div class="card-h"><h3>'+ico('trophy',16)+' 成就墙</h3><span class="ck-reward-count">已解锁 '+unlocked.size+' / '+ACHIEVEMENTS.length+'</span></div>'
+    + '<div class="ck-reward-grid">';
+  ACHIEVEMENTS.forEach(a => {
+    const on = unlocked.has(a.id);
+    h += '<div class="ck-reward '+(on?'on':'')+'">'
+      + '<div class="ck-reward-icon">'+ico(a.icon,28)+'</div>'
+      + '<b>'+esc(a.title)+'</b>'
+      + '<span>'+esc(a.desc)+'</span>'
+      + '</div>';
+  });
+  h += '</div></div>';
+
+  // 奖励进度
+  const cs = db.checks;
+  if(cs.length){
+    const maxTotal = Math.max(...cs.map(checkTotalDays));
+    const nextTotal = ACHIEVEMENTS.filter(a=>a.id.startsWith('total')).map(a=>parseInt(a.id.replace('total',''))).sort((a,b)=>a-b).find(n=>n>maxTotal);
+    h += '<div class="card"><div class="card-h"><h3>'+ico('flag',16)+' 下一个里程碑</h3></div>';
+    if(nextTotal){
+      const best = cs.slice().sort((a,b)=>checkTotalDays(b)-checkTotalDays(a))[0];
+      const pct = Math.round(Math.min(100, checkTotalDays(best)/nextTotal*100));
+      h += '<div class="ck-mile-next"><b>'+esc(best.title)+'</b><span>距离「累计 '+nextTotal+' 次」还差 '+(nextTotal-checkTotalDays(best))+' 次</span>'
+        + '<div class="ck-mile-bar"><i style="width:'+pct+'%"></i></div></div>';
+    } else {
+      h += '<div class="ck-mile-next"><span>太厉害了，所有累计里程碑都解锁了！</span></div>';
+    }
+    h += '</div>';
+  }
+  return h;
 }
 
 function viewRecords(){
