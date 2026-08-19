@@ -348,7 +348,16 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 /* 第三层：里程表（小里程碑也要有奖励感） */
 .sub-list{padding:2px 12px 12px 52px;border-top:1px dashed var(--border);margin-top:2px}
 .sub-empty{font-size:12.5px;color:var(--muted);padding:10px 0 6px}
+.sub-list.dragover{background:linear-gradient(180deg,rgba(224,163,184,.06),rgba(224,163,184,0));transition:background .15s}
 .submile{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);margin-top:8px;transition:.16s;position:relative;overflow:hidden}
+.submile[draggable="true"]{cursor:grab}
+.submile[draggable="true"]:active{cursor:grabbing}
+.submile.dragging{opacity:.4;border-style:dashed;border-color:var(--accent2)}
+.sub-grip{width:14px;height:14px;color:var(--muted);opacity:.4;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.submile:hover .sub-grip{opacity:.9}
+.sub-drop-line{height:0;margin:5px 0;position:relative;transition:height .15s}
+.sub-drop-line.show{height:18px}
+.sub-drop-line.show::after{content:'';position:absolute;left:6px;right:6px;top:50%;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 6px rgba(224,163,184,.45)}
 .submile:hover{border-color:var(--border2)}
 .submile.done{background:linear-gradient(135deg,rgba(224,163,184,.14),rgba(224,163,184,.04));border-color:rgba(224,163,184,.38);box-shadow:0 2px 10px rgba(224,163,184,.12)}
 .submile.done::before{content:'';position:absolute;right:-18px;top:-18px;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,rgba(224,163,184,.16) 0%,rgba(224,163,184,0) 70%);pointer-events:none}
@@ -2059,6 +2068,7 @@ const ICO = {
   volume:'<path d="M11 5L6.5 9H3v6h3.5L11 19z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>',
   mute:'<path d="M11 5L6.5 9H3v6h3.5L11 19z"/><line x1="16.5" y1="9" x2="22" y2="15"/><line x1="22" y1="9" x2="16.5" y2="15"/>',
   move:'<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>',
+  drag:'<circle cx="9" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.2" fill="currentColor" stroke="none"/>',
   goal:'<path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   idea:'<path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
   study:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
@@ -2350,13 +2360,14 @@ function viewGoals(){
           +   '</div>'
           + '</div>';
         if(mOpen){
-          h += '<div class="sub-list">';
+          h += '<div class="sub-list" data-mid="'+m.id+'" ondragover="allowSubDrop(event,this)" ondragleave="subDragLeave(event,this)" ondrop="dropSub(event,this)">';
           if(!subs.length) h += '<div class="sub-empty">还没有里程表小项，把这个里程碑再拆成几步可执行的动作。</div>';
           subs.forEach((s,si)=>{
-            h += '<div class="submile'+(s.done?' done':'')+'">'
+            h += '<div class="submile'+(s.done?' done':'')+'" data-sid="'+s.id+'" draggable="true" ondragstart="dragSubStart(event,this)" ondragend="dragSubEnd(event)">'
+              + '<span class="sub-grip" title="拖动重新排序">'+ico('drag',12,2)+'</span>'
               + '<button class="sub-check'+(s.done?' on':'')+'" onclick="toggleSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="'+(s.done?'取消完成':'标记完成')+'">'+(s.done?ico('check',12,3.2):'')+'</button>'
               + '<span class="sub-idx">'+(idx+1)+'.'+(si+1)+'</span>'
-              + '<span class="sub-title">'+esc(s.title)+'</span>'
+              + '<span class="sub-title" ondblclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+esc(s.title)+'</span>'
               + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span><div class="sub-reward" title="小里程碑达成">'+ico('star',11,2)+'</div>' : '')
               + '<span class="sub-ops">'
               +   '<button class="iconbtn" title="编辑" onclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('edit',13)+'</button>'
@@ -2411,6 +2422,85 @@ function dropGoalLast(e){
   const [moved] = db.goals.splice(from, 1);
   db.goals.push(moved);
   save(); render(); toast('已放到最后');
+}
+
+/* ---- 里程表小项拖动 ---- */
+let subDragSid = null;
+function dragSubStart(e, el){
+  subDragSid = (el && el.getAttribute) ? el.getAttribute('data-sid') : (el || null);
+  if(!subDragSid) return;
+  e.dataTransfer.setData('text/plain', subDragSid);
+  e.dataTransfer.effectAllowed = 'move';
+  // 让拖动时整个 sub-list 看到提示线
+  setTimeout(()=>el.classList && el.classList.add('dragging'), 0);
+}
+function dragSubEnd(e){
+  if(e && e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('dragging');
+  subDragSid = null;
+  document.querySelectorAll('.sub-list').forEach(l=>l.classList.remove('dragover'));
+  document.querySelectorAll('.sub-drop-line').forEach(l=>l.remove());
+}
+function allowSubDrop(e, listEl){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  listEl.classList.add('dragover');
+  // 显示插入位置指示线
+  listEl.querySelectorAll('.sub-drop-line').forEach(l=>l.remove());
+  const items = Array.from(listEl.querySelectorAll('.submile')).filter(s=>s.classList.contains('dragging') ? false : true);
+  let to = items.length;
+  for(let i=0;i<items.length;i++){
+    const r = items[i].getBoundingClientRect();
+    if(e.clientY < r.top + r.height/2){ to = i; break; }
+  }
+  const line = document.createElement('div');
+  line.className = 'sub-drop-line show';
+  if(items.length === 0){
+    listEl.appendChild(line);
+  } else if(to >= items.length){
+    listEl.insertBefore(line, listEl.querySelector('.addline'));
+  } else {
+    listEl.insertBefore(line, items[to]);
+  }
+}
+function subDragLeave(e, listEl){
+  // 只有真正离开列表才清，避免指示线闪烁
+  if(!listEl.contains(e.relatedTarget)){
+    listEl.classList.remove('dragover');
+    listEl.querySelectorAll('.sub-drop-line').forEach(l=>l.remove());
+  }
+}
+function dropSub(e, listEl){
+  e.preventDefault();
+  listEl.classList.remove('dragover');
+  const sid = e.dataTransfer.getData('text/plain');
+  listEl.querySelectorAll('.sub-drop-line').forEach(l=>l.remove());
+  if(!sid) return;
+  const mid = listEl.getAttribute('data-mid');
+  const m = findMilestoneByMid(mid);
+  if(!m || !Array.isArray(m.subs)) return;
+  const from = m.subs.findIndex(x=>x.id===sid);
+  if(from < 0) return;
+  const items = Array.from(listEl.querySelectorAll('.submile')).filter(s=>s.classList.contains('dragging') ? false : true);
+  let to = items.length;
+  for(let i=0;i<items.length;i++){
+    const r = items[i].getBoundingClientRect();
+    if(e.clientY < r.top + r.height/2){ to = i; break; }
+  }
+  const [moved] = m.subs.splice(from, 1);
+  // 移除后插入位置可能右移
+  if(from < to) to--;
+  if(to < 0) to = 0;
+  m.subs.splice(Math.min(to, m.subs.length), 0, moved);
+  save(); render(); toast('已调整里程表顺序');
+}
+// 找到 milestone（兼容被埋在不同目标下的查找）
+function findMilestoneByMid(mid){
+  for(const g of db.goals){
+    if(!Array.isArray(g.milestones)) continue;
+    const m = g.milestones.find(x=>x.id===mid);
+    if(m) return m;
+  }
+  return null;
 }
 function moveGoal(id, dir){
   const i = db.goals.findIndex(x=>x.id===id);
