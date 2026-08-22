@@ -362,9 +362,15 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .submile.done{background:linear-gradient(135deg,rgba(224,163,184,.14),rgba(224,163,184,.04));border-color:rgba(224,163,184,.38);box-shadow:0 2px 10px rgba(224,163,184,.12)}
 .submile.done::before{content:'';position:absolute;right:-18px;top:-18px;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,rgba(224,163,184,.16) 0%,rgba(224,163,184,0) 70%);pointer-events:none}
 .submile.done::after{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#e0a3b8,#d6a878,#e0a3b8);background-size:200% 100%;animation:rewardflow 4s linear infinite}
-.sub-check{width:22px;height:22px;border-radius:50%;border:1.8px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.14s}
-.sub-check:hover{border-color:var(--accent)}
+.sub-check{width:22px;height:22px;border-radius:50%;border:1.8px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.18s;cursor:pointer;position:relative}
+.sub-check:hover{border-color:var(--accent);transform:scale(1.12)}
+.sub-check:active{transform:scale(.9)}
 .sub-check.on{background:linear-gradient(140deg,#e0a3b8,#d08aa0);border-color:transparent;box-shadow:0 3px 8px rgba(224,163,184,.4);animation:medalpop .45s cubic-bezier(.34,1.56,.64,1)}
+.sub-check.on::after{content:'×';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:600;line-height:1;letter-spacing:-1px;opacity:0;transition:.18s;pointer-events:none}
+.sub-check.on:hover{box-shadow:0 4px 12px rgba(224,163,184,.55)}
+.sub-check.on:hover::after{opacity:1}
+.sub-check .sub-check-ck{transition:.18s;display:inline-flex}
+.sub-check.on:hover .sub-check-ck{opacity:0;transform:scale(.4)}
 .sub-idx{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0}
 .sub-title{flex:1;min-width:0;font-size:13.5px;color:var(--text);line-height:1.45}
 .submile.done .sub-title{color:#a85d72;text-decoration:line-through;text-decoration-color:rgba(168,93,114,.45)}
@@ -1242,6 +1248,10 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .acct-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:13.5px;color:var(--text);cursor:pointer;transition:.15s}
 .acct-chip:hover{border-color:var(--accent);background:var(--accent-soft)}
 .acct-chip svg{flex-shrink:0;color:var(--accent)}
+.ima-sync-btn{color:var(--accent);border-color:rgba(207,155,148,.35);background:rgba(207,155,148,.08)}
+.ima-sync-btn:hover{background:rgba(207,155,148,.18);border-color:var(--accent)}
+.ima-sync-btn:disabled{opacity:.5;pointer-events:none}
+.ima-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:var(--accent-soft);color:var(--accent);margin-left:4px;vertical-align:middle}
 
 /* ---- 模块：打卡（习惯养成 · 分析 · 奖励）---- */
 @keyframes ckConfetti{
@@ -2365,7 +2375,7 @@ function viewGoals(){
           subs.forEach((s,si)=>{
             h += '<div class="submile'+(s.done?' done':'')+'" data-sid="'+s.id+'" draggable="true" ondragstart="dragSubStart(event,this)" ondragend="dragSubEnd(event)">'
               + '<span class="sub-grip" title="拖动重新排序">'+ico('drag',12,2)+'</span>'
-              + '<button class="sub-check'+(s.done?' on':'')+'" onclick="toggleSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="'+(s.done?'取消完成':'标记完成')+'">'+(s.done?ico('check',12,3.2):'')+'</button>'
+              + '<button class="sub-check'+(s.done?' on':'')+'" onclick="toggleSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" ondragstart="event.stopPropagation()" onmousedown="event.stopPropagation()" ondragover="event.preventDefault()" title="'+(s.done?'点击取消完成':'标记为完成')+'">'+(s.done?'<span class="sub-check-ck">'+ico('check',12,3.2)+'</span>':'')+'</button>'
               + '<span class="sub-idx">'+(idx+1)+'.'+(si+1)+'</span>'
               + '<span class="sub-title" ondblclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+esc(s.title)+'</span>'
               + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span><div class="sub-reward" title="小里程碑达成">'+ico('star',11,2)+'</div>' : '')
@@ -5378,6 +5388,7 @@ function viewLibrary(){
   const curName = libCatId==='' ? '全部资料' : (libCatId==='__none__' ? '未分类' : libCatLabel(libCatId));
   h += '<div class="card lib-main-col"><div class="card-h"><h3>'+esc(curName||'资料')+'</h3>'
     + '<div class="r"><button class="btn sm lib-dir-btn mob-only" onclick="toggleLibDrawer()">'+ico('folder',14)+'目录</button>'
+    + '<button class="btn sm ghost ima-sync-btn" id="imaSyncBtn" onclick="imaQuickSync()" title="与 IMA 资料库双向同步">'+ico('refresh',14)+' IMA</button>'
     + '<button class="btn primary sm" onclick="libStartAddLink()">'+ico('link',15)+'加链接</button>'
     + '<label class="btn sm" style="cursor:pointer">'+ico('upload',15)+'上传文件'
     + '<input type="file" id="libFile" multiple style="display:none" onchange="libUpload(this)"></label></div></div>';
@@ -5722,6 +5733,204 @@ function libDel(id){
     if(x.type!=='link') delFile(id);
     save(); render(); toast('已删除');
   });
+}
+
+/* ============ IMA 资料库双向同步 ============ */
+const IMA_PROXY = 'http://localhost:18821';
+const IMA_KB_ID = 'QGnhMEjTJDbCRrYaGXP1VRvr9_d2tLCdvuWEM9xql80=';
+let imaSyncing = false;
+
+async function imaApi(path, body){
+  const resp = await fetch(IMA_PROXY + '/' + path, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  return resp.json();
+}
+async function imaPing(){
+  try { const r = await fetch(IMA_PROXY+'/ping',{signal:AbortSignal.timeout(3000)}); return (await r.json()).ok; }
+  catch(e){ return false; }
+}
+
+// 推送本地资料 → IMA（笔记方式，无需文件上传）
+async function imaPushItem(item){
+  // 构建笔记内容
+  let content = '# ' + item.name + '\n\n';
+  if(item.url) content += '🔗 链接：' + item.url + '\n\n';
+  if(item.note) content += '📝 备注：' + item.note + '\n\n';
+  if(item.linkedType && item.linkedType !== 'none'){
+    const label = item.linkedType === 'project' ? '项目' : item.linkedType === 'study' ? '学习' : item.linkedType === 'goal' ? '目标' : item.linkedType;
+    const proj = item.linkedId ? (db.projects.find(p=>p.id===item.linkedId)||{}) : {};
+    content += '📂 归属：' + label + (proj.name ? ' → ' + proj.name : '') + '\n\n';
+  }
+  content += '📅 日期：' + (item.date||'') + '\n';
+
+  // 1. 创建笔记
+  const noteResp = await imaApi('openapi/note/v1/import_doc', { content, content_format:1, title: item.name });
+  if(noteResp.code !== 0) return { ok:false, msg: noteResp.msg };
+  const noteId = noteResp.data?.note_id || noteResp.data?.doc_id;
+  if(!noteId) return { ok:false, msg:'创建笔记无ID返回' };
+
+  // 2. 把笔记添加到知识库
+  const addResp = await imaApi('openapi/wiki/v1/add_knowledge', {
+    media_type: 11,
+    note_info: { content_id: noteId },
+    title: item.name,
+    knowledge_base_id: IMA_KB_ID
+  });
+  if(addResp.code !== 0) return { ok:false, msg: addResp.msg };
+
+  // 3. 记录 media_id 到本地
+  item.imaMediaId = addResp.data?.media_id || '';
+  item.imaSyncedAt = Date.now();
+  return { ok:true, mediaId: item.imaMediaId };
+}
+
+// 推送项目产出 → IMA
+async function imaPushOutput(projName, out){
+  let content = '# ' + out.title + '\n\n';
+  if(out.url) content += '🔗 链接：' + out.url + '\n\n';
+  if(out.note) content += '📝 说明：' + out.note + '\n\n';
+  content += '📂 项目：' + projName + ' / 产出\n';
+  content += '📅 日期：' + (out.date||'') + '\n';
+
+  const noteResp = await imaApi('openapi/note/v1/import_doc', { content, content_format:1, title: '[产出] ' + out.title });
+  if(noteResp.code !== 0) return { ok:false, msg: noteResp.msg };
+  const noteId = noteResp.data?.note_id || noteResp.data?.doc_id;
+  if(!noteId) return { ok:false, msg:'创建笔记无ID返回' };
+
+  const addResp = await imaApi('openapi/wiki/v1/add_knowledge', {
+    media_type: 11,
+    note_info: { content_id: noteId },
+    title: '[产出] ' + out.title,
+    knowledge_base_id: IMA_KB_ID
+  });
+  if(addResp.code !== 0) return { ok:false, msg: addResp.msg };
+  out.imaMediaId = addResp.data?.media_id || '';
+  out.imaSyncedAt = Date.now();
+  return { ok:true };
+}
+
+// 从 IMA 拉取 → 本地
+async function imaPullAll(){
+  // 遍历知识库所有条目
+  let allItems = [], cursor = '', isEnd = false;
+  while(!isEnd){
+    const r = await imaApi('openapi/wiki/v1/get_knowledge_list', { knowledge_base_id: IMA_KB_ID, cursor, limit:50 });
+    if(r.code !== 0) return { ok:false, msg: r.msg };
+    allItems = allItems.concat(r.data?.knowledge_list || []);
+    isEnd = r.data?.is_end;
+    cursor = r.data?.next_cursor || '';
+  }
+  // 也递归遍历文件夹
+  for(const item of [...allItems]){
+    // FolderInfo 条目有 folder_id
+    if(item.folder_id && !item.media_id){
+      let subCursor='', subEnd=false;
+      while(!subEnd){
+        const r = await imaApi('openapi/wiki/v1/get_knowledge_list', { knowledge_base_id: IMA_KB_ID, folder_id: item.folder_id, cursor: subCursor, limit:50 });
+        if(r.code !== 0) break;
+        allItems = allItems.concat(r.data?.knowledge_list || []);
+        subEnd = r.data?.is_end;
+        subCursor = r.data?.next_cursor || '';
+      }
+    }
+  }
+
+  // 对比本地，拉取新条目
+  const existingIds = new Set(db.library.filter(x=>x.imaMediaId).map(x=>x.imaMediaId));
+  let pulled = 0;
+  for(const item of allItems){
+    if(!item.media_id || existingIds.has(item.media_id)) continue;
+    // 新条目，尝试获取内容
+    let noteText = '';
+    try {
+      const info = await imaApi('openapi/wiki/v1/get_media_info', { media_id: item.media_id });
+      if(info.code === 0 && info.data?.media_type === 11 && info.data?.notebook_ext_info?.notebook_id){
+        const docResp = await imaApi('openapi/note/v1/get_doc_content', { note_id: info.data.notebook_ext_info.notebook_id, target_content_format: 0 });
+        if(docResp.code === 0) noteText = docResp.data?.content || '';
+      }
+    } catch(e){ /* 获取内容失败不影响入库 */ }
+
+    // 从笔记内容提取链接
+    const urlMatch = noteText.match(/🔗 链接：(.+)/);
+    const noteMatch = noteText.match(/📝 备注：(.+)/);
+    const dateMatch = noteText.match(/📅 日期：(.+)/);
+
+    db.library.unshift({
+      id: uid(), name: item.title, type: 'link',
+      url: urlMatch ? urlMatch[1].trim() : '',
+      size: 0, date: dateMatch ? dateMatch[1].trim() : TODAY,
+      linkedType:'none', linkedId:'', catId:'',
+      note: noteMatch ? noteMatch[1].trim() : '',
+      imaMediaId: item.media_id, imaSyncedAt: Date.now()
+    });
+    pulled++;
+  }
+  return { ok:true, total: allItems.length, pulled };
+}
+
+// 一键双向同步
+async function imaQuickSync(){
+  if(imaSyncing) return;
+  const ok = await imaPing();
+  if(!ok){
+    openImaGuide();
+    return;
+  }
+  imaSyncing = true;
+  const btn = $('imaSyncBtn');
+  if(btn){ btn.disabled = true; btn.innerHTML = ico('refresh',14)+' 同步中…'; }
+
+  try {
+    // 1. 推送未同步的本地资料
+    let pushed = 0, pushErr = 0;
+    for(const item of db.library){
+      if(item.imaMediaId) continue; // 已同步过
+      const r = await imaPushItem(item);
+      if(r.ok) pushed++; else pushErr++;
+      await new Promise(r=>setTimeout(r, 300)); // 限频
+    }
+    // 2. 推送未同步的项目产出
+    let outPushed = 0;
+    for(const proj of db.projects){
+      for(const out of (proj.outputs||[])){
+        if(out.imaMediaId) continue;
+        const r = await imaPushOutput(proj.name, out);
+        if(r.ok) outPushed++;
+        await new Promise(r=>setTimeout(r, 300));
+      }
+    }
+    // 3. 拉取 IMA 新条目
+    const pullResult = await imaPullAll();
+
+    save(); render();
+    const summary = '推送 ' + pushed + ' 份资料 + ' + outPushed + ' 份产出'
+      + (pushErr ? '（'+pushErr+' 份失败）':'')
+      + '，拉取 ' + (pullResult.pulled||0) + ' 份新条目';
+    toast(summary);
+  } catch(e){
+    toast('同步出错：' + e.message);
+  } finally {
+    imaSyncing = false;
+    if(btn){ btn.disabled = false; btn.innerHTML = ico('refresh',14)+' IMA'; }
+  }
+}
+
+function openImaGuide(){
+  openModal('IMA 同步未就绪', '<div style="text-align:center;padding:10px 0">'
+    + '<div style="font-size:40px;margin-bottom:12px">' + ico('cloud',36) + '</div>'
+    + '<p style="margin-bottom:16px;color:var(--text2)">同步功能需要本地代理服务运行。</p>'
+    + '<div class="card" style="text-align:left;background:var(--surface2);padding:14px;margin-bottom:14px">'
+    + '<h4 style="margin:0 0 8px">启动方法（只需做一次）</h4>'
+    + '<p style="margin:0 0 8px">双击这个文件：</p>'
+    + '<code style="display:block;background:var(--surface3);padding:8px 12px;border-radius:6px;font-size:13px;word-break:break-all">WorkBuddy/初中数学/ima-proxy/启动IMA同步.command</code>'
+    + '<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">弹出终端窗口后保持打开即可，关闭窗口则同步停用。</p>'
+    + '</div>'
+    + '<p style="font-size:12px;color:var(--muted)">代理启动后，工作台通过这个本地中转服务与 IMA 通信（数据不经第三方服务器）。</p>'
+    + '</div>',
+    [{ t:'我知道了', cls:'btn primary', fn:closeModal }]
+  );
 }
 
 /* ---- 计时 ---- */
