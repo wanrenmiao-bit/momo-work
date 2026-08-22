@@ -345,7 +345,7 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .btn-achieve.view:hover{background:var(--surface3);color:var(--text)}
 .goal-completed-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:11px;background:var(--green-soft);color:#5f7d5a;border:1px solid rgba(148,176,142,.3);font-size:12px;font-weight:700}
 
-/* 第三层：里程表（小里程碑也要有奖励感） */
+/* 第三层：里程碑任务 */
 .sub-list{padding:2px 12px 12px 52px;border-top:1px dashed var(--border);margin-top:2px}
 .sub-empty{font-size:12.5px;color:var(--muted);padding:10px 0 6px}
 .sub-list.dragover{background:linear-gradient(180deg,rgba(224,163,184,.06),rgba(224,163,184,0));transition:background .15s}
@@ -376,6 +376,22 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .submile.done .sub-title{color:#a85d72;text-decoration:line-through;text-decoration-color:rgba(168,93,114,.45)}
 .sub-at{font-size:11px;color:#a85d72;flex-shrink:0}
 .sub-reward{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff2f6,#f0a8c0);color:#a85d72;box-shadow:0 2px 7px rgba(224,163,184,.35);position:relative;flex-shrink:0;margin-left:2px;margin-right:2px;animation:medalpop .5s cubic-bezier(.34,1.56,.64,1)}
+.sub-mile.done .sub-reward, .submile.done .sub-reward{display:flex}
+.sub-pri{appearance:none;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;height:20px;min-width:30px;padding:0 7px;border-radius:5px;font-size:10.5px;font-weight:600;letter-spacing:.4px;line-height:1;background:var(--surface2);color:var(--muted);border:1px solid var(--border);transition:.14s;flex-shrink:0;font-family:inherit}
+.sub-pri:hover{transform:scale(1.06);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.sub-pri-P0{background:linear-gradient(135deg,#e0788c,#d96a7e);color:#fff;border-color:transparent}
+.sub-pri-P1{background:linear-gradient(135deg,#dfa86c,#c98a4e);color:#fff;border-color:transparent}
+.sub-pri-P2{background:linear-gradient(135deg,#d8c476,#c4ad58);color:#fff;border-color:transparent}
+.sub-pri-P3{background:var(--surface2);color:var(--muted);border:1px dashed var(--border2)}
+.sub-sun{appearance:none;border:1px solid var(--border);background:var(--surface);width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:.18s;flex-shrink:0;padding:0}
+.sub-sun:hover{transform:scale(1.12);border-color:var(--accent);color:var(--accent)}
+.sub-sun.on{background:linear-gradient(135deg,#ffe27a,#f4c542);color:#8b5a00;border-color:transparent;box-shadow:0 2px 8px rgba(244,197,66,.5);animation:sunpulse 2.2s ease-in-out infinite}
+.sub-sun.on:hover{box-shadow:0 3px 12px rgba(244,197,66,.65)}
+.submile.today{background:linear-gradient(135deg,rgba(244,197,66,.08),rgba(244,197,66,.02));border-color:rgba(244,197,66,.4)}
+.submile.today::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#ffd966,#f4c542);border-radius:3px 0 0 3px}
+@keyframes sunpulse{0%,100%{box-shadow:0 2px 8px rgba(244,197,66,.5)}50%{box-shadow:0 2px 14px rgba(244,197,66,.75)}}
+.submile.done .sub-pri, .submile.done .sub-sun{opacity:.45;pointer-events:none}
+.submile.done .sub-title{flex:1;min-width:0;font-size:13.5px;color:var(--text);line-height:1.45}
 .submile.done .sub-reward{display:flex}
 .sub-reward::before{content:'';position:absolute;inset:-5px;border-radius:50%;border:1.2px dashed rgba(224,163,184,.4);animation:spin 12s linear infinite}
 .sub-reward svg{position:relative;z-index:2}
@@ -842,6 +858,8 @@ a{color:var(--accent2);text-decoration:none;word-break:break-all}
 .plan-src{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle}
 .plan-src.src-project{background:rgba(155,135,210,.16);color:#8d72c4}
 .plan-src.src-gratitude{background:rgba(216,118,140,.16);color:#c46884}
+.plan-src.src-goal{background:rgba(216,164,116,.16);color:#a06e34;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-src.src-goal i{font-style:normal;opacity:.7;margin-left:1px}
 .plan-src.proj-tag{background:rgba(214,168,120,.16);color:var(--orange);display:inline-flex;align-items:center;gap:3px;margin-left:4px}
 .lp-row{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font-size:12px;color:var(--muted)}
 .lp-row b{font-size:12.5px;color:var(--text2)}
@@ -2257,7 +2275,7 @@ function goalRing(pct, size){
 const GOAL_CATS = ['事业','健康','成长','财务','家庭','兴趣','其他'];
 let goalNewCat = '事业';
 
-/* 里程碑进度：有子里程表按子项算，没有就按自身 done */
+/* 里程碑进度：有子任务按子项算，没有就按自身 done */
 function msProgress(m){
   const subs = m.subs || [];
   if(!subs.length) return { done:m.done?1:0, total:1, pct:m.done?100:0, leaf:true };
@@ -2327,7 +2345,7 @@ function viewGoals(){
       +       (allDone ? '<span class="goal-completed-badge">'+ico('trophy',12,2.5)+'已达成'+(lastDone?' · '+fmtMD(lastDone):'')+'</span>' : '')
       +     '</div>'
       +     (g.note ? '<div class="goal-note">'+esc(g.note)+'</div>' : '')
-      +     '<div style="font-size:12.5px;color:var(--muted);margin-top:8px">里程碑 '+msDone+'/'+msTotal+' · 小项 '+gp.done+'/'+gp.total+'</div>'
+      +     '<div style="font-size:12.5px;color:var(--muted);margin-top:8px">里程碑 '+msDone+'/'+msTotal+' · 任务 '+gp.done+'/'+gp.total+'</div>'
       +   '</div>'
       +   '<div class="ops">'
       +     '<button class="iconbtn goal-grip" title="拖动调整顺序" onclick="event.stopPropagation()">'+ico('move',15)+'</button>'
@@ -2355,36 +2373,40 @@ function viewGoals(){
           +   '<div class="milestone-body">'
           +     '<div class="milestone-title">'+esc(m.title)+'</div>'
           +     '<div class="milestone-time">'
-          +       (subs.length ? ('里程表 '+p.done+'/'+p.total) : (done ? (ico('trophy',11,2)+' 完成于 '+fmtMD(m.doneAt)) : '暂无里程表小项'))
+          +       (subs.length ? ('任务 '+p.done+'/'+p.total) : (done ? (ico('trophy',11,2)+' 完成于 '+fmtMD(m.doneAt)) : '暂无任务'))
           +     '</div>'
           +   '</div>'
           +   (subs.length ? '<div class="ms-mini">'+goalRing(p.pct, 40)+'</div>' : '')
           +   (done ? '<div class="milestone-reward" title="里程碑达成">'+ico('star',15,2)+'</div>' : '')
           +   '<div class="milestone-actions">'
           +     (subs.length
-                  ? '<button class="btn-achieve view" onclick="toggleGoal(\''+m.id+'\')">'+(mOpen?'收起里程表':'里程表 '+p.done+'/'+p.total)+'</button>'
+                  ? '<button class="btn-achieve view" onclick="toggleGoal(\''+m.id+'\')">'+(mOpen?'收起任务':'任务 '+p.done+'/'+p.total)+'</button>'
                   : '<button class="btn-achieve'+(m.done?' completed':'')+'" onclick="toggleMilestone(\''+g.id+'\',\''+m.id+'\')">'+(m.done?'已完成':'标记完成')+'</button>')
-          +     '<button class="iconbtn" title="展开里程表" onclick="toggleGoal(\''+m.id+'\')">'+ico('chev',14)+'</button>'
+          +     '<button class="iconbtn" title="展开任务" onclick="toggleGoal(\''+m.id+'\')">'+ico('chev',14)+'</button>'
           +     '<button class="iconbtn" title="编辑" onclick="editMilestone(\''+g.id+'\',\''+m.id+'\')">'+ico('edit',14)+'</button>'
           +     '<button class="iconbtn del" title="删除" onclick="delMilestone(\''+g.id+'\',\''+m.id+'\')">'+ico('del',14)+'</button>'
           +   '</div>'
           + '</div>';
         if(mOpen){
           h += '<div class="sub-list" data-mid="'+m.id+'">';
-          if(!subs.length) h += '<div class="sub-empty">还没有里程表小项，把这个里程碑再拆成几步可执行的动作。</div>';
+          if(!subs.length) h += '<div class="sub-empty">还没有任务，把里程碑拆成几步可执行的动作。</div>';
           subs.forEach((s,si)=>{
-            h += '<div class="submile'+(s.done?' done':'')+'" data-sid="'+s.id+'">'
+            const pri = s.pri || 'P2';
+            const sunOn = !!s.today;
+            h += '<div class="submile sub-task'+(s.done?' done':'')+(sunOn?' today':'')+'" data-sid="'+s.id+'" data-pri="'+pri+'">'
               + '<span class="sub-grip" title="按住拖动排序" onpointerdown="subPtrStart(event,this.parentElement)">'+ico('drag',12,2)+'</span>'
               + '<button class="sub-check'+(s.done?' on':'')+'" onclick="toggleSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="'+(s.done?'点击取消完成':'标记为完成')+'">'+(s.done?'<span class="sub-check-ck">'+ico('check',12,3.2)+'</span>':'')+'</button>'
               + '<span class="sub-idx">'+(idx+1)+'.'+(si+1)+'</span>'
               + '<span class="sub-title" ondblclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+esc(s.title)+'</span>'
-              + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span><div class="sub-reward" title="小里程碑达成">'+ico('star',11,2)+'</div>' : '')
+              + '<button class="sub-pri sub-pri-'+pri+(sunOn?' also-today':'')+'" onclick="cycleSubPri(event,\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="优先级 '+pri+'（点击切换）">'+pri+'</button>'
+              + '<button class="sub-sun'+(sunOn?' on':'')+'" onclick="toggleSubToday(event,\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')" title="'+(sunOn?'取消今日必做':'设为今日必做')+'">'+ico('sun',12,2.2)+'</button>'
+              + (s.done ? '<span class="sub-at">'+fmtMD(s.doneAt)+'</span>' : '')
               + '<span class="sub-ops">'
               +   '<button class="iconbtn" title="编辑" onclick="editSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('edit',13)+'</button>'
               +   '<button class="iconbtn del" title="删除" onclick="delSub(\''+g.id+'\',\''+m.id+'\',\''+s.id+'\')">'+ico('del',13)+'</button>'
               + '</span></div>';
           });
-          h += '<div class="addline sub-add"><input placeholder="添加里程表小项，回车保存" onkeydown="if(event.key===\'Enter\')quickSub(\''+g.id+'\',\''+m.id+'\',this)">'
+          h += '<div class="addline sub-add"><input placeholder="添加任务，回车保存" onkeydown="if(event.key===\'Enter\')quickSub(\''+g.id+'\',\''+m.id+'\',this)">'
             + '<button class="btn sm" onclick="editSub(\''+g.id+'\',\''+m.id+'\')">添加</button></div>';
           h += '</div>';
         }
@@ -2434,7 +2456,7 @@ function dropGoalLast(e){
   save(); render(); toast('已放到最后');
 }
 
-/* ---- 里程表小项拖动（Pointer Events，无屏闪） ---- */
+/* ---- 里程碑小项拖动（Pointer Events，无屏闪） ---- */
 let subPD = null;
 function subPtrStart(e, itemEl){
   if(!itemEl || !itemEl.classList.contains('submile')) return;
@@ -2528,7 +2550,7 @@ function subPtrEnd(e){
         if(to < 0) to = 0;
         m.subs.splice(Math.min(to, m.subs.length), 0, mv);
         save(); render();
-        toast('已调整里程表顺序');
+        toast('已调整任务顺序');
       }
     }
   }
@@ -2600,6 +2622,18 @@ function moveProj(id, dir){
   save(); render();
 }
 function toggleGoal(id){ if(EXPANDED.has(id)) EXPANDED.delete(id); else EXPANDED.add(id); render(); }
+function jumpToGoalTask(gid, mid, sid){
+  // 从计划看板跳回目标视图，并展开对应里程碑
+  EXPANDED.add(gid);
+  EXPANDED.add(mid);
+  route.tab = 'goals';
+  render();
+  setTimeout(()=>{
+    const el = document.querySelector('.submile[data-sid="'+sid+'"]');
+    if(el){ el.scrollIntoView({ behavior:'smooth', block:'center' }); el.style.transition='background .4s'; el.style.background='rgba(244,197,66,.18)'; setTimeout(()=>{ el.style.background=''; }, 1400); }
+  }, 60);
+  toast('已定位到任务');
+}
 function openGoal(id){
   route.tab = 'goals'; EXPANDED.add(id); window.scrollTo(0,0); closeNav(); render();
   setTimeout(()=>{ const card = document.querySelector('.goal-card[data-gid="'+id+'"]'); if(card) card.scrollIntoView({behavior:'smooth', block:'center'}); }, 120);
@@ -2631,7 +2665,7 @@ function goalRewardHTML(g, msTotal, gp, lastDone){
     + '<div class="goal-reward-chips">'
     +   (days ? '<span class="rchip gold">'+ico('clock',11,2.4)+'历时 '+days+' 天</span>' : '')
     +   '<span class="rchip">'+ico('flag',11,2.4)+'里程碑 '+msTotal+'</span>'
-    +   (gp.total ? '<span class="rchip green">'+ico('check',11,2.8)+'小项 '+gp.done+'/'+gp.total+'</span>' : '')
+    +   (gp.total ? '<span class="rchip green">'+ico('check',11,2.8)+'任务 '+gp.done+'/'+gp.total+'</span>' : '')
     +   (lastDone ? '<span class="rchip">'+ico('star',11,2.2)+fmtMD(lastDone)+'</span>' : '')
     + '</div></div>';
 }
@@ -2651,7 +2685,7 @@ function quickMilestone(gid, el){
 function toggleMilestone(gid,mid){
   const g = db.goals.find(x=>x.id===gid);
   const m = g.milestones.find(x=>x.id===mid);
-  if((m.subs||[]).length){ toast('这个里程碑有里程表，勾完小项会自动完成'); return; }
+  if((m.subs||[]).length){ toast('这个里程碑有任务，勾完所有任务会自动完成'); return; }
   m.done = !m.done;
   m.doneAt = m.done ? TODAY : '';
   if(m.done){
@@ -2660,7 +2694,7 @@ function toggleMilestone(gid,mid){
   }
   save(); render();
 }
-/* ---- 第三层：里程表小项 ---- */
+/* ---- 第三层：里程碑任务 ---- */
 function findSub(gid,mid){
   const g = db.goals.find(x=>x.id===gid); if(!g) return {};
   const m = g.milestones.find(x=>x.id===mid); if(!m) return { g };
@@ -2684,35 +2718,84 @@ function toggleSub(gid,mid,sid){
     const allDone = g.milestones.every(msIsDone);
     toast(allDone ? '目标达成！' : '里程碑「'+m.title+'」达成');
   } else if(s.done){
-    toast('小里程碑达成');
+    toast('任务达成');
   }
+  syncGoalTaskToPlan(gid, mid, sid);
   save(); render();
 }
 function quickSub(gid,mid,el){
   const v = el.value.trim(); if(!v) return;
   const { g, m } = findSub(gid,mid); if(!m) return;
-  m.subs.push({ id:uid(), title:v, done:false, doneAt:'' });
+  const t = { id:uid(), title:v, done:false, doneAt:'', pri:'P2', today:false };
+  m.subs.push(t);
   syncMilestone(g,m);
-  el.value=''; save(); render(); toast('里程表已添加');
+  el.value=''; save(); render(); toast('任务已添加');
 }
 function editSub(gid,mid,sid){
   const { g, m } = findSub(gid,mid); if(!m) return;
   const s = sid ? m.subs.find(x=>x.id===sid) : null;
-  openForm(s?'编辑里程表小项':'添加里程表小项', [
-    { k:'title', l:'小项内容', t:'text', req:true, ph:'例：打通第一个获客渠道' }
-  ], s || {}, v => {
-    if(s) s.title = v.title;
-    else m.subs.push({ id:uid(), title:v.title, done:false, doneAt:'' });
-    syncMilestone(g,m); save(); render(); toast('已保存');
+  openForm(s?'编辑任务':'添加任务', [
+    { k:'title', l:'任务内容', t:'text', req:true, ph:'例：完成接口联调' },
+    { k:'pri', l:'优先级', t:'select', opts:[['P0','P0 · 重要且紧急'],['P1','P1 · 紧急不重要'],['P2','P2 · 重要不紧急'],['P3','P3 · 不紧急不重要']] },
+    { k:'today', l:'', t:'check', cl:'今日必做（点亮太阳并加入计划看板）' }
+  ], s || { pri:'P2', today:false }, v => {
+    if(s){
+      s.title = v.title;
+      s.pri = v.pri || 'P2';
+      s.today = !!v.today;
+    } else {
+      m.subs.push({ id:uid(), title:v.title, done:false, doneAt:'', pri:v.pri||'P2', today:!!v.today });
+    }
+    syncMilestone(g,m);
+    syncGoalTaskToPlan(gid, mid, sid || m.subs[m.subs.length-1].id);
+    save(); render(); toast('已保存');
   });
 }
 function delSub(gid,mid,sid){
   const { g, m } = findSub(gid,mid); if(!m) return;
   const s = m.subs.find(x=>x.id===sid); if(!s) return;
-  confirmBox('删除里程表小项？', '「'+s.title+'」删除后不可恢复。', ()=>{
+  confirmBox('删除任务？', '「'+s.title+'」删除后不可恢复。', ()=>{
     m.subs = m.subs.filter(x=>x.id!==sid);
+    db.plans = db.plans.filter(pl => !(pl.sourceType==='goal' && pl.sourceId===gid && pl.sourceSub===sid));
     syncMilestone(g,m); save(); render(); toast('已删除');
   });
+}
+/* ---- 任务：优先级 / 今日必做 ---- */
+function cycleSubPri(e,gid,mid,sid){
+  e.stopPropagation();
+  const order = ['P0','P1','P2','P3'];
+  const { m } = findSub(gid,mid); if(!m) return;
+  const s = m.subs.find(x=>x.id===sid); if(!s || s.done) return;
+  const cur = s.pri || 'P2';
+  s.pri = order[(order.indexOf(cur)+1) % order.length];
+  syncGoalTaskToPlan(gid, mid, sid);
+  save(); render();
+  toast('优先级：'+s.pri);
+}
+function toggleSubToday(e,gid,mid,sid){
+  e.stopPropagation();
+  const { m } = findSub(gid,mid); if(!m) return;
+  const s = m.subs.find(x=>x.id===sid); if(!s || s.done) return;
+  s.today = !s.today;
+  syncGoalTaskToPlan(gid, mid, sid);
+  save(); render();
+  toast(s.today ? '已加入今日必做' : '已移出今日必做');
+}
+function syncGoalTaskToPlan(gid, mid, sid){
+  const g = db.goals.find(x=>x.id===gid); if(!g) return;
+  const m = g.milestones.find(x=>x.id===mid); if(!m) return;
+  const t = m.subs.find(x=>x.id===sid); if(!t) return;
+  const idx = db.plans.findIndex(pl => pl.sourceType==='goal' && pl.sourceId===gid && pl.sourceSub===sid);
+  // 已完成：移除计划看板中的关联项
+  if(t.done){ if(idx>=0){ db.plans.splice(idx,1); } return; }
+  const cat = priToCat(t.pri||'P2');
+  const text = t.title + '  · ' + g.title;
+  if(idx>=0){
+    const pl = db.plans[idx];
+    pl.text = text; pl.cat = cat; pl.must = !!t.today; pl.date = TODAY;
+  }else{
+    db.plans.unshift({ id:uid(), cat, must:!!t.today, text, date:TODAY, done:false, created:TODAY, archived:false, sourceType:'goal', sourceId:gid, sourceMid:mid, sourceSub:sid });
+  }
 }
 function editGoal(id){
   const g = id ? db.goals.find(x=>x.id===id) : null;
@@ -2729,7 +2812,11 @@ function editGoal(id){
 function delGoal(id){
   const g = db.goals.find(x=>x.id===id);
   const subN = g.milestones.reduce((a,m)=>a+(m.subs||[]).length,0);
-  confirmBox('删除目标「'+g.title+'」？', '它下面的 '+g.milestones.length+' 个里程碑'+(subN?('和 '+subN+' 条里程表小项'):'')+'会一起删除，此操作不可撤销。', () => {
+  confirmBox('删除目标「'+g.title+'」？', '它下面的 '+g.milestones.length+' 个里程碑'+(subN?('和 '+subN+' 条任务'):'')+'会一起删除，此操作不可撤销。', () => {
+    // 清理关联的计划看板条目
+    const removedIds = new Set();
+    g.milestones.forEach(m => (m.subs||[]).forEach(s => removedIds.add(s.id)));
+    db.plans = db.plans.filter(pl => !(pl.sourceType==='goal' && pl.sourceId===id && removedIds.has(pl.sourceSub)));
     db.goals = db.goals.filter(x=>x.id!==id); save(); render(); toast('已删除');
   });
 }
@@ -2748,7 +2835,10 @@ function delMilestone(gid,mid){
   const g = db.goals.find(x=>x.id===gid);
   const m = g.milestones.find(x=>x.id===mid); if(!m) return;
   const n = (m.subs||[]).length;
-  confirmBox('删除里程碑？', '「'+m.title+'」'+(n?('及其下 '+n+' 条里程表小项'):'')+'将被删除。', ()=>{
+  confirmBox('删除里程碑？', '「'+m.title+'」'+(n?('及其下 '+n+' 条任务'):'')+'将被删除。', ()=>{
+    // 清理关联的计划看板条目
+    const removedIds = new Set((m.subs||[]).map(s=>s.id));
+    db.plans = db.plans.filter(pl => !(pl.sourceType==='goal' && pl.sourceId===gid && removedIds.has(pl.sourceSub)));
     g.milestones = g.milestones.filter(x=>x.id!==mid); save(); render(); toast('里程碑已删除');
   });
 }
@@ -4318,18 +4408,29 @@ function planZone(cat, items, full){
 
 function planItemHTML(p){
   const catInfo = PLAN_CATS.find(x=>x.k===p.cat) || PLAN_CATS[1];
-  const isLinked = p.sourceType === 'project' || p.sourceType === 'gratitude';
+  const isLinked = p.sourceType === 'project' || p.sourceType === 'gratitude' || p.sourceType === 'goal';
   const linkedProjName = p.sourceType === 'project' && p.sourceId
     ? ((db.projects.find(x=>x.id===p.sourceId)||{}).name || '项目')
     : '';
+  const linkedGoal = p.sourceType === 'goal' && p.sourceId
+    ? (db.goals.find(x=>x.id===p.sourceId) || null)
+    : null;
+  const linkedMilestone = linkedGoal && p.sourceMid
+    ? ((linkedGoal.milestones||[]).find(x=>x.id===p.sourceMid) || null)
+    : null;
+  let srcChip = '';
+  if(p.sourceType === 'project' && p.sourceId){
+    srcChip = '<span class="plan-src src-project" style="cursor:pointer" onclick="event.stopPropagation();openProject(\''+p.sourceId+'\')" title="来自项目：'+esc(linkedProjName)+'">'+ico('proj',11)+esc(linkedProjName)+'</span>';
+  } else if(p.sourceType === 'goal' && linkedGoal){
+    srcChip = '<span class="plan-src src-goal" style="cursor:pointer" onclick="event.stopPropagation();jumpToGoalTask(\''+p.sourceId+'\',\''+p.sourceMid+'\',\''+p.sourceSub+'\')" title="来自目标：'+esc(linkedGoal.title)+' / '+esc((linkedMilestone||{}).title||'')+'">'
+      + ico('goal',11)+esc(linkedGoal.title)+(linkedMilestone?' <i>· '+esc(linkedMilestone.title)+'</i>':'')
+      + '</span>';
+  } else if(p.sourceType === 'gratitude'){
+    srcChip = '<span class="plan-src src-gratitude">感恩</span>';
+  }
   return '<div class="plan'+(p.done?' done':'')+'" draggable="true" ondragstart="dragPlan(event,\''+p.id+'\')">'
     + '<div class="plan-check'+(p.done?' done':'')+'" onclick="togglePlan(\''+p.id+'\')">'+(p.done?ico('check',12,3):'')+'</div>'
-    + '<div class="plan-t">'+esc(p.text)
-    + (p.sourceType === 'project' && p.sourceId
-        ? '<span class="plan-src src-project" style="cursor:pointer" onclick="event.stopPropagation();openProject(\''+p.sourceId+'\')" title="来自项目：'+esc(linkedProjName)+'">'+ico('proj',11)+esc(linkedProjName)+'</span>'
-        : p.sourceType === 'gratitude'
-          ? '<span class="plan-src src-gratitude">感恩</span>'
-          : '')
+    + '<div class="plan-t">'+esc(p.text)+srcChip
     + (p.sourceProject ? '<span class="plan-src proj-tag">'+ico('proj',11)+esc((db.projects.find(x=>x.id===p.sourceProject)||{}).name||'项目')+'</span>' : '')
     + '</div>'
     + '<div class="plan-ops">'
@@ -4389,6 +4490,12 @@ function togglePlan(id){
     const t = db.projects.find(x=>x.id===p.sourceId)?.tasks.find(x=>x.id===p.sourceSub);
     if(t){ t.done = p.done; if(t.done){ t.today=false; t.abandoned=false; } }
   }
+  if(p.sourceType==='goal' && p.sourceId && p.sourceSub){
+    const g = db.goals.find(x=>x.id===p.sourceId);
+    const m = g && g.milestones.find(x=>x.id===p.sourceMid);
+    const t = m && m.subs.find(x=>x.id===p.sourceSub);
+    if(t){ t.done = p.done; t.doneAt = p.doneAt; if(p.done){ t.today=false; } syncMilestone(g,m); }
+  }
   if(p.sourceType==='gratitude' && p.sourceSub){
     const arr = db.gratitude[p.sourceSub]?.tomorrow; if(arr){
       const it = arr.find(x=>x.text===p.text); if(it){ it.done = p.done; if(it.done){ it.today=false; it.abandoned=false; } }
@@ -4403,6 +4510,13 @@ function togglePlanSun(id){
   if(p.sourceType==='project' && p.sourceId && p.sourceSub){
     const t = db.projects.find(x=>x.id===p.sourceId)?.tasks.find(x=>x.id===p.sourceSub);
     if(t){ t.today = toMust; if(toMust) t.abandoned=false; save(); syncProjectTaskToPlan(p.sourceId,p.sourceSub); render(); toast(toMust?'已设为今日必须完成':'已移出今日必须完成'); }
+    return;
+  }
+  if(p.sourceType==='goal' && p.sourceId && p.sourceSub){
+    const g = db.goals.find(x=>x.id===p.sourceId);
+    const m = g && g.milestones.find(x=>x.id===p.sourceMid);
+    const t = m && m.subs.find(x=>x.id===p.sourceSub);
+    if(t){ t.today = toMust; save(); syncGoalTaskToPlan(p.sourceId,p.sourceMid,p.sourceSub); render(); toast(toMust?'已设为今日必须完成':'已移出今日必须完成'); }
     return;
   }
   if(p.sourceType==='gratitude' && p.sourceSub){
